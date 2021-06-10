@@ -66,7 +66,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
@@ -256,8 +256,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\GameDemo\ClassicMain.cpp" />
+    <ClCompile Include="..\..\GameDemo\module.cpp" />
     <ClCompile Include="..\..\GameDemo\MyGame.cpp" />
     <ClCompile Include="..\..\GameDemo\MyGameRender.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\GameDemo\module.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

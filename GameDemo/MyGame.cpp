@@ -1,15 +1,18 @@
 #include <ctype.h>
-
+#include <iostream>
 #include "PxPhysicsAPI.h"
 #include "../Common/Print.h"
 #include "../Common/PVD.h"
 #include "../Utils/Utils.h"
+#include "module.h"
 #define PI 3.1415926
 
 using namespace physx;
 
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
+PxSimulationEventCallback *myCallBack;
+module moduleCallBack;
 
 PxFoundation*			gFoundation = NULL;
 PxPhysics*				gPhysics	= NULL;
@@ -23,9 +26,19 @@ PxPvd*                  gPvd        = NULL;
 
 PxReal stackZ = 10.0f;
 
+PxRigidDynamic*			body_1		= NULL;
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity=PxVec3(0))
 {
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *gMaterial, 10.0f);
+
+	//设置trigger的参数
+	body_1 = dynamic;
+	printf("createDynamic!\n");
+	/*PxShape* treasureShape;
+	body_1->getShapes(&treasureShape, 1);
+	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);*/
+
 	dynamic->setAngularDamping(0.5f);
 	dynamic->setLinearVelocity(velocity);
 	gScene->addActor(*dynamic);
@@ -48,7 +61,6 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 	}
 	shape->release();
 }
-PxRigidStatic* bodyToRemove;
 void createWall() {
 	PxTransform original(PxVec3(PxReal(0), PxReal(0), PxReal(0)));
 
@@ -58,26 +70,22 @@ void createWall() {
 	PxTransform local1(PxVec3(PxReal(0), PxReal(30), PxReal(-100)));
 	PxTransform local2(PxVec3(PxReal(100-3), PxReal(30), PxReal(0)));
 	PxTransform local3(PxVec3(PxReal(0), PxReal(30), PxReal(100)));
-	PxTransform local4(PxVec3(PxReal(-200), PxReal(30), PxReal(0)), PxQuat(0,1,0,0));
 
-	PxRigidStatic* body1 = gPhysics->createRigidStatic(original.transform(local1));
+	PxRigidStatic* body1 = gPhysics->createRigidStatic(original.transform(local1));	std::cout << "body1:" << body1 << "\n";
 	body1->attachShape(*shape1);
 	gScene->addActor(*body1);
-	PxRigidStatic* body2 = gPhysics->createRigidStatic(original.transform(local2));
+	PxRigidStatic* body2 = gPhysics->createRigidStatic(original.transform(local2)); std::cout << "body2:" << body2 << "\n";
 	body2->attachShape(*shape2);
 	gScene->addActor(*body2);
-	PxRigidStatic* body3 = gPhysics->createRigidStatic(original.transform(local3));
+	PxRigidStatic* body3 = gPhysics->createRigidStatic(original.transform(local3)); std::cout << "body3:" << body3 << "\n";
 	body3->attachShape(*shape1);
 	gScene->addActor(*body3);
-	PxRigidStatic* body4 = gPhysics->createRigidStatic(original.transform(local4));
-	body4->attachShape(*shape1);
-	gScene->addActor(*body4);/**/
-	bodyToRemove = body4;
 	
 	shape1->release();
 	shape2->release();
 }
 
+PxRigidStatic* bodyToRemove;
 void remove() {
 	gScene->removeActor(*bodyToRemove);
 }
@@ -110,6 +118,55 @@ void createBowl() {
 	bowlShape->release();
 }
 
+PxRigidActor* body_0 = NULL;
+void testTrigger() {
+	PxTransform original(PxVec3(PxReal(0), PxReal(0), PxReal(0)));//坐标原点
+	PxShape* shape1 = gPhysics->createShape(PxBoxGeometry(100, 30, 3), *gMaterial);//长宽高为200 60 6的墙
+	PxTransform local4(PxVec3(PxReal(-200), PxReal(30), PxReal(0)), PxQuat(0, 1, 0, 0));
+	PxRigidStatic* body4 = gPhysics->createRigidStatic(original.transform(local4)); std::cout << "body4:" << body4 << "\n";
+
+	
+	module wall(original, shape1, local4, body4);
+	wall.body0->attachShape(*shape1); std::cout << "wall.body0:" << wall.body0 << "\n";
+	/*PxShape* treasureShape;
+	wall.body0->getShapes(&treasureShape, 1);
+	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);*/
+	body_0 = wall.body0;
+	gScene->addActor(*wall.body0);
+
+	/*body4->attachShape(*shape1);
+	
+	gScene->addActor(*body4);*/
+	bodyToRemove = body4;
+
+	shape1->release();
+}
+bool toRemove = false;
+void module::onTrigger(PxTriggerPair* pairs, PxU32 count)
+{
+	printf("Enter onTrigger!\n");
+	for (PxU32 i = 0; i < count; i++)
+	{
+		// ignore pairs when shapes have been deleted
+		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_OTHER)) {
+			printf("Enter first 'if' !\n");
+			continue;
+		}
+
+		if ((pairs[i].otherActor == body_0) && (pairs[i].triggerActor == body_1))
+		{
+			toRemove = true;
+			printf("module::onTrigger!\n");
+		}
+	}
+}
+void module::onWake(PxActor** actor, PxU32 count) {
+	std::cout << "Enter onWake!\n";
+	if (toRemove) remove();
+	return;
+}
+
 void initPhysics(bool interactive)
 {
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
@@ -125,6 +182,9 @@ void initPhysics(bool interactive)
 	gDispatcher = PxDefaultCpuDispatcherCreate(2);
 	sceneDesc.cpuDispatcher	= gDispatcher;
 	sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
+	//注册onTrigger
+	myCallBack = new module();
+	sceneDesc.simulationEventCallback = myCallBack;
 	gScene = gPhysics->createScene(sceneDesc);
 
 	PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
@@ -144,6 +204,7 @@ void initPhysics(bool interactive)
 
 	createWall();
 	createBowl();
+	testTrigger();
 
 	if(!interactive)
 		createDynamic(PxTransform(PxVec3(0,40,100)), PxSphereGeometry(10), PxVec3(0,-50,-100));
