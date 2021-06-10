@@ -47,7 +47,7 @@ static float gCylinderData[] = {
 	1.0f,0.0f,1.0f,1.0f,0.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f
 };
 
-#define MAX_NUM_MESH_VEC3S  808080808
+#define MAX_NUM_MESH_VEC3S  21474836
 static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
 
 void renderGeometry(const PxGeometryHolder& h)

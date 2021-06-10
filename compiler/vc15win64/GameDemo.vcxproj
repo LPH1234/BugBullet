@@ -99,8 +99,10 @@
     <ProjectReference>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>XCOPY "../../../../PxShared/bin\vc15win64\PxFoundationDEBUG_x64.dll" "$(OutDir)" /D /Y
- XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDKDEBUG_x64.dll" "$(OutDir)" /D /Y</Command>
+      <Command>
+        XCOPY "../../../../PxShared/bin\vc15win64\PxFoundationDEBUG_x64.dll" "$(OutDir)" /D /Y
+        XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDKDEBUG_x64.dll" "$(OutDir)" /D /Y
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='checked|x64'">
@@ -146,8 +148,10 @@
     <ProjectReference>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>XCOPY "../../../../PxShared/bin\vc15win64\PxFoundationCHECKED_x64.dll" "$(OutDir)" /D /Y
- XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDKCHECKED_x64.dll" "$(OutDir)" /D /Y</Command>
+      <Command>
+        XCOPY "../../../../PxShared/bin\vc15win64\PxFoundationCHECKED_x64.dll" "$(OutDir)" /D /Y
+        XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDKCHECKED_x64.dll" "$(OutDir)" /D /Y
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
@@ -193,8 +197,10 @@
     <ProjectReference>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>XCOPY "../../../../PxShared/bin\vc15win64\PxFoundationPROFILE_x64.dll" "$(OutDir)" /D /Y
- XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDKPROFILE_x64.dll" "$(OutDir)" /D /Y</Command>
+      <Command>
+        XCOPY "../../../../PxShared/bin\vc15win64\PxFoundationPROFILE_x64.dll" "$(OutDir)" /D /Y
+        XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDKPROFILE_x64.dll" "$(OutDir)" /D /Y
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
@@ -240,8 +246,10 @@
     <ProjectReference>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>XCOPY "../../../../PxShared/bin\vc15win64\PxFoundation_x64.dll" "$(OutDir)" /D /Y
- XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDK_x64.dll" "$(OutDir)" /D /Y</Command>
+      <Command>
+        XCOPY "../../../../PxShared/bin\vc15win64\PxFoundation_x64.dll" "$(OutDir)" /D /Y
+        XCOPY "../../../../PxShared/bin\vc15win64\PxPvdSDK_x64.dll" "$(OutDir)" /D /Y
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -257,6 +265,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\GameDemo\ClassicMain.cpp" />
     <ClCompile Include="..\..\GameDemo\Consts.cpp" />
+    <ClCompile Include="..\..\GameDemo\module.cpp" />
     <ClCompile Include="..\..\GameDemo\MyGame.cpp" />
     <ClCompile Include="..\..\GameDemo\MyGameRender.cpp" />
     <ClCompile Include="..\..\GameDemo\objLoader.cpp" />
@@ -266,6 +275,9 @@
     <ClInclude Include="..\..\GameDemo\Consts.h" />
     <ClInclude Include="..\..\GameDemo\objLoader.h" />
     <ClInclude Include="..\..\GameDemo\Utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\GameDemo\module.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

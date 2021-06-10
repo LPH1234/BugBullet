@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\Utils\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Utils\PxSimulationEventCallback.h" />
     <ClInclude Include="..\..\Utils\Utils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
