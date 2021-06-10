@@ -26,8 +26,17 @@ ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCoo
 	ifstream file(filename);
 	string line;
 	int count = 0;
+	int v_count = 0;
+	int vt_count = 0;
+	int vn_count = 0;
+	int f_count = 0;
 	while (getline(file, line))
 	{
+		if (line.substr(0, 2) == "v ")v_count++;
+		if (line.substr(0, 2) == "vt")vt_count++;
+		if (line.substr(0, 2) == "vn")vn_count++;
+		if (line.substr(0, 1) == "f")f_count++;
+
 		if (line.substr(0, 2) == "v ")
 		{
 			struct vertices vtmp = { 0 };
@@ -81,6 +90,7 @@ ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCoo
 		writeMeshToCookingFile();
 		Logger::info("完成");
 	}
+	Logger::info("v:" + std::to_string(v_count) + "  vt:" + std::to_string(vt_count) + "   vn:" + std::to_string(vn_count) + "   f:" + std::to_string(f_count));
 }
 
 ObjLoader::~ObjLoader() {
