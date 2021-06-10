@@ -29,3 +29,8 @@ public:
 	static bool isFileExist(std::string filePath);
 };
 
+class StringUtils
+{
+public:
+	static void split(std::string& str, std::string delimiter, std::vector<std::string>& v);
+};
