@@ -256,12 +256,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\GameDemo\ClassicMain.cpp" />
+    <ClCompile Include="..\..\GameDemo\Consts.cpp" />
     <ClCompile Include="..\..\GameDemo\MyGame.cpp" />
     <ClCompile Include="..\..\GameDemo\MyGameRender.cpp" />
     <ClCompile Include="..\..\GameDemo\objLoader.cpp" />
+    <ClCompile Include="..\..\GameDemo\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\GameDemo\Consts.h" />
     <ClInclude Include="..\..\GameDemo\objLoader.h" />
+    <ClInclude Include="..\..\GameDemo\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

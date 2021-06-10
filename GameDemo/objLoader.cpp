@@ -13,13 +13,16 @@ using namespace std;
 
 
 
-ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCooking, PxScene* gScene, PxMaterial* gMaterial) {
+ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCooking, PxScene* gScene, PxMaterial* gMaterial, int scale, bool preLoad) {
 	this->gPhysics = gPhysics;
 	this->gCooking = gCooking;
 	this->gScene = gScene;
 	this->gMaterial = gMaterial;
 	this->name = filename.substr(filename.find_last_of("/") + 1);
-	cout << "name:" << name << "\n";
+	this->scale = scale;
+	this->preLoad = preLoad;
+	Logger::debug("打开模型文件：" + name);
+
 	ifstream file(filename);
 	string line;
 	int count = 0;
@@ -72,6 +75,12 @@ ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCoo
 	}
 	file.close();
 	cout << "count : " << count << "     v num: " << v.size() << "     f num: " << f.size() << endl;
+
+	if (preLoad) {
+		Logger::info("开始写入cooking文件中...");
+		writeMeshToCookingFile();
+		Logger::info("完成");
+	}
 }
 
 ObjLoader::~ObjLoader() {
@@ -104,8 +113,6 @@ physx::PxTriangleMesh* ObjLoader::createOjbMesh(int scale)
 			indices[i * 3 + 2] = (*faceIt)[2].u;
 	}
 
-
-
 	PxTriangleMeshDesc meshDesc1;
 	meshDesc1.points.count = numVertices;
 	meshDesc1.points.data = vertices;
@@ -116,18 +123,20 @@ physx::PxTriangleMesh* ObjLoader::createOjbMesh(int scale)
 	meshDesc1.triangles.stride = sizeof(PxU32) * 3;
 
 
-
-
 	PxTriangleMesh* triMesh = gCooking->createTriangleMesh(meshDesc1, gPhysics->getPhysicsInsertionCallback());
 
 	return triMesh;
 }
 
 
-PxRigidActor* ObjLoader::createObjMeshs(PxVec3 &offset, int scale)
+PxRigidActor* ObjLoader::createActorAndAddToScene(PxVec3 &offset)
 {
-	//PxTriangleMesh* mesh = createOjbMesh(scale);
-	PxTriangleMesh* mesh = readCookingFile();
+	PxTriangleMesh* mesh;
+	if (preLoad) //从cooking中读取
+		mesh = readCookingFile();
+	else  //即时创建
+		mesh = createOjbMesh(scale);
+
 
 	// 创建出它的几何体
 	PxTriangleMeshGeometry geom(mesh);
@@ -159,7 +168,7 @@ PxRigidActor* ObjLoader::createObjMeshs(PxVec3 &offset, int scale)
 
 
 
-int ObjLoader::writeMeshCookingFile(int scale)
+int ObjLoader::writeMeshToCookingFile()
 {
 	if (!this)
 		return -1;
@@ -207,9 +216,9 @@ int ObjLoader::writeMeshCookingFile(int scale)
 	delete[] indices;
 
 	// 将流写入到文件
-	FILE * filefd = fopen((this->name + ".cooking").c_str(), "wb+");
+	FILE * filefd = fopen((this->name + COOKING_FILE_SUFFIX).c_str(), "wb+");
 	if (!filefd) {
-		cout << "open cooking write fail" << endl;
+		Logger::error("open cooking read fail");
 		return -1;
 	}
 
@@ -223,15 +232,16 @@ int ObjLoader::writeMeshCookingFile(int scale)
 
 PxTriangleMesh* ObjLoader::readCookingFile() {
 	ObjLoader *objtmp1 = this;
-	// 读出流
-	FILE * filefd = fopen((this->name + ".cooking").c_str(), "rb+");
+	// 输入流
+	FILE * filefd = fopen((this->name + COOKING_FILE_SUFFIX).c_str(), "rb+");
 	if (!filefd) {
-		cout << "open cooking read fail" << endl;
+		Logger::error("file open fail :" + (this->name + COOKING_FILE_SUFFIX));
 		return NULL;
 	}
 	int rsize = 0;
 	fread(&rsize, sizeof(unsigned int), 1, filefd);
 	std::cout << "rsize:" << rsize << std::endl;
+	Logger::info("cooking file read size:" + to_string(rsize));
 	PxU8 *filebuff = new PxU8[rsize + 1];
 	fread(filebuff, sizeof(PxU8), rsize, filefd);
 

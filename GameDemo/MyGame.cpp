@@ -6,6 +6,7 @@
 #include "../Utils/Utils.h"
 #include "objLoader.h"
 
+
 #define PI 3.1415926
 
 using namespace physx;
@@ -114,14 +115,13 @@ void createBowl() {
 	bowlShape->release();
 }
 
-void createModel(std::string path) {
-#if 0
-	ObjLoader loader(path, gPhysics, gCooking, gScene, gMaterial);
-	loader.createObjMeshs(PxVec3(PxReal(-5.5), PxReal(2), PxReal(0)), 1);
-#endif
-	ObjLoader loader(path, gPhysics, gCooking, gScene, gMaterial);
-	//loader.writeMeshCookingFile(1);
-	loader.createObjMeshs(PxVec3(PxReal(-5.5), PxReal(2), PxReal(0)), 1);
+void createModel(std::string path, int scale, PxVec3& offset) {
+	if (!FileUtils::isFileExist(path)) {
+		Logger::error("文件不存在：" + path);
+		return;
+	}
+	ObjLoader loader(path, gPhysics, gCooking, gScene, gMaterial, scale, false);
+	loader.createActorAndAddToScene(offset);
 }
 
 void initPhysics(bool interactive)
@@ -160,7 +160,7 @@ void initPhysics(bool interactive)
 
 	createWall();
 	createBowl();
-	createModel("D:/repo/PhysX-3.4-master/PhysX_3.4/GameDemo/compiler/vc15win64/module/lowBuilding/low-poly-buildings.obj");
+	createModel("G:/dev-tools/PhysX/PhysX-3.4-master/PhysX_3.4/GameDemo/compiler/vc15win64/module/Building/Residential Buildings/Residential Buildings 001.obj", 1, PxVec3(0.0f, 0.0f, 0.0f));
 
 	if (!interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
