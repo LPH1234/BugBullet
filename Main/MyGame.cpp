@@ -135,7 +135,8 @@ void createModel(std::string path, int scale, PxVec3& offset) {
 		return;
 	}
 	ObjLoader loader(path, gPhysics, gCooking, gScene, gMaterial, scale, false);
-	loader.createActorAndAddToScene(offset);
+	loader.createStaticActorAndAddToScene(offset); //静态刚体
+	//loader.createDynamicActorAndAddToScene(offset); //动态刚体、目前还有bug
 }
 
 PxRigidActor* body_0 = NULL;
@@ -227,7 +228,7 @@ void initPhysics(bool interactive)
 	createWall();
 	createBowl();
 	//createModel("module/Building/Residential Buildings/Residential Buildings 001.obj", 1, PxVec3(0.0f, 0.0f, 0.0f));
-	createModel("module/test/RubixCube.obj", 10, PxVec3(3.0f, 0.0f, 1.0f));
+	createModel("module/Building/Residential Buildings/Residential Buildings 001.obj", 1, PxVec3(3.0f, 0.0f, 1.0f));
 	testTrigger();
 
 	if (!interactive)

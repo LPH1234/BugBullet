@@ -34,7 +34,7 @@ public:
 		unsigned int w;	// 法向量标号
 	};
 
-	ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking* gCooking, PxScene* gScene, PxMaterial* gMaterial, int scale, bool preLoad = false);
+	ObjLoader(std::string &obj_file_path, PxPhysics* gPhysics, PxCooking* gCooking, PxScene* gScene, PxMaterial* gMaterial, int scale, bool preLoad = false);
 	~ObjLoader();
 
 private:
@@ -50,29 +50,50 @@ private:
 	std::string name; //模型文件名
 	int scale;
 
-	/**
-	 * @brief  将模型的mesh加载到cooking文件中，在使用时读取。减少即时加载时间。内部使用。
-	 */
-	int writeMeshToCookingFile();
-
+	//--------------- TriangleMesh 静态刚体 ---------------------------
 	/**
 	 * @brief  从顶点集和面集创建PxTriangleMesh。内部使用。
 	 */
-	physx::PxTriangleMesh* createOjbMesh(int scale);
+	physx::PxTriangleMesh* createTriangleMesh(int scale);
+
+	/**
+	 * @brief  将模型的mesh加载到cooking文件中，在使用时读取。减少即时加载时间。内部使用。
+	 */
+	int writeTriangleMeshToCookingFile();
 
 	/**
 	 * @brief  从cooking文件创建PxTriangleMesh。内部使用。
 	 */
-	physx::PxTriangleMesh* readCookingFile();
+	physx::PxTriangleMesh* readTriangleMeshFromCookingFile();
+	//-----------------------------------------------------------------
+
+	//--------------- ConvexMesh 动态刚体 ---------------------------
+	physx::PxConvexMesh* createConvexMesh(int scale);
+
+	/**
+	 * @brief  将模型的mesh加载到cooking文件中，在使用时读取。减少即时加载时间。内部使用。
+	 */
+	int writeConvexMeshToCookingFile();
+
+	/**
+	 * @brief  从cooking文件创建PxTriangleMesh。内部使用。
+	 */
+	physx::PxConvexMesh* readConvexMeshFromCookingFile();
+	//-----------------------------------------------------------------
 
 public:
 	/**
-	 * @brief  创建一个模型所表示的Actor，将其加入到scene中(所以调用此方法会在当前场景中绘制此模型)，并返回它。
+	 * @brief  创建一个模型所表示的static rigid Actor，将其加入到scene中(所以调用此方法会在当前场景中绘制此模型)，并返回它。
 	 * @param offset    初始位置偏移量
 	 * @return 返回创建好的Actor
 	 */
-	physx::PxRigidActor* createActorAndAddToScene(physx::PxVec3 &offset);
+	physx::PxRigidActor* createStaticActorAndAddToScene(physx::PxVec3 &offset);
 
-
+	/**
+	 * @brief  创建一个模型所表示的dynamic rigid Actor，将其加入到scene中(所以调用此方法会在当前场景中绘制此模型)，并返回它。
+	 * @param offset    初始位置偏移量
+	 * @return 返回创建好的Actor
+	 */
+	physx::PxRigidActor* createDynamicActorAndAddToScene(physx::PxVec3 &offset);
 
 };
