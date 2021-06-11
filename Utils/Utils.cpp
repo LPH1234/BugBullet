@@ -1,4 +1,4 @@
-//
+﻿//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -41,174 +41,301 @@
 #include "extensions/PxDefaultAllocator.h"
 
 
-namespace physx
+BOOL SetConsoleColor(WORD wAttributes)
 {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hConsole == INVALID_HANDLE_VALUE)
+		return FALSE;
 
-namespace
-{
-PxDefaultAllocator gUtilAllocator;
-
-struct UtilAllocator // since we're allocating internal classes here, make sure we align properly
-{
-	void* allocate(size_t size,const char* file,  PxU32 line) 	{ return gUtilAllocator.allocate(size, NULL, file, int(line));		}
-	void deallocate(void* ptr)									{ gUtilAllocator.deallocate(ptr);								}
-};
+	return SetConsoleTextAttribute(hConsole, wAttributes);
 }
 
 
-namespace SnippetUtils
+void Logger::debug(std::string str) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN); //green
+	std::cout << "DEBUG\t" << str << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+void Logger::info(std::string str) {
+	std::cout << "INFO\t" << str << "\n";
+}
+void Logger::warn(std::string str) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN); // yellow
+	std::cout << "WARN\t" << str << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+void Logger::error(std::string str) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_RED); // red
+	std::cout << "ERROR\t" << str << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+
+
+
+
+//计算文件夹的个数
+int FileUtils::getFilesCount(std::string path)
+{
+	//文件句柄  
+	long   hFile = 0;
+	//文件信息  
+	struct _finddata_t fileinfo;
+	int result = 0;
+	std::string p;
+	if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
+	{
+		do
+		{
+			if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
+				if ((fileinfo.attrib &  _A_SUBDIR)) {
+				}
+				else {
+					result++;
+				}
+			}
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+	}
+	return result;
+}
+
+/*得到文件夹内的文件*/
+void FileUtils::getFiles(std::string path, std::vector<std::string>& files)
+{
+	//文件句柄  
+	long   hFile = 0;
+	//文件信息  
+	struct _finddata_t fileinfo;
+	std::string p;
+	if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
+	{
+		do
+		{
+			if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+				files.push_back(fileinfo.name);
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+	}
+}
+
+
+/*
+删除文件夹里面的文件
+*/
+void FileUtils::removeFileInDir(std::string path) {
+	//文件句柄  
+	long   hFile = 0;
+	//文件信息  
+	struct _finddata_t fileinfo;
+	std::string p;
+	if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
+	{
+		do
+		{
+			if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+				remove(fileinfo.name);
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+	}
+}
+
+
+bool FileUtils::isFileExist(std::string fileName) {
+	std::ifstream inFile;
+	inFile.open(fileName, std::ios::in);
+	if (inFile) {  //条件成立，则说明文件打开成功
+		inFile.close();
+		return true;
+	}
+	return false;
+}
+
+
+void StringUtils::split(std::string& s, std::string c, std::vector<std::string>& v) {
+	std::string::size_type pos1, pos2;
+	pos2 = s.find(c);
+	pos1 = 0;
+	while (std::string::npos != pos2)
+	{
+		v.push_back(s.substr(pos1, pos2 - pos1));
+
+		pos1 = pos2 + c.size();
+		pos2 = s.find(c, pos1);
+	}
+	if (pos1 != s.length())
+		v.push_back(s.substr(pos1));
+}
+
+
+
+namespace physx
 {
 
-	PxI32 atomicIncrement(volatile PxI32* val)
+	namespace
 	{
-		return Ps::atomicIncrement(val);
-	}
+		PxDefaultAllocator gUtilAllocator;
 
-	PxI32 atomicDecrement(volatile PxI32* val)
-	{
-		return Ps::atomicDecrement(val);
-	}
-
-	//******************************************************************************//
-
-	PxU32 getNbPhysicalCores()
-	{
-		return Ps::Thread::getNbPhysicalCores();
-	}
-
-	//******************************************************************************//
-
-	PxU32 getThreadId()
-	{
-		return static_cast<PxU32>(Ps::Thread::getId());
-	}
-
-	//******************************************************************************//
-
-	PxU64 getCurrentTimeCounterValue()
-	{
-		return Ps::Time::getCurrentCounterValue();
-	}
-
-	PxReal getElapsedTimeInMilliseconds(const PxU64 elapsedTime)
-	{
-		return Ps::Time::getCounterFrequency().toTensOfNanos(elapsedTime)/(100.0f * 1000.0f);
-	}
-
-	PxReal getElapsedTimeInMicroSeconds(const PxU64 elapsedTime)
-	{
-		return Ps::Time::getCounterFrequency().toTensOfNanos(elapsedTime)/(100.0f);
-	}
-
-	//******************************************************************************//
-
-	struct Sync: public Ps::SyncT<UtilAllocator> {};
-
-	Sync* syncCreate()
-	{
-		return new(gUtilAllocator.allocate(sizeof(Sync), 0, 0, 0)) Sync();
-	}
-
-	void syncWait(Sync* sync)
-	{
-		sync->wait();
-	}
-
-	void syncSet(Sync* sync)
-	{
-		sync->set();
-	}
-
-	void syncReset(Sync* sync)
-	{
-		sync->reset();
-	}
-	
-	void syncRelease(Sync* sync)
-	{
-		sync->~Sync();
-		gUtilAllocator.deallocate(sync);
-	}
-
-	//******************************************************************************//
-
-	struct Thread: public Ps::ThreadT<UtilAllocator>
-	{
-		Thread(ThreadEntryPoint entryPoint, void* data): 
-			Ps::ThreadT<UtilAllocator>(),
-			mEntryPoint(entryPoint),
-			mData(data)
+		struct UtilAllocator // since we're allocating internal classes here, make sure we align properly
 		{
+			void* allocate(size_t size, const char* file, PxU32 line) { return gUtilAllocator.allocate(size, NULL, file, int(line)); }
+			void deallocate(void* ptr) { gUtilAllocator.deallocate(ptr); }
+		};
+	}
+
+
+	namespace SnippetUtils
+	{
+
+		PxI32 atomicIncrement(volatile PxI32* val)
+		{
+			return Ps::atomicIncrement(val);
 		}
 
-		virtual void execute(void)											
-		{ 
-			mEntryPoint(mData);
+		PxI32 atomicDecrement(volatile PxI32* val)
+		{
+			return Ps::atomicDecrement(val);
 		}
 
-		ThreadEntryPoint mEntryPoint;
-		void* mData;
-	};
+		//******************************************************************************//
 
-	Thread* threadCreate(ThreadEntryPoint entryPoint, void* data)
-	{
-		Thread* createThread = static_cast<Thread*>(gUtilAllocator.allocate(sizeof(Thread), 0, 0, 0));
-		PX_PLACEMENT_NEW(createThread, Thread(entryPoint, data));
-		createThread->start();
-		return createThread;
-	}
+		PxU32 getNbPhysicalCores()
+		{
+			return Ps::Thread::getNbPhysicalCores();
+		}
 
-	void threadQuit(Thread* thread)
-	{
-		thread->quit();
-	}
+		//******************************************************************************//
 
-	void threadSignalQuit(Thread* thread)
-	{
-		thread->signalQuit();
-	}
+		PxU32 getThreadId()
+		{
+			return static_cast<PxU32>(Ps::Thread::getId());
+		}
 
-	bool threadWaitForQuit(Thread* thread)
-	{
-		return thread->waitForQuit();
-	}
+		//******************************************************************************//
 
-	bool threadQuitIsSignalled(Thread* thread)
-	{
-		return thread->quitIsSignalled();
-	}
+		PxU64 getCurrentTimeCounterValue()
+		{
+			return Ps::Time::getCurrentCounterValue();
+		}
 
-	void threadRelease(Thread* thread)
-	{
-		thread->~Thread();
-		gUtilAllocator.deallocate(thread);
-	}
+		PxReal getElapsedTimeInMilliseconds(const PxU64 elapsedTime)
+		{
+			return Ps::Time::getCounterFrequency().toTensOfNanos(elapsedTime) / (100.0f * 1000.0f);
+		}
 
-	//******************************************************************************//
+		PxReal getElapsedTimeInMicroSeconds(const PxU64 elapsedTime)
+		{
+			return Ps::Time::getCounterFrequency().toTensOfNanos(elapsedTime) / (100.0f);
+		}
 
-	struct Mutex: public Ps::MutexT<UtilAllocator> {};
+		//******************************************************************************//
 
-	Mutex* mutexCreate()
-	{
-		return new(gUtilAllocator.allocate(sizeof(Mutex), 0, 0, 0)) Mutex();
-	}
+		struct Sync : public Ps::SyncT<UtilAllocator> {};
 
-	void mutexLock(Mutex* mutex)
-	{
-		mutex->lock();
-	}
+		Sync* syncCreate()
+		{
+			return new(gUtilAllocator.allocate(sizeof(Sync), 0, 0, 0)) Sync();
+		}
 
-	void mutexUnlock(Mutex* mutex)
-	{
-		mutex->unlock();
-	}
+		void syncWait(Sync* sync)
+		{
+			sync->wait();
+		}
 
-	void mutexRelease(Mutex* mutex)
-	{
-		mutex->~Mutex();
-		gUtilAllocator.deallocate(mutex);
-	}
+		void syncSet(Sync* sync)
+		{
+			sync->set();
+		}
+
+		void syncReset(Sync* sync)
+		{
+			sync->reset();
+		}
+
+		void syncRelease(Sync* sync)
+		{
+			sync->~Sync();
+			gUtilAllocator.deallocate(sync);
+		}
+
+		//******************************************************************************//
+
+		struct Thread : public Ps::ThreadT<UtilAllocator>
+		{
+			Thread(ThreadEntryPoint entryPoint, void* data) :
+				Ps::ThreadT<UtilAllocator>(),
+				mEntryPoint(entryPoint),
+				mData(data)
+			{
+			}
+
+			virtual void execute(void)
+			{
+				mEntryPoint(mData);
+			}
+
+			ThreadEntryPoint mEntryPoint;
+			void* mData;
+		};
+
+		Thread* threadCreate(ThreadEntryPoint entryPoint, void* data)
+		{
+			Thread* createThread = static_cast<Thread*>(gUtilAllocator.allocate(sizeof(Thread), 0, 0, 0));
+			PX_PLACEMENT_NEW(createThread, Thread(entryPoint, data));
+			createThread->start();
+			return createThread;
+		}
+
+		void threadQuit(Thread* thread)
+		{
+			thread->quit();
+		}
+
+		void threadSignalQuit(Thread* thread)
+		{
+			thread->signalQuit();
+		}
+
+		bool threadWaitForQuit(Thread* thread)
+		{
+			return thread->waitForQuit();
+		}
+
+		bool threadQuitIsSignalled(Thread* thread)
+		{
+			return thread->quitIsSignalled();
+		}
+
+		void threadRelease(Thread* thread)
+		{
+			thread->~Thread();
+			gUtilAllocator.deallocate(thread);
+		}
+
+		//******************************************************************************//
+
+		struct Mutex : public Ps::MutexT<UtilAllocator> {};
+
+		Mutex* mutexCreate()
+		{
+			return new(gUtilAllocator.allocate(sizeof(Mutex), 0, 0, 0)) Mutex();
+		}
+
+		void mutexLock(Mutex* mutex)
+		{
+			mutex->lock();
+		}
+
+		void mutexUnlock(Mutex* mutex)
+		{
+			mutex->unlock();
+		}
+
+		void mutexRelease(Mutex* mutex)
+		{
+			mutex->~Mutex();
+			gUtilAllocator.deallocate(mutex);
+		}
 
 
-} // namespace physXUtils
+	} // namespace physXUtils
 } // namespace physx
