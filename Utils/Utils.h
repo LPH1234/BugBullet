@@ -1,31 +1,43 @@
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions
-// are met:
-//  * Redistributions of source code must retain the above copyright
-//    notice, this list of conditions and the following disclaimer.
-//  * Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//  * Neither the name of NVIDIA CORPORATION nor the names of its
-//    contributors may be used to endorse or promote products derived
-//    from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-// OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Copyright (c) 2008-2018 NVIDIA Corporation. All rights reserved.
+﻿#pragma once
+
+#include<string>
+#include<iostream>
+#include <fstream>
+#include<stdio.h>
+#include<Windows.h>
+#include<io.h>
+#include<string>
+#include<vector>
 
 #include "foundation/PxSimpleTypes.h"
+
+class Logger
+{
+public:
+	static void debug(std::string);
+	static void info(std::string);
+	static void warn(std::string);
+	static void error(std::string);
+
+};
+
+
+
+class FileUtils
+{
+public:
+	static int getFilesCount(std::string path);
+	static void getFiles(std::string path, std::vector<std::string>& files);
+	static void removeFileInDir(std::string dir);
+	static bool isFileExist(std::string filePath);
+};
+
+class StringUtils
+{
+public:
+	static void split(std::string& str, std::string delimiter, std::vector<std::string>& v);
+};
+
 
 namespace physx
 {
@@ -39,7 +51,7 @@ namespace physx
 		PxI32 atomicDecrement(volatile PxI32* val);
 
 		//******************************************************************************//
-		
+
 		/* Return the number of physical cores (does not include hyper-threaded cores), returns 0 on failure. */
 		PxU32 getNbPhysicalCores();
 
@@ -84,16 +96,16 @@ namespace physx
 		struct Thread;
 
 		/* Prototype of callback passed to threadCreate. */
-		typedef void (*ThreadEntryPoint)(void*);
+		typedef void(*ThreadEntryPoint)(void*);
 
-		/* Create a thread object and return a unique handle to the thread object so that it may be addressed through threadStart etc. 
+		/* Create a thread object and return a unique handle to the thread object so that it may be addressed through threadStart etc.
 		entryPoint implements ThreadEntryPoint and data will be passed as a function argument, POSIX-style. */
 		Thread* threadCreate(ThreadEntryPoint entryPoint, void* data);
 
 		/* Cleanly shut down the specified thread. Called in the context of the spawned thread. */
 		void threadQuit(Thread* thread);
 
-		/* Stop the specified thread. Signals the spawned thread that it should stop, so the 
+		/* Stop the specified thread. Signals the spawned thread that it should stop, so the
 		thread should check regularly. */
 		void threadSignalQuit(Thread* thread);
 
