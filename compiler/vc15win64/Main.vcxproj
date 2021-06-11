@@ -22,6 +22,7 @@
     <ProjectGuid>{DF91286C-A048-0858-C381-C4106C184C0B}</ProjectGuid>
     <RootNamespace>SnippetHelloWorld</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <ProjectName>Main</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
@@ -57,7 +58,7 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <OutDir>./../../../bin/vc15win64\</OutDir>
-    <IntDir>./x64/GameDemo/debug\</IntDir>
+    <IntDir>./x64/Main/debug\</IntDir>
     <TargetExt>.exe</TargetExt>
     <TargetName>$(ProjectName)DEBUG</TargetName>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -205,7 +206,7 @@
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <OutDir>./../../../bin/vc15win64\</OutDir>
-    <IntDir>./x64/GameDemo/release\</IntDir>
+    <IntDir>./x64/Main/release\</IntDir>
     <TargetExt>.exe</TargetExt>
     <TargetName>$(ProjectName)</TargetName>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -263,21 +264,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\GameDemo\ClassicMain.cpp" />
-    <ClCompile Include="..\..\GameDemo\Consts.cpp" />
-    <ClCompile Include="..\..\GameDemo\module.cpp" />
-    <ClCompile Include="..\..\GameDemo\MyGame.cpp" />
-    <ClCompile Include="..\..\GameDemo\MyGameRender.cpp" />
-    <ClCompile Include="..\..\GameDemo\objLoader.cpp" />
-    <ClCompile Include="..\..\GameDemo\Utils.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\GameDemo\Consts.h" />
-    <ClInclude Include="..\..\GameDemo\objLoader.h" />
-    <ClInclude Include="..\..\GameDemo\Utils.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\GameDemo\module.h" />
+    <ClCompile Include="..\..\Main\ClassicMain.cpp" />
+    <ClCompile Include="..\..\Main\MyGame.cpp" />
+    <ClCompile Include="..\..\Main\MyGameRender.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
