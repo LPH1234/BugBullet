@@ -221,13 +221,13 @@ void initPhysics(bool interactive)
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
 	gScene->addActor(*groundPlane);
 
-	for (PxU32 i = 0; i < 5; i++)
-		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
-
+	/*	for (PxU32 i = 0; i < 5; i++)
+			createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
+	*/
 	createWall();
 	createBowl();
 	//createModel("module/Building/Residential Buildings/Residential Buildings 001.obj", 1, PxVec3(0.0f, 0.0f, 0.0f));
-	createModel("module/test/box_stack.obj", 10, PxVec3(3.0f, 0.0f, 1.0f));
+	createModel("module/test/RubixCube.obj", 10, PxVec3(3.0f, 0.0f, 1.0f));
 	testTrigger();
 
 	if (!interactive)
