@@ -12,8 +12,8 @@
 #include "geometry/PxTriangleMeshGeometry.h"
 #include "foundation/PxPreprocessor.h"
 
-#include "Utils.h"
-#include "Consts.h"
+#include "../Utils/Utils.h"
+#include "../Utils/Consts.h"
 
 using namespace physx;
 

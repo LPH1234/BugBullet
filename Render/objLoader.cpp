@@ -8,6 +8,8 @@
 
 #include "ObjLoader.h"
 
+#include "OBJ_Loader.h"
+
 using namespace std;
 
 
@@ -26,8 +28,17 @@ ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCoo
 	ifstream file(filename);
 	string line;
 	int count = 0;
+	int v_count = 0;
+	int vt_count = 0;
+	int vn_count = 0;
+	int f_count = 0;
 	while (getline(file, line))
 	{
+		if (line.substr(0, 2) == "v ")v_count++;
+		if (line.substr(0, 2) == "vt")vt_count++;
+		if (line.substr(0, 2) == "vn")vn_count++;
+		if (line.substr(0, 1) == "f")f_count++;
+
 		if (line.substr(0, 2) == "v ")
 		{
 			struct vertices vtmp = { 0 };
@@ -52,16 +63,16 @@ ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCoo
 			for (int i = 0; i < 3; i++)
 			{
 				struct face faceTmp;
-				istringstream sdata(tmpdata[i]);
-				string buffer;
-				// sdata里面存储的   25/25/25
-				int j = 0;
-				while (getline(sdata, buffer, '/'))
-				{
-					// 得到的u 就是25
-					faceTmp.u = atoi(buffer.c_str()) - 1;
-					break;
-				}
+				// 若tmpdata里面存储的   25/25/25
+				std::vector<std::string> splits;
+				StringUtils::split(tmpdata[i], "/", splits);
+				// 得到的u 就是25
+				faceTmp.u = atoi(splits[0].c_str()) - 1;
+				if (splits.size() >= 2 && splits[1] != "")
+					faceTmp.v = atoi(splits[1].c_str()) - 1;
+				if (splits.size() >= 3 && splits[2] != "")
+					faceTmp.w = atoi(splits[2].c_str()) - 1;
+
 				vface.push_back(faceTmp);
 			}
 			f.push_back(vface);
@@ -81,6 +92,8 @@ ObjLoader::ObjLoader(std::string &filename, PxPhysics* gPhysics, PxCooking*	gCoo
 		writeMeshToCookingFile();
 		Logger::info("完成");
 	}
+	Logger::info("v:" + std::to_string(v_count) + "  vt:" + std::to_string(vt_count) + "   vn:" + std::to_string(vn_count) + "   f:" + std::to_string(f_count));
+
 }
 
 ObjLoader::~ObjLoader() {
@@ -96,6 +109,8 @@ physx::PxTriangleMesh* ObjLoader::createOjbMesh(int scale)
 
 	PxVec3* vertices = new PxVec3[numVertices];
 	PxU32* indices = new PxU32[numTriangles * 3];
+	PxMaterialTableIndex* vtIndices = new PxMaterialTableIndex[numTriangles * 3];
+
 
 	// 加载顶点
 	for (int i = 0; i < numVertices; ++i) {
@@ -107,10 +122,13 @@ physx::PxTriangleMesh* ObjLoader::createOjbMesh(int scale)
 	// 加载面
 	auto faceIt = this->f.begin();
 	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
-		indices[i * 3 + 0] = (*faceIt)[0].u;
-		indices[i * 3 + 1] = (*faceIt)[1].u;
-		if ((*faceIt).size() >= 3)
-			indices[i * 3 + 2] = (*faceIt)[2].u;
+		for (int j = 0; j < 3; j++)
+		{
+			if ((*faceIt).size() >= j + 1) {
+				indices[i * 3 + j] = (*faceIt)[j].u;
+				vtIndices[i * 3 + j] = (*faceIt)[j].v;
+			}
+		}
 	}
 
 	PxTriangleMeshDesc meshDesc1;
@@ -122,6 +140,8 @@ physx::PxTriangleMesh* ObjLoader::createOjbMesh(int scale)
 	meshDesc1.triangles.data = indices;
 	meshDesc1.triangles.stride = sizeof(PxU32) * 3;
 
+	meshDesc1.materialIndices.data = vtIndices;
+	meshDesc1.materialIndices.stride = sizeof(PxMaterialTableIndex) * 3;
 
 	PxTriangleMesh* triMesh = gCooking->createTriangleMesh(meshDesc1, gPhysics->getPhysicsInsertionCallback());
 
