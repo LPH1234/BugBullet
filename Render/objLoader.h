@@ -6,6 +6,8 @@
 #include <sstream>
 #include <math.h>
 #include <list>
+#include <unordered_map>
+#include <stdio.h>
 
 #include "PxPhysicsAPI.h"
 #include "geometry/PxTriangleMesh.h"
@@ -33,6 +35,14 @@ public:
 		unsigned int v; // 贴图顶点标号
 		unsigned int w;	// 法向量标号
 	};
+	struct vt
+	{
+		float x;
+		float y;
+	};
+
+	static std::unordered_map<PxTriangleMesh*, std::vector<vt>> meshToVts;
+	static std::unordered_map<PxTriangleMesh*, std::vector<int>> meshToVtIdxes;
 
 	ObjLoader(std::string &obj_file_path, PxPhysics* gPhysics, PxCooking* gCooking, PxScene* gScene, PxMaterial* gMaterial, int scale, bool preLoad = false);
 	~ObjLoader();
@@ -47,6 +57,8 @@ private:
 	bool preLoad; //是否加载到cooking文件中
 	std::vector<struct vertices> v;//存放顶点(x,y,z)坐标
 	std::list<std::vector<struct face>> f;//存放面的三个顶点索引
+	std::vector<ObjLoader::vt> vts; //贴图坐标
+	std::vector<int> vt_idx; //贴图坐标索引
 	std::string name; //模型文件名
 	int scale;
 

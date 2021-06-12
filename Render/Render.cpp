@@ -29,7 +29,16 @@
 
 #include "Render.h"
 
+#include "../Utils/Utils.h"
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+
 using namespace physx;
+
+unsigned int texID = 0;
 
 static float gCylinderData[] = {
 	1.0f,0.0f,1.0f,1.0f,0.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,
@@ -49,6 +58,43 @@ static float gCylinderData[] = {
 
 #define MAX_NUM_MESH_VEC3S  21474836
 static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
+
+
+unsigned int GenTextures(std::string path) {
+	unsigned int texture;
+	int width, height, nrComponents;
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &texture);
+	Logger::debug("load texture.");
+	if (data)
+	{
+		GLenum format;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		//	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+		Logger::debug("load complete.");
+
+	}
+	else
+	{
+		Logger::error("-----------------------Texture failed to load at path: ");
+		texture = 0;
+	}
+	stbi_image_free(data);
+	return texture;
+}
 
 void renderGeometry(const PxGeometryHolder& h)
 {
@@ -160,11 +206,14 @@ void renderGeometry(const PxGeometryHolder& h)
 	break;
 	case PxGeometryType::eTRIANGLEMESH:
 	{
+		//Logger::debug("=======================start=======================");
 		const PxTriangleMeshGeometry& triGeom = h.triangleMesh();
 		const PxTriangleMesh& mesh = *triGeom.triangleMesh;
+		PxTriangleMesh* mesh_key = triGeom.triangleMesh;
 		const PxVec3 scale = triGeom.scale.scale;
 
 		const PxU32 triangleCount = mesh.getNbTriangles();
+		//	Logger::debug("numTotalTriangles:" + std::to_string(triangleCount));
 		const PxU32 has16BitIndices = mesh.getTriangleMeshFlags() & PxTriangleMeshFlag::e16_BIT_INDICES;
 		const void* indexBuffer = mesh.getTriangles();
 
@@ -173,6 +222,9 @@ void renderGeometry(const PxGeometryHolder& h)
 		const PxU32* intIndices = reinterpret_cast<const PxU32*>(indexBuffer);
 		const PxU16* shortIndices = reinterpret_cast<const PxU16*>(indexBuffer);
 		PxU32 numTotalTriangles = 0;
+
+		const std::vector<ObjLoader::vt>& vts = ObjLoader::meshToVts[mesh_key];
+		const std::vector<int>& vtidxes = ObjLoader::meshToVtIdxes[mesh_key];
 		for (PxU32 i = 0; i < triangleCount; ++i)
 		{
 			PxVec3 triVert[3];
@@ -195,25 +247,43 @@ void renderGeometry(const PxGeometryHolder& h)
 
 			if (numTotalTriangles * 6 < MAX_NUM_MESH_VEC3S)
 			{
-				gVertexBuffer[numTotalTriangles * 6 + 0] = fnormal;
-				gVertexBuffer[numTotalTriangles * 6 + 1] = triVert[0];
-				gVertexBuffer[numTotalTriangles * 6 + 2] = fnormal;
-				gVertexBuffer[numTotalTriangles * 6 + 3] = triVert[1];
-				gVertexBuffer[numTotalTriangles * 6 + 4] = fnormal;
-				gVertexBuffer[numTotalTriangles * 6 + 5] = triVert[2];
+				//PxMaterialTableIndex mid = mesh.getTriangleMaterialIndex(numTotalTriangles * 3);
+				//Logger::debug("numTotalTriangles:" + std::to_string(numTotalTriangles) + "  PxMaterialTableIndex:" + std::to_string(mid));
+				int stride = 9;
+				gVertexBuffer[numTotalTriangles * stride + 0] = fnormal;
+				gVertexBuffer[numTotalTriangles * stride + 1] = triVert[0];
+				gVertexBuffer[numTotalTriangles * stride + 2] = PxVec3(vts.at(vtidxes.at(i * 3 + 0)).x, vts.at(vtidxes.at(i * 3 + 0)).y, 0);
+
+				gVertexBuffer[numTotalTriangles * stride + 3] = fnormal;
+				gVertexBuffer[numTotalTriangles * stride + 4] = triVert[1];
+				gVertexBuffer[numTotalTriangles * stride + 5] = PxVec3(vts.at(vtidxes.at(i * 3 + 1)).x, vts.at(vtidxes.at(i * 3 + 1)).y, 0);
+
+				gVertexBuffer[numTotalTriangles * stride + 6] = fnormal;
+				gVertexBuffer[numTotalTriangles * stride + 7] = triVert[2];
+				gVertexBuffer[numTotalTriangles * stride + 8] = PxVec3(vts.at(vtidxes.at(i * 3 + 2)).x, vts.at(vtidxes.at(i * 3 + 2)).y, 0);
+
 				numTotalTriangles++;
 			}
 		}
+		if (texID == 0)
+			texID = GenTextures("module/Building/Residential Buildings/textures/Box_N.jpg");
 		glPushMatrix();
 		glScalef(scale.x, scale.y, scale.z);
+		glEnable(GL_TEXTURE_2D);
+		if (texID != 0)
+			glBindTexture(GL_TEXTURE_2D, texID);
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glNormalPointer(GL_FLOAT, 2 * 3 * sizeof(float), gVertexBuffer);
-		glVertexPointer(3, GL_FLOAT, 2 * 3 * sizeof(float), gVertexBuffer + 1);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glNormalPointer(GL_FLOAT, 3 * 3 * sizeof(float), gVertexBuffer);
+		glVertexPointer(3, GL_FLOAT, 3 * 3 * sizeof(float), gVertexBuffer + 1);
+		glTexCoordPointer(2, GL_FLOAT, 3 * 3 * sizeof(float), gVertexBuffer + 2);
 		glDrawArrays(GL_TRIANGLES, 0, int(numTotalTriangles * 3));
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_NORMAL_ARRAY);
 		glPopMatrix();
+		//	Logger::debug("===================================================");
+
 	}
 	break;
 	case PxGeometryType::eINVALID:
@@ -316,8 +386,10 @@ namespace Snippets
 					PxVec3 darkColor = color * 0.25f;
 					glColor4f(darkColor.x, darkColor.y, darkColor.z, 1.0f);
 				}
-				else
-					glColor4f(color.x, color.y, color.z, 1.0f);
+				else {
+
+					// glColor4f(color.x, color.y, color.z, 1.0f); 
+				}
 				renderGeometry(h);
 				glPopMatrix();
 

@@ -26,7 +26,7 @@
 // Copyright (c) 2008-2018 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
-
+#pragma once
 
 #ifndef PHYSX_SNIPPET_RENDER_H
 #define PHYSX_SNIPPET_RENDER_H
@@ -34,9 +34,12 @@
 #include "PxPhysicsAPI.h"
 #include "foundation/PxPreprocessor.h"
 
+#include "objLoader.h"
+
 #if PX_WINDOWS
 #include <windows.h>
 #pragma warning(disable: 4505)
+//#include <glew.h>
 #include <glut.h>
 #elif PX_LINUX_FAMILY
 #include <GL/glut.h>
@@ -48,12 +51,12 @@
 
 namespace Snippets
 {
-void setupDefaultWindow(const char* name);
-void setupDefaultRenderState();
+	void setupDefaultWindow(const char* name);
+	void setupDefaultRenderState();
 
-void startRender(const physx::PxVec3& cameraEye, const physx::PxVec3& cameraDir, physx::PxReal nearClip = 1.f, physx::PxReal farClip = 10000.f);
-void renderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, bool shadows = false, const physx::PxVec3 & color = physx::PxVec3(0.0f, 0.75f, 0.0f));
-void finishRender();
+	void startRender(const physx::PxVec3& cameraEye, const physx::PxVec3& cameraDir, physx::PxReal nearClip = 1.f, physx::PxReal farClip = 10000.f);
+	void renderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, bool shadows = false, const physx::PxVec3 & color = physx::PxVec3(0.0f, 0.75f, 0.0f));
+	void finishRender();
 }
 
 #define MAX_NUM_ACTOR_SHAPES 128

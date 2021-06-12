@@ -12,7 +12,8 @@
 
 using namespace std;
 
-
+std::unordered_map<PxTriangleMesh*, std::vector<ObjLoader::vt>> ObjLoader::meshToVts;
+std::unordered_map<PxTriangleMesh*, std::vector<int>> ObjLoader::meshToVtIdxes;
 
 ObjLoader::ObjLoader(std::string &obj_file_path, PxPhysics* gPhysics, PxCooking*	gCooking, PxScene* gScene, PxMaterial* gMaterial, int scale, bool preLoad) {
 	this->gPhysics = gPhysics;
@@ -30,6 +31,7 @@ ObjLoader::ObjLoader(std::string &obj_file_path, PxPhysics* gPhysics, PxCooking*
 	int vt_count = 0;
 	int vn_count = 0;
 	int f_count = 0;
+	vts.resize(4096);
 	while (getline(obj_file, line))
 	{
 		if (line.substr(0, 2) == "v ")v_count++;
@@ -37,7 +39,7 @@ ObjLoader::ObjLoader(std::string &obj_file_path, PxPhysics* gPhysics, PxCooking*
 		if (line.substr(0, 2) == "vn")vn_count++;
 		if (line.substr(0, 1) == "f")f_count++;
 
-		if (line.substr(0, 2) == "v ")
+		if (line.substr(0, 2) == "v ") //顶点
 		{
 			struct vertices vtmp = { 0 };
 			istringstream s(line.substr(2));
@@ -48,7 +50,14 @@ ObjLoader::ObjLoader(std::string &obj_file_path, PxPhysics* gPhysics, PxCooking*
 			}
 			v.push_back(vtmp);
 		}
-		else if (line.substr(0, 1) == "f")
+		else if (line.substr(0, 2) == "vt") { //顶点贴图坐标
+			struct vt vttmp = { 0 };
+			istringstream s(line.substr(3));
+			// vt 0.4166 0.0343
+			s >> vttmp.x >> vttmp.y;
+			vts.push_back(vttmp);
+		}
+		else if (line.substr(0, 1) == "f") //面
 		{
 			istringstream s(line.substr(2)); //25/25/25  28/28/28  26/26/26 (27/27/27) 可能是四个顶点
 			string f_points[4];
@@ -100,8 +109,9 @@ ObjLoader::ObjLoader(std::string &obj_file_path, PxPhysics* gPhysics, PxCooking*
 		writeTriangleMeshToCookingFile();
 		Logger::info("完成");
 	}
-	Logger::info("v:" + std::to_string(v_count) + "  vt:" + std::to_string(vt_count) + "   vn:" + std::to_string(vn_count) + "   f:" + std::to_string(f_count));
+	Logger::info("v:" + std::to_string(v_count) + "  vt:" + std::to_string(vt_count) + "   vn:" + std::to_string(vn_count) + "   f:" + std::to_string(f.size()));
 
+	vt_idx.resize(f.size());
 }
 
 ObjLoader::~ObjLoader() {
@@ -117,7 +127,6 @@ physx::PxTriangleMesh* ObjLoader::createTriangleMesh(int scale)
 
 	PxVec3* vertices = new PxVec3[numVertices];
 	PxU32* indices = new PxU32[numTriangles * 3];
-	PxMaterialTableIndex* vtIndices = new PxMaterialTableIndex[numTriangles * 3];
 
 
 	// 加载顶点
@@ -127,14 +136,14 @@ physx::PxTriangleMesh* ObjLoader::createTriangleMesh(int scale)
 	}
 	//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
 
-	// 加载面
+	// 加载面和顶点贴图索引
 	auto faceIt = this->f.begin();
 	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
 		for (int j = 0; j < 3; j++)
 		{
 			if ((*faceIt).size() >= j + 1) {
 				indices[i * 3 + j] = (*faceIt)[j].u;
-				vtIndices[i * 3 + j] = (*faceIt)[j].v;
+				vt_idx.push_back((*faceIt)[j].v);
 			}
 		}
 	}
@@ -148,14 +157,14 @@ physx::PxTriangleMesh* ObjLoader::createTriangleMesh(int scale)
 	meshDesc.triangles.data = indices;
 	meshDesc.triangles.stride = sizeof(PxU32) * 3;
 
-	meshDesc.materialIndices.data = vtIndices;
-	meshDesc.materialIndices.stride = sizeof(PxMaterialTableIndex) * 3;
-
 
 	PxTriangleMesh* triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback());
 	if (!triMesh) {
 		Logger::error("triMesh create fail.");
 	}
+
+	meshToVts[triMesh] = vts;
+	meshToVtIdxes[triMesh] = vt_idx;
 	return triMesh;
 }
 
