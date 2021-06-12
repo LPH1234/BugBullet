@@ -6,7 +6,13 @@
 
 #include <math.h>
 
-
+class A {
+public:
+	int a;
+	float b;
+	static std::vector<int> vv;
+};
+std::vector<int> A::vv;
 
 using namespace std;
 int main() {
@@ -21,4 +27,14 @@ int main() {
 		cout << "!" << tmpdata[i] << "!  ";
 	}
 
+	//  return  hash<int>(classA.getvalue());
+
+	A ca;
+	char* tmp = new char[32];
+	sprintf_s(tmp, 32, "%ld", &ca);
+	cout << "====" << endl;
+	cout << "==" << tmp << "==" << endl;
+	cout << "==" << atoll(tmp) << "==" << endl;
+
+	A::vv.push_back(1);
 }
