@@ -6,6 +6,7 @@
 #include "../Utils/Utils.h"
 #include "../Render/objLoader.h"
 #include "../Utils/module.h"
+#include <ctime>
 #define PI 3.1415926
 
 using namespace physx;
