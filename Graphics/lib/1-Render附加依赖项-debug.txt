@@ -1,0 +1,4 @@
+opengl32.lib
+glfw3d.lib
+libglew32d.lib
+assimp-vc140-mtd.lib

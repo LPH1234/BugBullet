@@ -1,5 +1,0 @@
-assimp-vc140-mtd.lib
-glew32d.lib
-glfw3d.lib
-libglew32d.lib
-soil2-debug.lib
