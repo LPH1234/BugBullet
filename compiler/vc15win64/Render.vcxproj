@@ -19,16 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Render\Camera.cpp" />
+    <ClCompile Include="..\..\Render\Convert.cpp" />
+    <ClCompile Include="..\..\Render\glad.c" />
+    <ClCompile Include="..\..\Render\Model.cpp" />
+    <ClCompile Include="..\..\Render\models.cpp" />
     <ClCompile Include="..\..\Render\objLoader.cpp" />
     <ClCompile Include="..\..\Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Render\Camera.h" />
+    <ClInclude Include="..\..\Render\Convert.h" />
+    <ClInclude Include="..\..\Render\Mesh.h" />
+    <ClInclude Include="..\..\Render\Model.h" />
+    <ClInclude Include="..\..\Render\models.h" />
     <ClInclude Include="..\..\Render\objLoader.h" />
     <ClInclude Include="..\..\Render\OBJ_Loader.h" />
     <ClInclude Include="..\..\Render\Render.h" />
-    <ClInclude Include="..\..\Render\stb_image.h" />
+    <ClInclude Include="..\..\Render\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\envShader\selfDefinedFragmentShader.fs" />
+    <None Include="shaders\envShader\selfDefinedVertexShader.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{43554530-2170-F5A9-4794-3AD09344F18D}</ProjectGuid>
@@ -75,6 +86,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
+    <IncludePath>C:\Users\23101\Desktop\opengl-shader\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <ClCompile>
@@ -84,7 +96,7 @@
       <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /Zi /d2Zi+</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./../../Graphics/include/win32/GL;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include/win32/GL;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -96,9 +108,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>glut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3d.lib;libglew32d.lib;assimp-vc140-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)DEBUG.lib</OutputFile>
-      <AdditionalLibraryDirectories>./../../Graphics/lib/win64/glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../../Graphics/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
       <TargetMachine>MachineX64</TargetMachine>
     </Lib>
@@ -205,7 +217,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /d2Zi+</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>./../../Graphics/include/win32/GL;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include/win32/GL;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -218,9 +230,9 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/INCREMENTAL:NO</AdditionalOptions>
-      <AdditionalDependencies>glut32.lib;glew32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;libglew32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
-      <AdditionalLibraryDirectories>./../../Graphics/lib/win64;./../../Graphics/lib/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../../Graphics/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
       <TargetMachine>MachineX64</TargetMachine>
     </Lib>
