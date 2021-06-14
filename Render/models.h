@@ -97,6 +97,7 @@ public:
 		this->shader->setMat4("model", this->getModel());
 	}
 
+
 	void setModel(Model* model) {
 		this->model = model;
 	}
@@ -492,6 +493,8 @@ public:
 		return model;
 	}
 
+
+
 	void ProcessKeyboard(Movement direction, float deltaTime) {
 
 	}
@@ -592,7 +595,11 @@ public:
 		//使用线框模式绘制
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, x_segments * y_segments * 6, GL_UNSIGNED_INT, 0);
+		this->shader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
+	}
 
+	void setColor(glm::vec3 c) {
+		this->shader->setVec3("objectColor", c);
 	}
 
 	//得到模型坐标系，以下为默认实现

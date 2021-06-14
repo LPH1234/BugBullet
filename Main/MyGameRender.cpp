@@ -149,7 +149,8 @@ int myRenderLoop()
 
 		envShader->use();
 		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
+		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		envShader->setMat4("projection", projection);
 		envShader->setMat4("view", view);

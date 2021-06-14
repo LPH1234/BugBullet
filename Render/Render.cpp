@@ -67,22 +67,26 @@ void renderGeometry(const PxGeometryHolder& h, PxVec3 position, Shader* shader)
 	{
 	case PxGeometryType::eBOX:
 	{
+		glm::vec3 scale(2 * h.box().halfExtents.x, 2 * h.box().halfExtents.y, 2 * h.box().halfExtents.z);
 		if (cube == nullptr) {
-			cube = new Cube(pos, glm::vec3(2 * h.box().halfExtents.x, 2 * h.box().halfExtents.y, 2 * h.box().halfExtents.z),
-				"", shader, "images/textures/w200Bullet.png");
+			cube = new Cube(pos, scale, "", shader, "images/textures/w200Bullet.png");
 		}
 		cube->setPosition(pos);
+		cube->setScaleValue(scale);
 		cube->updateShaderModel();
 		cube->draw();
 	}
 	break;
 	case PxGeometryType::eSPHERE:
 	{
+		glm::vec3 scale(h.sphere().radius, h.sphere().radius, h.sphere().radius);
 		if (sphere == nullptr) {
-			sphere = new Sphere(pos, glm::vec3(h.sphere().radius, h.sphere().radius, h.sphere().radius), "", shader, 10, 10);
+			sphere = new Sphere(pos, scale, "", shader, 10, 10);
 		}
 		sphere->setPosition(pos);
+		sphere->setScaleValue(scale);
 		sphere->updateShaderModel();
+		sphere->setColor(glm::vec3(1.f, 0.f, 0.f));
 		sphere->draw();
 	}
 	break;
