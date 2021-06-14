@@ -1,0 +1,5 @@
+assimp-vc140-mt.lib
+glew32.lib
+glfw3.lib
+libglew32.lib
+soil2.lib

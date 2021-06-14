@@ -6,6 +6,8 @@
 #include "../Utils/Utils.h"
 #include "../Render/objLoader.h"
 #include "../Utils/module.h"
+#include "../Render/models.h"
+#include "../Render/Render.h"
 #define PI 3.1415926
 
 using namespace physx;
@@ -33,10 +35,32 @@ PxRigidDynamic*			body_1 = NULL;
 
 PxRigidStatic* bodyToRemove = NULL;
 
+
+/**
+* @brief			创建一个普通的渲染模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
+* @param pos        模型的初始位置
+* @param scale      模型的缩放系数
+* @param modelPath  模型文件路径
+* @param shader     绘制此模型的shader
+* @return			是否成功
+*/
+bool createStaticModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad = false, bool ifStatic = true);
+/**
+* @brief			根据一个自定义的渲染模型去创建物理模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
+* @param model      指向渲染模型的指针
+* @return			是否成功
+*/
+bool createSpecialStaticModel(BaseModel* model, bool preLoad = false, bool ifStatic = true);
+
+
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0))
 {
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *gMaterial, 10.0f);
-
+	if (!t.isValid()) {
+		Logger::error("error:");
+	}
+	PxMaterial* me = gPhysics->createMaterial(0.8f, 0.8f, 0.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
+	me->release();
 	//设置trigger的参数
 	body_1 = dynamic;
 	printf("createDynamic!\n");
@@ -44,8 +68,8 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	body_1->getShapes(&treasureShape, 1);
 	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);*/
-
 	dynamic->setAngularDamping(0.5f);
+	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setLinearVelocity(velocity);
 	gScene->addActor(*dynamic);
 	return dynamic;
@@ -70,13 +94,13 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 void createWall() {
 	PxTransform original(PxVec3(PxReal(0), PxReal(0), PxReal(0)));
 
-	PxShape* shape1 = gPhysics->createShape(PxBoxGeometry(100, 30, 3), *gMaterial);
-	PxShape* shape2 = gPhysics->createShape(PxBoxGeometry(3, 30, 100 - 3), *gMaterial);
+	PxShape* shape1 = gPhysics->createShape(PxBoxGeometry(3, 1, 0.1), *gMaterial);
+	PxShape* shape2 = gPhysics->createShape(PxBoxGeometry(0.1, 1, 3), *gMaterial);
 
-	PxTransform local1(PxVec3(PxReal(0), PxReal(30), PxReal(-100)));
-	PxTransform local2(PxVec3(PxReal(100 - 3), PxReal(30), PxReal(0)));
-	PxTransform local3(PxVec3(PxReal(0), PxReal(30), PxReal(100)));
-	PxTransform local4(PxVec3(PxReal(-200), PxReal(30), PxReal(0)), PxQuat(0, 1, 0, 0));
+	PxTransform local1(PxVec3(PxReal(3), PxReal(1), PxReal(3)));
+	PxTransform local2(PxVec3(PxReal(3), PxReal(1), PxReal(4)));
+	PxTransform local3(PxVec3(PxReal(3), PxReal(1), PxReal(5)));
+	PxTransform local4(PxVec3(PxReal(6), PxReal(1), PxReal(6)), PxQuat(0, 1, 0, 0));
 
 	PxRigidStatic* body1 = gPhysics->createRigidStatic(original.transform(local1));	std::cout << "body1:" << body1 << "\n";
 	body1->attachShape(*shape1);
@@ -130,13 +154,7 @@ void createBowl() {
 }
 
 void createModel(std::string path, int scale, PxVec3& offset) {
-	if (!FileUtils::isFileExist(path)) {
-		Logger::error("文件不存在：" + path);
-		return;
-	}
-	ObjLoader loader(path, gPhysics, gCooking, gScene, gMaterial, scale, false);
-	loader.createStaticActorAndAddToScene(offset); //静态刚体
-	//loader.createDynamicActorAndAddToScene(offset); //动态刚体、目前还有bug
+
 }
 
 PxRigidActor* body_0 = NULL;
@@ -188,6 +206,10 @@ void module::onWake(PxActor** actor, PxU32 count) {
 	return;
 }
 
+extern Shader* envShader;
+PlainModel *street;
+Ball *ball;
+
 void initPhysics(bool interactive)
 {
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
@@ -201,10 +223,12 @@ void initPhysics(bool interactive)
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD; // 开启CCD：continuous collision detection
 	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
 	gDispatcher = PxDefaultCpuDispatcherCreate(2);
 	sceneDesc.cpuDispatcher = gDispatcher;
-	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+	//sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+	sceneDesc.filterShader = testCCDFilterShader;
 	//注册onTrigger
 	myCallBack = new module();
 	sceneDesc.simulationEventCallback = myCallBack;
@@ -222,17 +246,48 @@ void initPhysics(bool interactive)
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
 	gScene->addActor(*groundPlane);
 
-	/*	for (PxU32 i = 0; i < 5; i++)
-			createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
-	*/
-	createWall();
-	createBowl();
-	//createModel("module/Building/Residential Buildings/Residential Buildings 001.obj", 1, PxVec3(0.0f, 0.0f, 0.0f));
-	createModel("module/Building/Residential Buildings/Residential Buildings 001.obj", 1, PxVec3(3.0f, 0.0f, 1.0f));
-	testTrigger();
+	for (PxU32 i = 0; i < 5; i++)
+		createStack(PxTransform(PxVec3(0, 2, stackZ -= 10.0f)), 10, 0.1f);
+
+	//createWall();
+	//createBowl();
+	//testTrigger();
+
+	//std::string path = "model/street/Street environment_V01.obj";
+	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
+	createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+
+
+
+	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
 
 	if (!interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
+}
+
+bool createStaticModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad, bool ifStatic) {
+	BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
+	if (FileUtils::isFileExist(modelPath)) {
+		ObjLoader loader(model, preLoad);
+		if (ifStatic)
+			loader.createStaticActorAndAddToScene(); // 静态刚体
+		else
+			loader.createDynamicActorAndAddToScene(); // 动态刚体
+		Logger::debug("xxxxxxxxxxxxxxxxx");
+	}
+	else {
+		Logger::error("文件不存在：" + modelPath);
+		return false;
+	}
+	return true;
+}
+bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
+	ObjLoader loader(model, preLoad);
+	if (ifStatic)
+		loader.createStaticActorAndAddToScene(); //静态刚体
+	else
+		loader.createDynamicActorAndAddToScene();
+	return true;
 }
 
 void stepPhysics(bool interactive)
@@ -254,7 +309,7 @@ void cleanupPhysics(bool interactive)
 
 	gFoundation->release();
 
-	printf("SnippetHelloWorld done.\n");
+	printf("program exit.\n");
 }
 
 void keyPress(unsigned char key, const PxTransform& camera)
@@ -262,16 +317,17 @@ void keyPress(unsigned char key, const PxTransform& camera)
 	switch (toupper(key))
 	{
 	case 'B':	createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);						break;
-	case ' ':	createDynamic(camera, PxSphereGeometry(3.0f), camera.rotate(PxVec3(0, 0, -1)) * 200);	break;
+	case 'F':	createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);	break;
 	case 'R':	remove();	break;
 	}
 }
 
+extern int myRenderLoop();
 int snippetMyMain(int, const char*const*)
 {
 #ifdef RENDER_SNIPPET
-	extern void myRenderLoop();
-	myRenderLoop();
+
+	return myRenderLoop();
 #else
 	static const PxU32 frameCount = 100;
 	initPhysics(false);
