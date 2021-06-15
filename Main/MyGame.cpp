@@ -44,7 +44,7 @@ PxRigidStatic* bodyToRemove = NULL;
 * @param shader     绘制此模型的shader
 * @return			是否成功
 */
-bool createStaticModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad = false, bool ifStatic = true);
+bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad = false, bool ifStatic = true);
 /**
 * @brief			根据一个自定义的渲染模型去创建物理模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
 * @param model      指向渲染模型的指针
@@ -254,9 +254,10 @@ void initPhysics(bool interactive)
 	//testTrigger();
 
 	//std::string path = "model/street/Street environment_V01.obj";
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
+	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 
 
 
@@ -266,15 +267,15 @@ void initPhysics(bool interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
 
-bool createStaticModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad, bool ifStatic) {
-	BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
+bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad, bool ifStatic) {
 	if (FileUtils::isFileExist(modelPath)) {
+		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
 		ObjLoader loader(model, preLoad);
 		if (ifStatic)
 			loader.createStaticActorAndAddToScene(); // 静态刚体
 		else
 			loader.createDynamicActorAndAddToScene(); // 动态刚体
-		Logger::debug("xxxxxxxxxxxxxxxxx");
+		Logger::debug("创建完成");
 	}
 	else {
 		Logger::error("文件不存在：" + modelPath);

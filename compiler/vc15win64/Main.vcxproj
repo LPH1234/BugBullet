@@ -94,6 +94,10 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX64</TargetMachine>
+      <StackReserveSize>200000000</StackReserveSize>
+      <HeapReserveSize>200000000</HeapReserveSize>
+      <HeapCommitSize>200000000</HeapCommitSize>
+      <StackCommitSize>200000000</StackCommitSize>
     </Link>
     <ResourceCompile>
     </ResourceCompile>
@@ -241,6 +245,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX64</TargetMachine>
+      <StackReserveSize>100000000</StackReserveSize>
     </Link>
     <ResourceCompile>
     </ResourceCompile>

@@ -266,6 +266,7 @@ PxRigidActor* ObjLoader::createDynamicActorAndAddToScene()
 	shape->release();
 
 	convexMesh->userData = new int;
+	//convexMesh->userData = 
 	int testid = 88888888;
 	memcpy(convexMesh->userData, &testid, sizeof(int));
 
