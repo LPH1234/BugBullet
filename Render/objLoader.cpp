@@ -8,7 +8,6 @@
 
 #include "ObjLoader.h"
 
-#include "OBJ_Loader.h"
 
 using namespace std;
 

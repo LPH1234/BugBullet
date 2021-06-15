@@ -105,7 +105,7 @@ private:
 		// walk through each of the mesh's vertices
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
-			cout << "count:" << count++ << "\n";
+			cout << count++ << "\n";
 			Vertex vertex;
 			glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
 			// positions
@@ -114,41 +114,58 @@ private:
 			vector.z = mesh->mVertices[i].z;
 			vertex.Position = vector;
 			// normals
+			//cout << "\t 000 \n";
+
 			if (mesh->HasNormals())
 			{
 				vector.x = mesh->mNormals[i].x;
 				vector.y = mesh->mNormals[i].y;
 				vector.z = mesh->mNormals[i].z;
+				//cout << "\t 111 \n";
+
 				vertex.Normal = vector;
 			}
 			// texture coordinates
+			//cout << "\t 1212 \n";
+
 			if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
 			{
+				//cout << "\t 222 \n";
+
 				glm::vec2 vec;
 				// a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
 				// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
 				vec.x = mesh->mTextureCoords[0][i].x;
 				vec.y = mesh->mTextureCoords[0][i].y;
+				//cout << "\t 333 \n";
+
 				vertex.TexCoords = vec;
 				// tangent
 				vector.x = mesh->mTangents[i].x;
 				vector.y = mesh->mTangents[i].y;
 				vector.z = mesh->mTangents[i].z;
 				vertex.Tangent = vector;
+				//cout << "\t 444 \n";
+
 				// bitangent
 				vector.x = mesh->mBitangents[i].x;
 				vector.y = mesh->mBitangents[i].y;
 				vector.z = mesh->mBitangents[i].z;
 				vertex.Bitangent = vector;
+				//cout << "\t 555 \n";
+
 			}
 			else
 				vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+			//cout << "\t 666 \n";
 
 			vertices.push_back(vertex);
 		}
 		// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 		{
+			//cout << "\t 777 \n";
+
 			aiFace face = mesh->mFaces[i];
 			// retrieve all indices of the face and store them in the indices vector
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
@@ -175,7 +192,7 @@ private:
 		// 4. height maps
 		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
+		//cout << "\t return mesh. \n";
 		// return a mesh object created from the extracted mesh data
 		return Mesh(vertices, indices, textures);
 	}
@@ -203,7 +220,9 @@ private:
 			if (!skip)
 			{   // if texture hasn't been loaded already, load it
 				Texture texture;
+				cout << "加载纹理：" << str.C_Str() << "  " << this->directory << "\n";
 				texture.id = TextureFromFile(str.C_Str(), this->directory);
+				cout << "完成：" << str.C_Str() << "  " << this->directory << "\n";
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);
