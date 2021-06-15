@@ -19,7 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Render\Convert.cpp" />
+    <ClInclude Include="..\..\Render\Camera.h" />
+    <ClInclude Include="..\..\Render\Mesh.h" />
+    <ClInclude Include="..\..\Render\Model.h" />
+    <ClInclude Include="..\..\Render\models.h" />
+    <ClInclude Include="..\..\Render\objLoader.h" />
+    <ClInclude Include="..\..\Render\Render.h" />
+    <ClInclude Include="..\..\Render\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\..\Render\glad.c" />
     <ClCompile Include="..\..\Render\Model.cpp" />
     <ClCompile Include="..\..\Render\models.cpp" />
@@ -27,19 +35,13 @@
     <ClCompile Include="..\..\Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Render\Camera.h" />
-    <ClInclude Include="..\..\Render\Convert.h" />
-    <ClInclude Include="..\..\Render\Mesh.h" />
-    <ClInclude Include="..\..\Render\Model.h" />
-    <ClInclude Include="..\..\Render\models.h" />
-    <ClInclude Include="..\..\Render\objLoader.h" />
-    <ClInclude Include="..\..\Render\OBJ_Loader.h" />
-    <ClInclude Include="..\..\Render\Render.h" />
-    <ClInclude Include="..\..\Render\Shader.h" />
+    <None Include="shaders\envShader\env.FragmentShader" />
+    <None Include="shaders\envShader\env.VertexShader" />
+    <None Include="shaders\skyboxShader\skybox.FragmentShader" />
+    <None Include="shaders\skyboxShader\skybox.VertexShader" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\envShader\selfDefinedFragmentShader.fs" />
-    <None Include="shaders\envShader\selfDefinedVertexShader.vs" />
+    <Image Include="images\icon\icon.png" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{43554530-2170-F5A9-4794-3AD09344F18D}</ProjectGuid>
