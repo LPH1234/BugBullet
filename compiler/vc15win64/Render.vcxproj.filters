@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\Render\glad.c" />
+    <ClCompile Include="..\..\Render\objLoader.cpp" />
+    <ClCompile Include="..\..\Render\Render.cpp" />
+    <ClCompile Include="..\..\Render\Model.cpp" />
+    <ClCompile Include="..\..\Render\models.cpp" />
+    <ClCompile Include="..\..\Render\Convert.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Render\Camera.h" />
+    <ClInclude Include="..\..\Render\Mesh.h" />
+    <ClInclude Include="..\..\Render\Model.h" />
+    <ClInclude Include="..\..\Render\models.h" />
+    <ClInclude Include="..\..\Render\objLoader.h" />
+    <ClInclude Include="..\..\Render\OBJ_Loader.h" />
+    <ClInclude Include="..\..\Render\Render.h" />
+    <ClInclude Include="..\..\Render\Shader.h" />
+    <ClInclude Include="..\..\Render\Convert.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{5f3c841b-538e-4248-a05d-d22e67a3108c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\envShader\selfDefinedFragmentShader.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\envShader\selfDefinedVertexShader.vs">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

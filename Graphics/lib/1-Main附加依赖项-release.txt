@@ -1,0 +1,8 @@
+Winmm.lib
+OpenGL32.lib
+Render.lib
+opengl32.lib
+glfw3.lib
+glew32.lib
+assimp-vc140-mt.lib
+soil2.lib
