@@ -53,20 +53,20 @@ BOOL SetConsoleColor(WORD wAttributes)
 
 void Logger::debug(std::string str) {
 	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN); //green
-	std::cout << "DEBUG\t" << str << "\n";
+	std::cout << "[DEBUG]\t" << str << "\n";
 	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
 void Logger::info(std::string str) {
-	std::cout << "INFO\t" << str << "\n";
+	std::cout << "[INFO]\t" << str << "\n";
 }
 void Logger::warn(std::string str) {
 	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN); // yellow
-	std::cout << "WARN\t" << str << "\n";
+	std::cout << "[WARN]\t" << str << "\n";
 	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
 void Logger::error(std::string str) {
 	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_RED); // red
-	std::cout << "ERROR\t" << str << "\n";
+	std::cout << "[ERROR]\t" << str << "\n";
 	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
 
