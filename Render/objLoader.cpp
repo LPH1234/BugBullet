@@ -169,9 +169,14 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene()
 	TriangleMesh->attachShape(*shape);
 	shape->release();
 
-	TriangleMesh->userData = new int;
+	//TriangleMesh->userData = new int;
+	TriangleMesh->userData = TriangleMesh;
+	TriangleMesh->setName("map");
+	
 	int testid = 88888888;
-	memcpy(TriangleMesh->userData, &testid, sizeof(int));
+	//memcpy(TriangleMesh->userData, &testid, sizeof(int));
+
+
 
 	gScene->addActor(*TriangleMesh);
 	return TriangleMesh;
