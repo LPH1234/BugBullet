@@ -1,35 +1,88 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\Render\glad.c" />
-    <ClCompile Include="..\..\Render\objLoader.cpp" />
-    <ClCompile Include="..\..\Render\Render.cpp" />
-    <ClCompile Include="..\..\Render\Model.cpp" />
-    <ClCompile Include="..\..\Render\models.cpp" />
-    <ClCompile Include="..\..\Render\Convert.cpp" />
+    <ClInclude Include="..\..\Render\Camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\Mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\Model.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\models.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\objLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\Render.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\Shader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Render\Camera.h" />
-    <ClInclude Include="..\..\Render\Mesh.h" />
-    <ClInclude Include="..\..\Render\Model.h" />
-    <ClInclude Include="..\..\Render\models.h" />
-    <ClInclude Include="..\..\Render\objLoader.h" />
-    <ClInclude Include="..\..\Render\OBJ_Loader.h" />
-    <ClInclude Include="..\..\Render\Render.h" />
-    <ClInclude Include="..\..\Render\Shader.h" />
-    <ClInclude Include="..\..\Render\Convert.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Shaders">
+    <Filter Include="源文件">
+      <UniqueIdentifier>{9e143b1e-7f20-49a5-bb36-a405be467428}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件">
       <UniqueIdentifier>{5f3c841b-538e-4248-a05d-d22e67a3108c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shader">
+      <UniqueIdentifier>{baf4d9fa-215f-4b2a-b2d0-551b2dd58ca4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shader\envShader">
+      <UniqueIdentifier>{b2f96203-24a8-42a8-85e8-b7e580acfdf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shader\skyBoxShader">
+      <UniqueIdentifier>{5dd7e11a-33e7-4254-9ef5-a23801e64823}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\icon">
+      <UniqueIdentifier>{c288314c-001e-46b3-b994-243da2f39cab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\image">
+      <UniqueIdentifier>{df9d4fa3-a6be-4c27-a424-651de5a4f49d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{dabfa763-d14d-491a-bd37-f85739b43925}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\envShader\selfDefinedFragmentShader.fs">
-      <Filter>Shaders</Filter>
+    <ClCompile Include="..\..\Render\Render.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Render\objLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Render\models.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Render\Model.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Render\glad.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\envShader\env.FragmentShader">
+      <Filter>资源文件\shader\envShader</Filter>
     </None>
-    <None Include="shaders\envShader\selfDefinedVertexShader.vs">
-      <Filter>Shaders</Filter>
+    <None Include="shaders\envShader\env.VertexShader">
+      <Filter>资源文件\shader\envShader</Filter>
     </None>
+    <None Include="shaders\skyboxShader\skybox.FragmentShader">
+      <Filter>资源文件\shader\skyBoxShader</Filter>
+    </None>
+    <None Include="shaders\skyboxShader\skybox.VertexShader">
+      <Filter>资源文件\shader\skyBoxShader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="images\icon\icon.png">
+      <Filter>资源文件\icon</Filter>
+    </Image>
   </ItemGroup>
 </Project>

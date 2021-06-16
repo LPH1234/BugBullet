@@ -15,7 +15,7 @@
 #include "foundation/PxPreprocessor.h"
 
 #include "../Utils/Utils.h"
-#include "../Utils/Consts.h"
+#include "../Data/Consts.h"
 #include "models.h"
 
 
@@ -44,6 +44,9 @@ public:
 	 * @param model     指向渲染模型的指针
 	 */
 	ObjLoader(BaseModel* renderModel, bool preLoad = false);
+
+
+	//ObjLoader(BaseModel* renderModel, bool preLoad = false);
 	~ObjLoader();
 
 private:

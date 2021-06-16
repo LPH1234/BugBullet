@@ -166,7 +166,26 @@ void StringUtils::split(std::string& s, std::string c, std::vector<std::string>&
 		v.push_back(s.substr(pos1));
 }
 
+// compiler文件夹所在的目录
+std::string PathUtils::getRoot() {
+	return "../../";
+}
+// getRoot()目录下的resource文件夹目录
+std::string PathUtils::getResourceRoot() {
+	return PathUtils::getRoot() + "resource/";
+}
+//getResourceRoot()目录下的model目录
+std::string PathUtils::getModelRoot() {
+	return PathUtils::getResourceRoot() + "model/";
+}
 
+std::string PathUtils::getModelPath(std::string dir) {
+	if (dir.size() > 2) {
+		if (dir[1] == ':')//是绝对路径，直接返回
+			return dir;
+	}
+	return PathUtils::getModelRoot() + dir;
+}
 
 namespace physx
 {

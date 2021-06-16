@@ -38,6 +38,22 @@ public:
 	static void split(std::string& str, std::string delimiter, std::vector<std::string>& v);
 };
 
+class PathUtils
+{
+public:
+	// compiler文件夹所在的目录
+	static std::string getRoot();
+	// getRoot()目录下的Resource文件夹目录
+	static std::string getResourceRoot();
+	//getResourceRoot()目录下的model目录
+	static std::string getModelRoot();
+	/**
+	 * @brief			得到模型文件的路径，如：getModelRelativePath("football/soccer ball.obj")返回../../model/football/soccer ball.obj。但是绝对路径会直接返回
+	 * @param dir       从getModelRoot()目录开始，模型的路径
+	 * @return          模型文件的路径
+	 */
+	static std::string getModelPath(std::string dir);
+};
 
 namespace physx
 {
