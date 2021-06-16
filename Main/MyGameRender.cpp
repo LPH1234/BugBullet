@@ -244,6 +244,8 @@ void playerProcessInput(GLFWwindow *window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 		keyPress('F', px);
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)//ÇÐ»»Á¬·¢
+		keyPress('T', px);
 
 }
 
