@@ -144,6 +144,8 @@ public:
 	 */
 	physx::PxRigidActor* createDynamicActorAndAddToScene();
 
+
+	void free_memory();
 };
 
 

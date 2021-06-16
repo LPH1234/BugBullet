@@ -65,61 +65,58 @@ void ObjLoader::free_memory() {
 		convex_mesh->release();
 }
 
-physx::PxTriangleMesh* ObjLoader::genTriangleMesh(physx::PxVec3 scale)
-{
+physx::PxTriangleMesh* ObjLoader::genTriangleMesh(physx::PxVec3 scale) {
 	if (this->is_triangle_cooked) {//从cooking中读取
 		this->triangle_mesh = readTriangleMeshFromCookingFile();
-		meshToRenderModel[this->triangle_mesh] = this->renderModel;
-		Logger::debug("存在cooking");
-		return this->triangle_mesh;
+		Logger::debug("存在cooking文件");
 	}
+	else {
+		Logger::debug("不存在cooking文件");
+		const PxU32 numVertices = this->v.size();
+		const PxU32 numTriangles = this->f.size();
 
-	const PxU32 numVertices = this->v.size();
-	const PxU32 numTriangles = this->f.size();
+		PxVec3* vertices = new PxVec3[numVertices];
+		PxU32* indices = new PxU32[numTriangles * 3];
 
-	PxVec3* vertices = new PxVec3[numVertices];
-	PxU32* indices = new PxU32[numTriangles * 3];
+		// 加载顶点
+		for (int i = 0; i < numVertices; ++i) {
+			PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
+			vertices[i] = vectmp;
+		}
+		//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
 
-
-	// 加载顶点
-	for (int i = 0; i < numVertices; ++i) {
-		PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
-		vertices[i] = vectmp;
-	}
-	//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
-
-	// 加载面和顶点贴图索引
-	auto faceIt = this->f.begin();
-	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
-		for (int j = 0; j < 3; j++)
-		{
-			if ((*faceIt).size() >= j + 1) {
-				indices[i * 3 + j] = (*faceIt)[j].u;
+		// 加载面和顶点贴图索引
+		auto faceIt = this->f.begin();
+		for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
+			for (int j = 0; j < 3; j++)
+			{
+				if ((*faceIt).size() >= j + 1) {
+					indices[i * 3 + j] = (*faceIt)[j].u;
+				}
 			}
 		}
-	}
 
-	PxTriangleMeshDesc* meshDesc = new PxTriangleMeshDesc();
-	meshDesc->points.count = numVertices;
-	meshDesc->points.data = vertices;
-	meshDesc->points.stride = sizeof(PxVec3);
+		PxTriangleMeshDesc* meshDesc = new PxTriangleMeshDesc();
+		meshDesc->points.count = numVertices;
+		meshDesc->points.data = vertices;
+		meshDesc->points.stride = sizeof(PxVec3);
 
-	meshDesc->triangles.count = numTriangles;
-	meshDesc->triangles.data = indices;
-	meshDesc->triangles.stride = sizeof(PxU32) * 3;
+		meshDesc->triangles.count = numTriangles;
+		meshDesc->triangles.data = indices;
+		meshDesc->triangles.stride = sizeof(PxU32) * 3;
 
-	this->triangle_mesh_desc = meshDesc;
-	this->triangle_mesh = gCooking->createTriangleMesh(*meshDesc, gPhysics->getPhysicsInsertionCallback());
-	if (!this->triangle_mesh) {
-		Logger::error("triMesh create fail.");
+		this->triangle_mesh_desc = meshDesc;
+		this->triangle_mesh = gCooking->createTriangleMesh(*meshDesc, gPhysics->getPhysicsInsertionCallback());
+		if (!this->triangle_mesh) {
+			Logger::error("triMesh create fail.");
+		}
 	}
 	meshToRenderModel[this->triangle_mesh] = this->renderModel;
 	return this->triangle_mesh;
 }
 
 
-PxRigidActor* ObjLoader::createStaticActorAndAddToScene()
-{
+PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 
 	// 创建出它的几何体
 	PxTriangleMeshGeometry geom(this->triangle_mesh);
@@ -285,8 +282,7 @@ physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 	return convex_mesh;
 }
 
-PxRigidActor* ObjLoader::createDynamicActorAndAddToScene()
-{
+PxRigidActor* ObjLoader::createDynamicActorAndAddToScene() {
 	// 创建出它的几何体
 	PxConvexMeshGeometry geom(this->convex_mesh);
 	// 创建网格面
