@@ -8,6 +8,7 @@
 #include "../Utils/module.h"
 #include "../Render/models.h"
 #include "../Render/Render.h"
+#include<time.h>
 #define PI 3.1415926
 
 using namespace physx;
@@ -158,6 +159,28 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	dynamic->setLinearVelocity(velocity);
 	gScene->addActor(*dynamic);
 	return dynamic;
+}
+
+PxRigidDynamic* init3rdplyer(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0)) {
+	if (!t.isValid()) {
+		Logger::error("error:");
+	}
+	PxMaterial* me = gPhysics->createMaterial(0.8f, 0.8f, 0.0f);
+	PxRigidDynamic* player = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
+	//设置刚体名称
+	player->setName("3rdplayer");
+	
+	//userdata指向自己
+	//dynamic->userData = dynamic;
+	//设置碰撞的标签
+	setupFiltering(player, FilterGroup::eBALL, FilterGroup::eSTACK);
+	me->release();
+
+	player->setAngularDamping(0.5f);
+	player->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+	//dynamic->setLinearVelocity(velocity);
+	gScene->addActor(*player);
+	return player;
 }
 
 void createBigBall() {
@@ -311,13 +334,37 @@ void cleanupPhysics(bool interactive)
 
 	printf("program exit.\n");
 }
-
+bool autoshooting = true;
+clock_t last = 0;
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	switch (toupper(key))
 	{
-	case 'B':	createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);						break;
-	case 'F':	createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);	break;
+	case 'B':	
+		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);					
+		break;
+	case 'F':
+		if (autoshooting) {
+			createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
+			break;
+		}
+		else {
+			clock_t now = clock();
+			if (now - last > 1000) {
+				createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
+				last = now;
+			}
+			break;
+		}
+	case 'T':
+		autoshooting = !autoshooting;
+		if (autoshooting) {
+			cout << "切换成全自动" << endl;
+		}
+		else {
+			cout << "切换成半自动" << endl;
+		}
+		break;
 	}
 }
 
