@@ -11,7 +11,7 @@
 #include <iostream>
 
 #include "../Render/models.h"
-#include "../Utils/Consts.h"
+#include "../Data/Consts.h"
 
 
 using namespace physx;
@@ -120,8 +120,8 @@ int myRenderLoop()
 
 	// build and compile shaders
 	// -------------------------
-	skyBoxShader = new Shader("shaders/skyboxShader/skyboxVertexShader.vs", "shaders/skyboxShader/skyboxFragmentShader.fs");
-	envShader = new Shader("shaders/envShader/selfDefinedVertexShader.vs", "shaders/envShader/selfDefinedFragmentShader.fs");
+	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
+	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
 
 
 	atexit(exitCallback); //6
