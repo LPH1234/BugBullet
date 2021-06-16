@@ -8,7 +8,7 @@
 #include "../Utils/module.h"
 #include "../Render/models.h"
 #include "../Render/Render.h"
-#include<time.h>
+#include <ctime>
 #define PI 3.1415926
 
 using namespace physx;
@@ -29,9 +29,12 @@ PxMaterial*				gMaterial = NULL;
 
 PxPvd*                  gPvd = NULL;
 
-PxReal stackZ = 10.0f;
+PxReal stackZ = 3.0f;
 
 vector<PxActor*> removeActorList;
+
+clock_t					last = 0, current = 0;
+
 //碰撞过滤枚举类型
 struct FilterGroup
 {
@@ -73,8 +76,10 @@ PxFilterFlags testCollisionFilterShader(
 		return PxFilterFlag::eDEFAULT;
 	}
 	// generate contacts for all that were not filtered above
-	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
-	pairFlags ^= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+	pairFlags = PxPairFlag::eSOLVE_CONTACT | PxPairFlag::eDETECT_DISCRETE_CONTACT
+		| PxPairFlag::eNOTIFY_TOUCH_FOUND
+		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+		| PxPairFlag::eNOTIFY_CONTACT_POINTS;
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
@@ -105,6 +110,7 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
 	//PX_UNUSED((pairHeader));
 	//printf("Enter onContact!\n");
+	std::vector<PxContactPairPoint> contactPoints;//存储每一个触碰点信息
 	for (PxU32 i = 0; i < nbPairs; i++)
 	{
 		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]);
@@ -119,15 +125,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| actor_1->getName() == "bigBall"&&actor_0->getName() == "box") {
 				printf("大球碰方块！\n");
 				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
+
 			}
 			else {}
 		}
-		/*const PxContactPair& cp = pairs[i];
-		if (cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
-		{
-			printf("碰撞\n");
-		}*/
 	}
+
 }
 module moduleCallBack;
 //删除removeActorList里面的actor
@@ -185,7 +188,7 @@ PxRigidDynamic* init3rdplyer(const PxTransform& t, const PxGeometry& geometry, c
 
 void createBigBall() {
 	//PxShape* shape = gPhysics->createShape(PxSphereGeometry(1), *gMaterial);
-	PxTransform pos(PxVec3(0, 1, 13));
+	PxTransform pos(PxVec3(0, 1, -18));
 	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, pos, PxSphereGeometry(1), *gMaterial, 10.0f);
 	//设置刚体名称
 	body->setName("bigBall");
@@ -193,7 +196,7 @@ void createBigBall() {
 	//body->userData = body;
 	//设置碰撞标签
 	setupFiltering(body, FilterGroup::eBIGBALL, FilterGroup::eSTACK);
-	body->setLinearVelocity(PxVec3(0,0,-5));
+	body->setLinearVelocity(PxVec3(0,0,5));
 	gScene->addActor(*body);
 	//shape->release();
 }
@@ -266,7 +269,7 @@ void initPhysics(bool interactive)
 	gScene->addActor(*groundPlane);
 
 	for (PxU32 i = 0; i < 3; i++)
-		createStack(PxTransform(PxVec3(0, 2, stackZ -= 10.0f)), 10, 0.1f);
+		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	createBigBall();
 
 
@@ -315,9 +318,19 @@ bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
 void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
-	gScene->simulate(1.0f / 60.0f);
-	gScene->fetchResults(true);
-	removeActorInList();
+	//锁帧
+	current = clock();//当前时钟
+	if ((current-last)<16) {
+		//skip，1000clocks/s，则一帧约16ms（60帧）
+		Sleep(16-(current - last));
+	}
+	else {
+		gScene->simulate(1.0f / 60.0f);
+		gScene->fetchResults(true);
+		removeActorInList();
+		last = current;//每执行一帧，记录上一帧（即当前帧）时钟
+	}
+	
 }
 
 void cleanupPhysics(bool interactive)

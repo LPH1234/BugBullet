@@ -187,7 +187,11 @@ PxFilterFlags testCCDFilterShader(
 {
 	pairFlags = PxPairFlag::eSOLVE_CONTACT;
 	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT
+		| PxPairFlag::eNOTIFY_TOUCH_FOUND
+		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+		| PxPairFlag::eNOTIFY_CONTACT_POINTS;
+		
 
 	// let triggers through
 	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
