@@ -106,8 +106,8 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 	//printf("Enter onContact!\n");
 	for (PxU32 i = 0; i < nbPairs; i++)
 	{
-		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]->userData);
-		PxRigidActor* actor_1 = (PxRigidActor*)(pairHeader.actors[1]->userData);
+		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]);
+		PxRigidActor* actor_1 = (PxRigidActor*)(pairHeader.actors[1]);
 		if (actor_0 != NULL && actor_1 != NULL) {
 			if (actor_0->getName() == "littleBall"&&actor_1->getName() == "box"
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "box") {
@@ -149,7 +149,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	//设置刚体名称
 	dynamic->setName("littleBall");
 	//userdata指向自己
-	dynamic->userData = dynamic;
+	//dynamic->userData = dynamic;
 	//设置碰撞的标签
 	setupFiltering(dynamic, FilterGroup::eBALL, FilterGroup::eSTACK);
 	me->release();
@@ -167,7 +167,7 @@ void createBigBall() {
 	//设置刚体名称
 	body->setName("bigBall");
 	//userdata指向自己
-	body->userData = body;
+	//body->userData = body;
 	//设置碰撞标签
 	setupFiltering(body, FilterGroup::eBIGBALL, FilterGroup::eSTACK);
 	body->setLinearVelocity(PxVec3(0,0,-5));
@@ -187,7 +187,7 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 			//设置刚体名称
 			body->setName("box");
 			//userdata指向自己
-			body->userData = body;
+			//body->userData = body;
 			//设置碰撞的标签
 			setupFiltering(body, FilterGroup::eSTACK, FilterGroup::eBALL | FilterGroup::eBIGBALL);
 			body->attachShape(*shape);
@@ -252,8 +252,8 @@ void initPhysics(bool interactive)
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 
 
