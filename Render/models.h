@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
 #include "Model.h"
-#include "Convert.h"
+#include "../Utils/Convert.h"
 #include "../Utils/Utils.h"
 
 
@@ -41,10 +41,11 @@ public:
 
 	BaseModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) {
 		this->Position = pos; this->scale_value = scale;  this->shader = shader;   this->modelPath = modelPath;
-		Logger::debug("加载modelPath:" + modelPath);
 
-		if (modelPath.compare("") != 0)
+		if (modelPath.compare("") != 0) {
+			Logger::debug("开始加载模型，Path:" + modelPath);
 			this->model = new Model(modelPath);
+		}
 	}
 
 	virtual ~BaseModel() {

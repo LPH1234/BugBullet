@@ -11,7 +11,7 @@
 #include <iostream>
 
 #include "../Render/models.h"
-#include "../Utils/Consts.h"
+#include "../Data/Consts.h"
 
 
 using namespace physx;
@@ -27,8 +27,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1920/2;
+const unsigned int SCR_HEIGHT = 1080/2;
 
 // camera
 Camera camera(glm::vec3(0.0f, 5.0f, 3.0f));
@@ -120,8 +120,8 @@ int myRenderLoop()
 
 	// build and compile shaders
 	// -------------------------
-	skyBoxShader = new Shader("shaders/skyboxShader/skyboxVertexShader.vs", "shaders/skyboxShader/skyboxFragmentShader.fs");
-	envShader = new Shader("shaders/envShader/selfDefinedVertexShader.vs", "shaders/envShader/selfDefinedFragmentShader.fs");
+	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
+	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
 
 
 	atexit(exitCallback); //6

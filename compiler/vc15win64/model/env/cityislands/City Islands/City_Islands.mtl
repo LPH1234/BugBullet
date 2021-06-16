@@ -1,0 +1,715 @@
+newmtl default
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/snd2_01.jpg
+
+newmtl default_interior_land
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/dm1.jpg
+
+newmtl default_road
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.501961 0.501961 0.501961
+Ks 1 1 1
+Km 0
+
+newmtl default_bridges
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_city_bldgs
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/ac2.jpg
+
+newmtl default_roof
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/roofti8.jpg
+
+newmtl default_country_club_house
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/fac_151.jpg
+
+newmtl default_town_roofs
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/sx1.jpg
+
+newmtl default_town_walls
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/g1.jpg
+
+newmtl default_house_complex
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/sf1c.jpg
+
+newmtl default_bldgs_dowtown
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/fac_231.jpg
+
+newmtl default_station.mult
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.780392 0.780392 0.572549
+Ks 1 1 1
+Km 0
+
+newmtl default_roof_&_pumps_mult
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.678431 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_window_mult
+d 1
+Ns 1
+Ni 0
+Ka 1 1 1
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/sxa1.jpg
+
+newmtl default_floor_mult
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/antenna.jpg
+
+newmtl default_s1
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/Pepsi_Commercial_by_mindfuckx.jpg
+
+newmtl default_s1_fedex
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/fx1.jpg
+
+newmtl default_s1_cocacola
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/dk1.jpg
+
+newmtl default_s1_sprite
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/logo_sprite-794746.jpg
+
+newmtl default_s1_uhaul
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/ct1_02.jpg
+
+newmtl default_rims_mult3
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_&_windows_3
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_car_truck_bodies
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.207843 0.501961 0.419608
+Ks 1 1 1
+Km 0
+
+newmtl default_shopping_center
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/dmq1c2.jpg
+
+newmtl default_wall2
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/dmq1c2.jpg
+
+newmtl default_bldg
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/antenna.jpg
+
+newmtl default_parking
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/pe1b2.jpg
+
+newmtl default_roof_flat
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/sx1.jpg
+
+newmtl default_roof_shopping_center
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/rf2.jpg
+
+newmtl default_windows
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 0
+Ks 1 1 1
+Km 0
+
+newmtl default_car
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.74902 0.74902 0.74902
+Ks 1 1 1
+Km 0
+
+newmtl default_car_1
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_1
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_1
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_1
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 0.501961 0
+Ks 1 1 1
+Km 0
+
+newmtl default_car_2
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_2
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_2
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_2
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 0 1
+Ks 1 1 1
+Km 0
+
+newmtl default_car_3
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_3
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_3
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_3
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.764706 0.858824 0.94902
+Ks 1 1 1
+Km 0
+
+newmtl default_car_4
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_4
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_4
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_4
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.247059 0.501961 0.501961
+Ks 1 1 1
+Km 0
+
+newmtl default_car_5
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_5
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_5
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_5
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_car_6
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_6
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_6
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_6
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.501961 0 0.501961
+Ks 1 1 1
+Km 0
+
+newmtl default_car_7
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_7
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_7
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_7
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.776471 0.776471 0.568627
+Ks 1 1 1
+Km 0
+
+newmtl default_car_8
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_8
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_8
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_8
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_car_9
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_9
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_9
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_9
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0.247059 0.501961
+Ks 1 1 1
+Km 0
+
+newmtl default_car_10
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windows_car_10
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_tires_car_10
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_body_car_10
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 0.501961 1 0
+Ks 1 1 1
+Km 0
+
+newmtl default_car_11
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+

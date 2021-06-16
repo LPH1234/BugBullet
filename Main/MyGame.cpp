@@ -15,7 +15,6 @@ using namespace physx;
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 PxSimulationEventCallback *myCallBack;
-module moduleCallBack;
 
 PxFoundation*			gFoundation = NULL;
 PxPhysics*				gPhysics = NULL;
@@ -31,10 +30,18 @@ PxPvd*                  gPvd = NULL;
 
 PxReal stackZ = 10.0f;
 
-PxRigidDynamic*			body_1 = NULL;
-
-PxRigidStatic* bodyToRemove = NULL;
-
+vector<PxActor*> removeActorList;
+//碰撞过滤枚举类型
+struct FilterGroup
+{
+	enum Enum
+	{
+		eBALL = (1 << 0),		//发射的小球
+		eWALL = (1 << 1),		//墙壁
+		eSTACK = (1 << 2),		//小方块
+		eBIGBALL = (1 << 3),	//大球
+	};
+};
 
 /**
 * @brief			创建一个普通的渲染模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
@@ -44,13 +51,92 @@ PxRigidStatic* bodyToRemove = NULL;
 * @param shader     绘制此模型的shader
 * @return			是否成功
 */
-bool createStaticModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad = false, bool ifStatic = true);
+bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad = false, bool ifStatic = true);
 /**
 * @brief			根据一个自定义的渲染模型去创建物理模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
 * @param model      指向渲染模型的指针
 * @return			是否成功
 */
 bool createSpecialStaticModel(BaseModel* model, bool preLoad = false, bool ifStatic = true);
+
+//自定义FilterShader，大球或小球跟方块发生碰撞时为pairFlags添加eCONTACT_DEFAULT
+PxFilterFlags testCollisionFilterShader(
+	PxFilterObjectAttributes attributes0, PxFilterData filterData0,
+	PxFilterObjectAttributes attributes1, PxFilterData filterData1,
+	PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
+{
+	// let triggers through
+	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
+	{
+		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+		return PxFilterFlag::eDEFAULT;
+	}
+	// generate contacts for all that were not filtered above
+	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+	pairFlags ^= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+	// trigger the contact callback for pairs (A,B) where 
+	// the filtermask of A contains the ID of B and vice versa.
+	if ((filterData0.word0 == filterData1.word1) || (filterData1.word0 == filterData0.word1))
+		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+	return PxFilterFlag::eDEFAULT;
+
+}
+
+//设置碰撞过滤
+void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
+{
+	PxFilterData filterData;
+	filterData.word0 = filterGroup; // word0 = own ID
+	filterData.word1 = filterMask;	// word1 = ID mask to filter pairs that trigger a contact callback;
+	const PxU32 numShapes = actor->getNbShapes();
+	PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
+	actor->getShapes(shapes, numShapes);
+	for (PxU32 i = 0; i < numShapes; i++)
+	{
+		PxShape* shape = shapes[i];
+		shape->setSimulationFilterData(filterData);
+	}
+	free(shapes);
+}
+//碰撞回调函数
+void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
+	//PX_UNUSED((pairHeader));
+	//printf("Enter onContact!\n");
+	for (PxU32 i = 0; i < nbPairs; i++)
+	{
+		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]->userData);
+		PxRigidActor* actor_1 = (PxRigidActor*)(pairHeader.actors[1]->userData);
+		if (actor_0 != NULL && actor_1 != NULL) {
+			if (actor_0->getName() == "littleBall"&&actor_1->getName() == "box"
+				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "box") {
+				printf("小球碰方块！\n");
+				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
+			}
+			else if (actor_0->getName() == "bigBall"&&actor_1->getName() == "box"
+				|| actor_1->getName() == "bigBall"&&actor_0->getName() == "box") {
+				printf("大球碰方块！\n");
+				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
+			}
+			else {}
+		}
+		/*const PxContactPair& cp = pairs[i];
+		if (cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+		{
+			printf("碰撞\n");
+		}*/
+	}
+}
+module moduleCallBack;
+//删除removeActorList里面的actor
+void removeActorInList() {
+	int n = removeActorList.size();
+	for (int i = 0; i < n; i++) {
+		gScene->removeActor(*removeActorList[i]);
+	}
+	removeActorList.clear();
+}
 
 
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0))
@@ -60,19 +146,33 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	}
 	PxMaterial* me = gPhysics->createMaterial(0.8f, 0.8f, 0.0f);
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
+	//设置刚体名称
+	dynamic->setName("littleBall");
+	//userdata指向自己
+	dynamic->userData = dynamic;
+	//设置碰撞的标签
+	setupFiltering(dynamic, FilterGroup::eBALL, FilterGroup::eSTACK);
 	me->release();
-	//设置trigger的参数
-	body_1 = dynamic;
-	printf("createDynamic!\n");
-	/*PxShape* treasureShape;
-	body_1->getShapes(&treasureShape, 1);
-	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);*/
 	dynamic->setAngularDamping(0.5f);
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setLinearVelocity(velocity);
 	gScene->addActor(*dynamic);
 	return dynamic;
+}
+
+void createBigBall() {
+	//PxShape* shape = gPhysics->createShape(PxSphereGeometry(1), *gMaterial);
+	PxTransform pos(PxVec3(0, 1, 13));
+	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, pos, PxSphereGeometry(1), *gMaterial, 10.0f);
+	//设置刚体名称
+	body->setName("bigBall");
+	//userdata指向自己
+	body->userData = body;
+	//设置碰撞标签
+	setupFiltering(body, FilterGroup::eBIGBALL, FilterGroup::eSTACK);
+	body->setLinearVelocity(PxVec3(0,0,-5));
+	gScene->addActor(*body);
+	//shape->release();
 }
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
@@ -84,6 +184,12 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 		{
 			PxTransform localTm(PxVec3(PxReal(j * 2) - PxReal(size - i), PxReal(i * 2 + 1), 0) * halfExtent);
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
+			//设置刚体名称
+			body->setName("box");
+			//userdata指向自己
+			body->userData = body;
+			//设置碰撞的标签
+			setupFiltering(body, FilterGroup::eSTACK, FilterGroup::eBALL | FilterGroup::eBIGBALL);
 			body->attachShape(*shape);
 			PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
 			gScene->addActor(*body);
@@ -91,119 +197,9 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 	}
 	shape->release();
 }
-void createWall() {
-	PxTransform original(PxVec3(PxReal(0), PxReal(0), PxReal(0)));
-
-	PxShape* shape1 = gPhysics->createShape(PxBoxGeometry(3, 1, 0.1), *gMaterial);
-	PxShape* shape2 = gPhysics->createShape(PxBoxGeometry(0.1, 1, 3), *gMaterial);
-
-	PxTransform local1(PxVec3(PxReal(3), PxReal(1), PxReal(3)));
-	PxTransform local2(PxVec3(PxReal(3), PxReal(1), PxReal(4)));
-	PxTransform local3(PxVec3(PxReal(3), PxReal(1), PxReal(5)));
-	PxTransform local4(PxVec3(PxReal(6), PxReal(1), PxReal(6)), PxQuat(0, 1, 0, 0));
-
-	PxRigidStatic* body1 = gPhysics->createRigidStatic(original.transform(local1));	std::cout << "body1:" << body1 << "\n";
-	body1->attachShape(*shape1);
-	gScene->addActor(*body1);
-	PxRigidStatic* body2 = gPhysics->createRigidStatic(original.transform(local2)); std::cout << "body2:" << body2 << "\n";
-	body2->attachShape(*shape2);
-	gScene->addActor(*body2);
-	PxRigidStatic* body3 = gPhysics->createRigidStatic(original.transform(local3)); std::cout << "body3:" << body3 << "\n";
-	body3->attachShape(*shape1);
-	gScene->addActor(*body3);
-	PxRigidStatic* body4 = gPhysics->createRigidStatic(original.transform(local4));
-	body4->attachShape(*shape1);
-	gScene->addActor(*body4);/**/
-	bodyToRemove = body4;
-
-	shape1->release();
-	shape2->release();
-}
-
-
-void remove() {
-	gScene->removeActor(*bodyToRemove);
-}
-
-void createBowl() {
-	PxTransform original(PxVec3(PxReal(150), PxReal(0), PxReal(0)));
-
-	PxShape* bowlShape = gPhysics->createShape(PxCapsuleGeometry(2, 3.5), *gMaterial);
-	PxTransform local1(PxVec3(PxReal(-5.5), PxReal(2), PxReal(0)));
-	PxTransform local2(PxVec3(PxReal(5.5), PxReal(4), PxReal(0)));
-	PxTransform local3(PxVec3(PxReal(16.5), PxReal(5.5), PxReal(0)));
-	PxTransform local4(PxVec3(PxReal(27.5), PxReal(8), PxReal(0)));
-
-	PxRigidStatic* body1 = gPhysics->createRigidStatic(original.transform(local1));
-	body1->attachShape(*bowlShape);
-	/*body1->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_LINEAR_X, true);
-	body1->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_LINEAR_Y,true);
-	body1->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, true);*/
-	gScene->addActor(*body1);
-	PxRigidStatic* body2 = gPhysics->createRigidStatic(original.transform(local2));
-	body2->attachShape(*bowlShape);
-	gScene->addActor(*body2);
-	PxRigidStatic* body3 = gPhysics->createRigidStatic(original.transform(local3));
-	body3->attachShape(*bowlShape);
-	gScene->addActor(*body3);
-	PxRigidStatic* body4 = gPhysics->createRigidStatic(original.transform(local4));
-	body4->attachShape(*bowlShape);
-	gScene->addActor(*body4);
-
-	bowlShape->release();
-}
 
 void createModel(std::string path, int scale, PxVec3& offset) {
 
-}
-
-PxRigidActor* body_0 = NULL;
-void testTrigger() {
-	PxTransform original(PxVec3(PxReal(0), PxReal(0), PxReal(0)));//坐标原点
-	PxShape* shape1 = gPhysics->createShape(PxBoxGeometry(100, 30, 3), *gMaterial);//长宽高为200 60 6的墙
-	PxTransform local4(PxVec3(PxReal(-200), PxReal(30), PxReal(0)), PxQuat(0, 1, 0, 0));
-	PxRigidStatic* body4 = gPhysics->createRigidStatic(original.transform(local4)); std::cout << "body4:" << body4 << "\n";
-
-
-	module wall(original, shape1, local4, body4);
-	wall.body0->attachShape(*shape1); std::cout << "wall.body0:" << wall.body0 << "\n";
-	/*PxShape* treasureShape;
-	wall.body0->getShapes(&treasureShape, 1);
-	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);*/
-	body_0 = wall.body0;
-	gScene->addActor(*wall.body0);
-
-	/*body4->attachShape(*shape1);
-
-	gScene->addActor(*body4);*/
-	bodyToRemove = body4;
-
-	shape1->release();
-}
-bool toRemove = false;
-void module::onTrigger(PxTriggerPair* pairs, PxU32 count)
-{
-	printf("Enter onTrigger!\n");
-	for (PxU32 i = 0; i < count; i++)
-	{
-		// ignore pairs when shapes have been deleted
-		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_OTHER)) {
-			printf("Enter first 'if' !\n");
-			continue;
-		}
-
-		if ((pairs[i].otherActor == body_0) && (pairs[i].triggerActor == body_1))
-		{
-			toRemove = true;
-			printf("module::onTrigger!\n");
-		}
-	}
-}
-void module::onWake(PxActor** actor, PxU32 count) {
-	std::cout << "Enter onWake!\n";
-	if (toRemove) remove();
-	return;
 }
 
 extern Shader* envShader;
@@ -229,9 +225,9 @@ void initPhysics(bool interactive)
 	sceneDesc.cpuDispatcher = gDispatcher;
 	//sceneDesc.filterShader = PxDefaultSimulationFilterShader;
 	sceneDesc.filterShader = testCCDFilterShader;
-	//注册onTrigger
-	myCallBack = new module();
-	sceneDesc.simulationEventCallback = myCallBack;
+	//sceneDesc.filterShader = testCollisionFilterShader;
+	//注册onContact
+	sceneDesc.simulationEventCallback = &moduleCallBack;
 	gScene = gPhysics->createScene(sceneDesc);
 
 	PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
@@ -246,17 +242,19 @@ void initPhysics(bool interactive)
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
 	gScene->addActor(*groundPlane);
 
-	for (PxU32 i = 0; i < 5; i++)
+	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 10.0f)), 10, 0.1f);
+	createBigBall();
 
-	//createWall();
-	//createBowl();
-	//testTrigger();
 
 	//std::string path = "model/street/Street environment_V01.obj";
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 
 
 
@@ -266,15 +264,15 @@ void initPhysics(bool interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
 
-bool createStaticModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad, bool ifStatic) {
-	BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
+bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad, bool ifStatic) {
 	if (FileUtils::isFileExist(modelPath)) {
+		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
 		ObjLoader loader(model, preLoad);
 		if (ifStatic)
 			loader.createStaticActorAndAddToScene(); // 静态刚体
 		else
 			loader.createDynamicActorAndAddToScene(); // 动态刚体
-		Logger::debug("xxxxxxxxxxxxxxxxx");
+		Logger::debug("创建完成");
 	}
 	else {
 		Logger::error("文件不存在：" + modelPath);
@@ -296,6 +294,7 @@ void stepPhysics(bool interactive)
 	PX_UNUSED(interactive);
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
+	removeActorInList();
 }
 
 void cleanupPhysics(bool interactive)
@@ -319,7 +318,6 @@ void keyPress(unsigned char key, const PxTransform& camera)
 	{
 	case 'B':	createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);						break;
 	case 'F':	createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);	break;
-	case 'R':	remove();	break;
 	}
 }
 

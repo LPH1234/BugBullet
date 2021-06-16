@@ -57,6 +57,8 @@ private:
 	{
 		// read file via ASSIMP
 		Assimp::Importer importer;
+		cout << "start importer " << endl;
+
 		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 		// check for errors
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
@@ -64,11 +66,14 @@ private:
 			cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
 			return;
 		}
+		cout << "importer over\n start process node   " << endl;
 		// retrieve the directory path of the filepath
 		directory = path.substr(0, path.find_last_of('//'));
 
 		// process ASSIMP's root node recursively
 		processNode(scene->mRootNode, scene);
+		cout << "process over   " << endl;
+
 	}
 
 	// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -89,7 +94,7 @@ private:
 		}
 
 	}
-
+	int count = 0;
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene)
 	{
 		// data to fill
@@ -100,6 +105,7 @@ private:
 		// walk through each of the mesh's vertices
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
+			cout << "count:" << count++ << "\n";
 			Vertex vertex;
 			glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
 			// positions

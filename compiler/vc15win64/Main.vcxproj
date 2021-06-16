@@ -94,6 +94,10 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX64</TargetMachine>
+      <StackReserveSize>200000000</StackReserveSize>
+      <HeapReserveSize>200000000</HeapReserveSize>
+      <HeapCommitSize>200000000</HeapCommitSize>
+      <StackCommitSize>200000000</StackCommitSize>
     </Link>
     <ResourceCompile>
     </ResourceCompile>
@@ -117,7 +121,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /d2Zi+</AdditionalOptions>
@@ -241,6 +245,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX64</TargetMachine>
+      <StackReserveSize>100000000</StackReserveSize>
     </Link>
     <ResourceCompile>
     </ResourceCompile>
