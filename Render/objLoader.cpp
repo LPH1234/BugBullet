@@ -169,9 +169,14 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene()
 	TriangleMesh->attachShape(*shape);
 	shape->release();
 
-	TriangleMesh->userData = new int;
+	//TriangleMesh->userData = new int;
+	//TriangleMesh->userData = TriangleMesh;
+	TriangleMesh->setName("map");
+	
 	int testid = 88888888;
-	memcpy(TriangleMesh->userData, &testid, sizeof(int));
+	//memcpy(TriangleMesh->userData, &testid, sizeof(int));
+
+
 
 	gScene->addActor(*TriangleMesh);
 	return TriangleMesh;
@@ -264,10 +269,10 @@ PxRigidActor* ObjLoader::createDynamicActorAndAddToScene()
 	convexMesh->attachShape(*shape);
 	shape->release();
 
-	convexMesh->userData = new int;
+	//convexMesh->userData = new int;
 	//convexMesh->userData = 
 	int testid = 88888888;
-	memcpy(convexMesh->userData, &testid, sizeof(int));
+	//memcpy(convexMesh->userData, &testid, sizeof(int));
 
 	gScene->addActor(*convexMesh);
 
