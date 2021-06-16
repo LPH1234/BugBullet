@@ -224,8 +224,8 @@ void initPhysics(bool interactive)
 	gDispatcher = PxDefaultCpuDispatcherCreate(2);
 	sceneDesc.cpuDispatcher = gDispatcher;
 	//sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	//sceneDesc.filterShader = testCCDFilterShader;
-	sceneDesc.filterShader = testCollisionFilterShader;
+	sceneDesc.filterShader = testCCDFilterShader;
+	//sceneDesc.filterShader = testCollisionFilterShader;
 	//注册onContact
 	sceneDesc.simulationEventCallback = &moduleCallBack;
 	gScene = gPhysics->createScene(sceneDesc);
@@ -249,7 +249,7 @@ void initPhysics(bool interactive)
 
 	//std::string path = "model/street/Street environment_V01.obj";
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
