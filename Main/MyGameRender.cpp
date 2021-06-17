@@ -180,14 +180,14 @@ int myRenderLoop()
 	// 绘制包围盒
 	//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
 
-	/*skyBoxShader->use();
+	skyBoxShader->use();
 	skyBoxShader->setMat4("projection", projection);
 	skyBoxShader->setMat4("view", view);
 
 
 	skybox->setPosition(camera.Position);
 	skyBoxShader->setMat4("model", skybox->getModel());
-	skybox->draw();*/
+	skybox->draw();
 
 
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

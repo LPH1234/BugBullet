@@ -191,7 +191,7 @@ public:
 		queue_mutex.unlock();
 	}
 
-	static CookThread* newInstance() {
+	static CookThread* newInstance() { // 最多三个线程同时工作
 		if (threads->size() == 0 || (threads->size() < 3 && tasks->size() > 5)) {
 			CookThread* t = new CookThread;
 			threads->push_back(t);
@@ -208,7 +208,7 @@ public:
 		return cook_thread_exit_flag;
 	}
 
-	static void remove_thread(HANDLE h) {
+	static void remove_thread(HANDLE h) { //使句柄为h的线程退出
 		queue_mutex.lock();
 		for (int i = 0; i < threads->size(); i++)
 		{
