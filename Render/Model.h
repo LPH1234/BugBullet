@@ -105,7 +105,6 @@ private:
 		// walk through each of the mesh's vertices
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
-			cout << count++ << "\n";
 			Vertex vertex;
 			glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
 			// positions
@@ -220,9 +219,10 @@ private:
 			if (!skip)
 			{   // if texture hasn't been loaded already, load it
 				Texture texture;
-				cout << "加载纹理：" << str.C_Str() << "  " << this->directory << "\n";
+
+				cout << "准备加载："<<"\t"<< str.C_Str() << "\t" << this->directory << endl;
 				texture.id = TextureFromFile(str.C_Str(), this->directory);
-				cout << "完成：" << str.C_Str() << "  " << this->directory << "\n";
+				cout << "加载完成"<< endl; 
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);

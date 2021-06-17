@@ -73,7 +73,7 @@
       <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /Zi /d2Zi+</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PHYSX_PROFILE_SDK;RENDER_SNIPPET;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -86,7 +86,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/LIBPATH:../../../Lib/vc15win64 PhysX3CommonDEBUG_x64.lib PhysX3DEBUG_x64.lib PhysX3CookingDEBUG_x64.lib PhysX3CharacterKinematicDEBUG_x64.lib PhysX3ExtensionsDEBUG.lib PhysX3VehicleDEBUG.lib PxTaskDEBUG_x64.lib PxFoundationDEBUG_x64.lib PsFastXmlDEBUG_x64.lib PxPvdSDKDEBUG_x64.lib /LIBPATH:../../lib/vc15win64 UtilsDEBUG.lib /DEBUG /verbose:lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)DEBUG.exe</OutputFile>
       <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -121,12 +121,12 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|x64'">
     <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /d2Zi+</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include/win32/GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include/win32/GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PHYSX_PROFILE_SDK;RENDER_SNIPPET;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -139,7 +139,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/LIBPATH:../../../Lib/vc15win64 PhysX3CommonCHECKED_x64.lib PhysX3CHECKED_x64.lib PhysX3CookingCHECKED_x64.lib PhysX3CharacterKinematicCHECKED_x64.lib PhysX3ExtensionsCHECKED.lib PhysX3VehicleCHECKED.lib PxTaskCHECKED_x64.lib PxFoundationCHECKED_x64.lib PsFastXmlCHECKED_x64.lib PxPvdSDKCHECKED_x64.lib /LIBPATH:../../lib/vc15win64 SnippetUtilsCHECKED.lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;glut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;glut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)CHECKED.exe</OutputFile>
       <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib/win64/glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -175,7 +175,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /d2Zi+</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include/win32/GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include/win32/GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PHYSX_PROFILE_SDK;RENDER_SNIPPET;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -188,7 +188,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/INCREMENTAL:NO /LIBPATH:../../../Lib/vc15win64 PhysX3CommonPROFILE_x64.lib PhysX3PROFILE_x64.lib PhysX3CookingPROFILE_x64.lib PhysX3CharacterKinematicPROFILE_x64.lib PhysX3ExtensionsPROFILE.lib PhysX3VehiclePROFILE.lib PxTaskPROFILE_x64.lib PxFoundationPROFILE_x64.lib PsFastXmlPROFILE_x64.lib PxPvdSDKPROFILE_x64.lib /LIBPATH:../../lib/vc15win64 SnippetUtilsPROFILE.lib /DEBUG</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;glut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;glut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)PROFILE.exe</OutputFile>
       <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib/win64/glut;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -224,7 +224,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /d2Zi+</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Graphics/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PHYSX_PROFILE_SDK;RENDER_SNIPPET;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -237,7 +237,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/INCREMENTAL:NO /LIBPATH:../../../Lib/vc15win64 PhysX3Common_x64.lib PhysX3_x64.lib PhysX3Cooking_x64.lib PhysX3CharacterKinematic_x64.lib PhysX3Extensions.lib PhysX3Vehicle.lib PxTask_x64.lib PxFoundation_x64.lib PsFastXml_x64.lib PxPvdSDK_x64.lib /LIBPATH:../../lib/vc15win64 Utils.lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;Render.lib;opengl32.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;Render.lib;opengl32.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
