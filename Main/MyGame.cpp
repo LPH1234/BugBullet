@@ -183,7 +183,7 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 	
 	//设置刚体名称
 	player->setName("3rdplayer");
-	
+
 	//userdata指向自己
 	//dynamic->userData = dynamic;
 	//设置碰撞的标签
@@ -208,15 +208,15 @@ void createBigBall() {
 	//body->userData = body;
 	//设置碰撞标签
 	setupFiltering(body, FilterGroup::eBIGBALL, FilterGroup::eSTACK);
-	body->setLinearVelocity(PxVec3(0,0,5));
+	body->setLinearVelocity(PxVec3(0, 0, 5));
 
 	gScene->addActor(*body);
 	//shape->release();
 }
 //飞机刚体
 void createAirPlane() {
-	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5,0.2,0.2), *gMaterial);
-	PxTransform initPos(PxVec3(2, 1, -15),PxQuat(PxPi/6,PxVec3(0,0,1)));
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
+	PxTransform initPos(PxVec3(2, 1, -15), PxQuat(PxPi / 6, PxVec3(0, 0, 1)));
 	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, initPos, *shape, 8);
 
 	body->setName("airPlane");
@@ -231,7 +231,7 @@ void changeAirPlaneVelocity() {
 	angelAirPlane += 1;
 	angelAirPlane = angelAirPlane % 360;
 	PxQuat rot(PxPi / 180 * angelAirPlane, PxVec3(0, 0, 1));
-	headForward = rot.rotate(PxVec3(1,0,0));
+	headForward = rot.rotate(PxVec3(1, 0, 0));
 	airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));
 	airPlane->setLinearVelocity(5 * headForward);
 }
@@ -250,14 +250,13 @@ PxRigidDynamic* initPlayer() {
 }
 
 
-void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
-{
+void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 	for (PxU32 i = 0; i < size; i++)
 	{
 		for (PxU32 j = 0; j < size - i; j++)
 		{
-			PxTransform localTm(PxVec3(PxReal(j * 2) - PxReal(size - i), PxReal(i * 2 + 1), 0) * halfExtent);
+			PxTransform localTm(PxVec3(PxReal(j * 2) - PxReal(size - i), PxReal(i * 2 + 1), 0) * halfExtent, PxQuat(45, PxVec3(1, 0, 0)));
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
 			//设置刚体名称
 			body->setName("box");
@@ -267,7 +266,7 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 			//设置碰撞的标签
 			setupFiltering(body, FilterGroup::eSTACK, FilterGroup::eBALL | FilterGroup::eBIGBALL);
 			body->attachShape(*shape);
-			PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+			PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
 			gScene->addActor(*body);
 		}
 	}
@@ -330,11 +329,9 @@ void initPhysics(bool interactive)
 	createAirPlane();
 
 
-	//std::string path = "model/street/Street environment_V01.obj";
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
+	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
@@ -353,7 +350,7 @@ void initPhysics(bool interactive)
 bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	if (FileUtils::isFileExist(modelPath)) {
 		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
-		
+
 		if (ifStatic) {
 			ObjLoader loader(model, MESH_TYPE::TRIANGLE);
 			loader.createStaticActorAndAddToScene(); // 静态刚体
@@ -384,9 +381,9 @@ void stepPhysics(bool interactive)
 	PX_UNUSED(interactive);
 	//锁帧
 	lockFrame_current = clock();//当前时钟
-	if ((lockFrame_current- lockFrame_last)<16) {
+	if ((lockFrame_current - lockFrame_last) < 16) {
 		//skip，1000clocks/s，则一帧约16ms（60帧）
-		Sleep(16-(lockFrame_current - lockFrame_last));
+		Sleep(16 - (lockFrame_current - lockFrame_last));
 	}
 	else {
 		gScene->simulate(1.0f / 60.0f);
@@ -420,8 +417,8 @@ void keyPress(unsigned char key, const PxTransform& camera)
 {
 	switch (toupper(key))
 	{
-	case 'B':	
-		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);					
+	case 'B':
+		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
 		break;
 	case 'F':
 		if (autoshooting) {
