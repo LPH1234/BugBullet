@@ -10,9 +10,6 @@
     <ClCompile Include="..\..\Main\MyGameRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="playercontroller.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="源文件">
@@ -21,5 +18,10 @@
     <Filter Include="头文件">
       <UniqueIdentifier>{d179dd44-08f9-4dfe-814f-f6a08029673e}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Main\playercontroller.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

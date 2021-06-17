@@ -272,7 +272,9 @@
     <ClCompile Include="..\..\Main\ClassicMain.cpp" />
     <ClCompile Include="..\..\Main\MyGame.cpp" />
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
-    <ClCompile Include="playercontroller.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Main\playercontroller.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

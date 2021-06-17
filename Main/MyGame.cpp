@@ -33,7 +33,14 @@ PxReal stackZ = 3.0f;
 
 vector<PxActor*> removeActorList;
 
-clock_t					last = 0, current = 0;
+clock_t					lockFrame_last = 0, lockFrame_current = 0;
+
+//切换射击机制
+bool autoshooting = true;
+clock_t last = 0;
+
+//
+PxRigidDynamic* player_ctl=NULL;
 
 //碰撞过滤枚举类型
 struct FilterGroup
@@ -164,12 +171,15 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	return dynamic;
 }
 
-PxRigidDynamic* init3rdplyer(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0)) {
+PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) {
 	if (!t.isValid()) {
 		Logger::error("error:");
 	}
-	PxMaterial* me = gPhysics->createMaterial(0.8f, 0.8f, 0.0f);
-	PxRigidDynamic* player = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
+	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
+	PxRigidDynamic* player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
+	PxVec3 position = player->getGlobalPose().p;
+	cout <<"position: "<<"x: "<<position.x << " y: " << position.y << " z: " << position.z << endl;
+	
 	//设置刚体名称
 	player->setName("3rdplayer");
 	
@@ -183,6 +193,7 @@ PxRigidDynamic* init3rdplyer(const PxTransform& t, const PxGeometry& geometry, c
 	player->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	//dynamic->setLinearVelocity(velocity);
 	gScene->addActor(*player);
+	player_ctl = player;
 	return player;
 }
 
@@ -271,6 +282,10 @@ void initPhysics(bool interactive)
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	createBigBall();
+	
+	//生成第三人称角色
+	PxTransform born_pos(PxVec3(0, 1, -7));
+	init3rdplayer(born_pos, PxSphereGeometry(1.0f));
 
 
 	//std::string path = "model/street/Street environment_V01.obj";
@@ -319,16 +334,16 @@ void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
 	//锁帧
-	current = clock();//当前时钟
-	if ((current-last)<16) {
+	lockFrame_current = clock();//当前时钟
+	if ((lockFrame_current-lockFrame_last)<16) {
 		//skip，1000clocks/s，则一帧约16ms（60帧）
-		Sleep(16-(current - last));
+		Sleep(16-(lockFrame_current - lockFrame_last));
 	}
 	else {
 		gScene->simulate(1.0f / 60.0f);
 		gScene->fetchResults(true);
 		removeActorInList();
-		last = current;//每执行一帧，记录上一帧（即当前帧）时钟
+		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 	}
 	
 }
@@ -347,8 +362,10 @@ void cleanupPhysics(bool interactive)
 
 	printf("program exit.\n");
 }
-bool autoshooting = true;
-clock_t last = 0;
+
+
+
+
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	switch (toupper(key))
