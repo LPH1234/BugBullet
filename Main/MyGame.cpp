@@ -33,7 +33,7 @@ PxReal stackZ = 3.0f;
 
 vector<PxActor*> removeActorList;
 
-clock_t					last = 0, current = 0;
+clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
 //碰撞过滤枚举类型
 struct FilterGroup
@@ -319,16 +319,16 @@ void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
 	//锁帧
-	current = clock();//当前时钟
-	if ((current-last)<16) {
+	lockFrame_current = clock();//当前时钟
+	if ((lockFrame_current- lockFrame_last)<16) {
 		//skip，1000clocks/s，则一帧约16ms（60帧）
-		Sleep(16-(current - last));
+		Sleep(16-(lockFrame_current - lockFrame_last));
 	}
 	else {
 		gScene->simulate(1.0f / 60.0f);
 		gScene->fetchResults(true);
 		removeActorInList();
-		last = current;//每执行一帧，记录上一帧（即当前帧）时钟
+		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 	}
 	
 }
