@@ -16,25 +16,22 @@ using namespace physx;
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 PxSimulationEventCallback *myCallBack;
-
 PxFoundation*			gFoundation = NULL;
 PxPhysics*				gPhysics = NULL;
-
 PxCooking*				gCooking = NULL;
-
 PxDefaultCpuDispatcher*	gDispatcher = NULL;
 PxScene*				gScene = NULL;
-
 PxMaterial*				gMaterial = NULL;
-
 PxPvd*                  gPvd = NULL;
 
-PxReal stackZ = 3.0f;
-
-vector<PxActor*> removeActorList;
-
+PxReal					stackZ = 3.0f;
+vector<PxActor*>		removeActorList;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
+PxVec3					airPlaneVelocity(0, 0, 0);
+PxRigidDynamic*			airPlane = NULL;
+long long				angelAirPlane = 0.0;
+PxVec3					headForward(1, 0, 0);
 
 //碰撞过滤枚举类型
 struct FilterGroup
@@ -128,6 +125,10 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
 
 			}
+			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "map"
+				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "map") {
+				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
+			}
 			else {}
 		}
 	}
@@ -199,6 +200,28 @@ void createBigBall() {
 
 	gScene->addActor(*body);
 	//shape->release();
+}
+//飞机刚体
+void createAirPlane() {
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5,0.2,0.2), *gMaterial);
+	PxTransform initPos(PxVec3(2, 1, -15),PxQuat(PxPi/6,PxVec3(0,0,1)));
+	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, initPos, *shape, 8);
+
+	body->setName("airPlane");
+	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	airPlane = body;
+	gScene->addActor(*body);
+	shape->release();
+}
+//改变飞机姿态与速度，使其做圆周运动
+void changeAirPlaneVelocity() {
+	angelAirPlane += 1;
+	angelAirPlane = angelAirPlane % 360;
+	PxQuat rot(PxPi / 180 * angelAirPlane, PxVec3(0, 0, 1));
+	headForward = rot.rotate(PxVec3(1,0,0));
+	airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));
+	airPlane->setLinearVelocity(5 * headForward);
 }
 
 PxRigidDynamic* player;
@@ -285,8 +308,8 @@ void initPhysics(bool interactive)
 
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-
-	createBigBall();
+	//createBigBall();
+	createAirPlane();
 
 
 	//std::string path = "model/street/Street environment_V01.obj";
@@ -294,10 +317,10 @@ void initPhysics(bool interactive)
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 
 
@@ -351,6 +374,7 @@ void stepPhysics(bool interactive)
 		gScene->simulate(1.0f / 60.0f);
 		gScene->fetchResults(true);
 		removeActorInList();
+		changeAirPlaneVelocity();
 		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 	}
 
