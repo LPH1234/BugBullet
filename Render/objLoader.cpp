@@ -14,6 +14,10 @@ using namespace std;
 std::unordered_map<PxBase*, BaseModel*> ObjLoader::meshToRenderModel;
 std::mutex queue_mutex;
 
+volatile bool CookThread::cook_thread_exit_flag = false;
+std::deque<CookThread::CookTask>* CookThread::tasks = new std::deque<CookThread::CookTask>();
+std::vector<CookThread*>* CookThread::threads = new std::vector<CookThread*>;
+
 extern PxPhysics* gPhysics;
 extern PxCooking* gCooking;
 extern PxScene* gScene;
@@ -35,20 +39,28 @@ ObjLoader::ObjLoader(BaseModel* renderModel, MESH_TYPE type) {
 	bool is_need_load_obj_file = !(type == MESH_TYPE::TRIANGLE ? this->is_triangle_cooked : this->is_convex_cooked);
 
 	if (is_need_load_obj_file) {// 对应mesh的cooking文件不存在,需要重新加载obj文件
-
 		parseObjFile();
-
 	}
 	Logger::info("开始创建Mesh");
 	if (type == MESH_TYPE::TRIANGLE) {
 		genTriangleMesh(this->scale);
-		cookTriangleMesh(this->triangle_mesh_desc, this->triangle_cooking_file_path);
+		//cookTriangleMesh(this->triangle_mesh_desc, this->triangle_cooking_file_path);
 	}
 	if (type == MESH_TYPE::CONVEX) {
 		genConvexMesh(this->scale);
-		cookConvexMesh(this->convex_mesh_desc, this->convex_cooking_file_path);
+		//cookConvexMesh(this->convex_mesh_desc, this->convex_cooking_file_path);
 	}
 	Logger::info("Mesh加载完成");
+
+	if (is_need_load_obj_file) {// 需要将mesh数据写出到cooking文件
+		Logger::debug("准备开启线程cook");
+		CookThread::CookTask cookTask;
+		cookTask.tm = this->triangle_mesh_desc;
+		cookTask.cm = this->convex_mesh_desc;
+		cookTask.cook_file_path = (type == MESH_TYPE::TRIANGLE ? this->triangle_cooking_file_path : this->convex_cooking_file_path);
+		CookThread::newInstance()->start();
+		CookThread::newInstance()->addTask(cookTask);
+	}
 
 }
 
@@ -59,10 +71,6 @@ ObjLoader::~ObjLoader() {
 
 void ObjLoader::free_memory() {
 	delete renderModel;
-	if (triangle_mesh != nullptr)
-		triangle_mesh->release();
-	if (convex_mesh != nullptr)
-		convex_mesh->release();
 }
 
 physx::PxTriangleMesh* ObjLoader::genTriangleMesh(physx::PxVec3 scale) {
@@ -203,12 +211,12 @@ physx::PxTriangleMesh* ObjLoader::readTriangleMeshFromCookingFile() {
 	// 输入流
 	FILE * filefd = fopen(this->triangle_cooking_file_path.c_str(), "rb+");
 	if (!filefd) {
-		Logger::error("cooking file open fail :" + (this->name + COOKING_FILE_SUFFIX));
+		Logger::error("cooking file open fail :" + this->triangle_cooking_file_path);
 		return nullptr;
 	}
 	int rsize = 0;
 	fread(&rsize, sizeof(unsigned int), 1, filefd);
-	Logger::info((this->name + COOKING_FILE_SUFFIX) + ":cooking file read size:" + to_string(rsize));
+	Logger::info(this->triangle_cooking_file_path + ":cooking file read size:" + to_string(rsize));
 	PxU8 *filebuff = new PxU8[rsize + 1];
 	fread(filebuff, sizeof(PxU8), rsize, filefd);
 
@@ -229,56 +237,56 @@ physx::PxTriangleMesh* ObjLoader::readTriangleMeshFromCookingFile() {
 physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 	if (this->is_convex_cooked) {//从cooking中读取
 		this->convex_mesh = readConvexMeshFromCookingFile();
-		meshToRenderModel[this->convex_mesh] = this->renderModel;
 		Logger::debug("存在cooking");
-		return this->convex_mesh;
 	}
+	else {
+		Logger::debug("不存在cooking");
+		const PxU32 numVertices = this->v.size();
+		const PxU32 numTriangles = this->f.size();
+		PxVec3* vertices = new PxVec3[numVertices];
+		//PxU32* indices = new PxU32[numTriangles * 3];
 
-	const PxU32 numVertices = this->v.size();
-	const PxU32 numTriangles = this->f.size();
-	PxVec3* vertices = new PxVec3[numVertices];
-	PxU32* indices = new PxU32[numTriangles * 3];
+		// 加载顶点
+		for (int i = 0; i < numVertices; ++i) {
+			PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
+			vertices[i] = vectmp;
+		}
 
-	// 加载顶点
-	for (int i = 0; i < numVertices; ++i) {
-		PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
-		vertices[i] = vectmp;
+		// 加载面
+		/*auto faceIt = this->f.begin();
+		for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
+			for (int j = 0; j < 3; j++)
+				if ((*faceIt).size() >= j + 1)
+					indices[i * 3 + j] = (*faceIt)[j].u;
+		}*/
+
+		PxConvexMeshDesc* meshDesc = new PxConvexMeshDesc();
+		meshDesc->points.count = numVertices;
+		meshDesc->points.data = vertices;
+		meshDesc->points.stride = sizeof(PxVec3);
+
+		/*meshDesc->indices.count = numTriangles;
+		meshDesc->indices.data = indices;
+		meshDesc->indices.stride = 3 * sizeof(PxU32);*/
+
+		meshDesc->flags = PxConvexFlag::eCOMPUTE_CONVEX;
+
+		bool res = gCooking->validateConvexMesh(*meshDesc);
+		if (!res) {
+			Logger::error("invalid Convex Mesh Desc!");
+		}
+		//PX_ASSERT(res);
+
+		PxDefaultMemoryOutputStream buf;
+		PxConvexMeshCookingResult::Enum result;
+
+		if (!gCooking->cookConvexMesh(*meshDesc, buf, &result)) {
+			Logger::error("cook convex mesh fail!");
+		}
+		this->convex_mesh_desc = meshDesc;
+		PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
+		this->convex_mesh = gPhysics->createConvexMesh(input);
 	}
-
-	// 加载面
-	auto faceIt = this->f.begin();
-	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
-		for (int j = 0; j < 3; j++)
-			if ((*faceIt).size() >= j + 1)
-				indices[i * 3 + j] = (*faceIt)[j].u;
-	}
-
-	PxConvexMeshDesc* meshDesc = new PxConvexMeshDesc;
-	meshDesc->points.count = numVertices;
-	meshDesc->points.data = vertices;
-	meshDesc->points.stride = sizeof(PxVec3);
-
-	meshDesc->indices.count = numTriangles;
-	meshDesc->indices.data = indices;
-	meshDesc->indices.stride = 3 * sizeof(PxU32);
-
-	meshDesc->flags = PxConvexFlag::eCOMPUTE_CONVEX;
-
-	bool res = gCooking->validateConvexMesh(*meshDesc);
-	if (!res) {
-		Logger::error("invalid Convex Mesh Desc!");
-	}
-	PX_ASSERT(res);
-
-	PxDefaultMemoryOutputStream buf;
-	PxConvexMeshCookingResult::Enum result;
-
-	if (!gCooking->cookConvexMesh(*meshDesc, buf, &result)) {
-		Logger::error("cook convex mesh fail!");
-	}
-	this->convex_mesh_desc = meshDesc;
-	PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
-	this->convex_mesh = gPhysics->createConvexMesh(input);
 	meshToRenderModel[convex_mesh] = this->renderModel;
 	return convex_mesh;
 }
@@ -289,7 +297,7 @@ PxRigidActor* ObjLoader::createDynamicActorAndAddToScene() {
 	// 创建网格面
 	PxRigidDynamic* convexMesh = gPhysics->createRigidDynamic(PxTransform(initPos));
 
-	// 创建三角网格形状 *gMaterial
+	// 创建三角网格形状
 	PxShape* shape = PxRigidActorExt::createExclusiveShape(*convexMesh, geom, *gMaterial);
 
 	{
@@ -316,15 +324,69 @@ PxRigidActor* ObjLoader::createDynamicActorAndAddToScene() {
 
 
 bool  ObjLoader::cookConvexMesh(PxConvexMeshDesc* meshDesc, std::string cook_file_path) {
-	return false;
+	int rt = writeConvexMeshToCookingFile(meshDesc, cook_file_path);
+	if (rt == -1) {
+		Logger::error("cook convex mesh fail!");
+		return false;
+	}
+	if (rt == 1) {
+		Logger::notice("cooking file already existd.");
+		return false;
+	}
+	if (rt == 2) {
+		Logger::notice("ConvexMeshDesc is null!");
+		return false;
+	}
+	if (rt == 3) {
+		Logger::notice("ConvexMeshDesc is invalid!");
+		return false;
+	}
+	return rt == 0;
 }
 
 int ObjLoader::writeConvexMeshToCookingFile(PxConvexMeshDesc* meshDesc, std::string cook_file_path) {
+	if (FileUtils::isFileExist(cook_file_path))
+		return 1;
+	if (meshDesc == nullptr)
+		return 2;
+	if (!meshDesc->isValid())
+		return 3;
+	PxDefaultMemoryOutputStream writeBuffer;
+	PxConvexMeshCookingResult::Enum result;
+	bool status = gCooking->cookConvexMesh(*meshDesc, writeBuffer, &result);
+	if (!status) return -1;
+
+	// 将流写入到文件
+	FILE * filefd = fopen(cook_file_path.c_str(), "wb+");
+	if (!filefd) {
+		Logger::error("open cooking read fail");
+		return -1;
+	}
+
+	int size = writeBuffer.getSize();
+	fwrite(&size, sizeof(unsigned int), 1, filefd);
+	fwrite(writeBuffer.getData(), sizeof(PxU8), size, filefd);
+	fclose(filefd);
 	return 0;
 }
 
 physx::PxConvexMesh* ObjLoader::readConvexMeshFromCookingFile() {
-	return nullptr;
+	// 输入流
+	FILE * filefd = fopen(this->convex_cooking_file_path.c_str(), "rb+");
+	if (!filefd) {
+		Logger::error("cooking file open fail :" + this->convex_cooking_file_path);
+		return nullptr;
+	}
+	int rsize = 0;
+	fread(&rsize, sizeof(unsigned int), 1, filefd);
+	Logger::info(this->convex_cooking_file_path + ":cooking file read size:" + to_string(rsize));
+	PxU8 *filebuff = new PxU8[rsize + 1];
+	fread(filebuff, sizeof(PxU8), rsize, filefd);
+
+	PxDefaultMemoryInputData readBuffer(filebuff, rsize);
+	PxConvexMesh * convex = gPhysics->createConvexMesh(readBuffer);
+	delete[] filebuff;
+	return convex;
 }
 
 
@@ -335,7 +397,37 @@ physx::PxConvexMesh* ObjLoader::readConvexMeshFromCookingFile() {
 
 
 
-
+DWORD WINAPI run(LPVOID lpParamter) {
+	std::deque<CookThread::CookTask>* tasks = (std::deque<CookThread::CookTask>*)lpParamter;
+	int continuous_sleep_times = 0;
+	while (!CookThread::getExitFlag())
+	{
+		if (tasks == nullptr || tasks->empty())
+		{
+			Sleep(60);
+			if (++continuous_sleep_times == 500) { //连续休眠达到500次，即30秒时，退出
+				CookThread::remove_thread(GetCurrentThread());
+				break;
+			}
+			continue;
+		}
+		continuous_sleep_times = 0;
+		Logger::debug("consume task");
+		queue_mutex.lock();
+		CookThread::CookTask task = tasks->front();
+		tasks->pop_front();
+		queue_mutex.unlock();
+		if (task.tm != nullptr && task.tm->isValid()) {
+			ObjLoader::cookTriangleMesh(task.tm, task.cook_file_path);
+			delete task.tm;
+		}
+		if (task.cm != nullptr && task.cm->isValid()) {
+			ObjLoader::cookConvexMesh(task.cm, task.cook_file_path);
+			delete task.cm;
+		}
+	}
+	return 0;
+}
 
 
 

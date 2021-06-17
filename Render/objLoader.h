@@ -58,6 +58,17 @@ public:
 
 	~ObjLoader();
 
+	/**
+	 * @brief  将meshDesc写入到cook_file_path所指向的cooking文件
+	 * @return 是否成功
+	 */
+	static bool cookTriangleMesh(PxTriangleMeshDesc* meshDesc, std::string cook_file_path);
+	/**
+	 * @brief  将meshDesc写入到cook_file_path所指向的cooking文件
+	 * @return 是否成功
+	 */
+	static bool cookConvexMesh(PxConvexMeshDesc* meshDesc, std::string cook_file_path);
+
 private:
 
 	bool is_triangle_cooked; //是否加载到cooking文件中
@@ -80,17 +91,6 @@ private:
 
 	void parseObjFile();
 
-
-	/**
-	 * @brief  将meshDesc写入到cook_file_path所指向的cooking文件
-	 * @return 是否成功
-	 */
-	static bool cookTriangleMesh(PxTriangleMeshDesc* meshDesc, std::string cook_file_path);
-	/**
-	 * @brief  将meshDesc写入到cook_file_path所指向的cooking文件
-	 * @return 是否成功
-	 */
-	static bool cookConvexMesh(PxConvexMeshDesc* meshDesc, std::string cook_file_path);
 
 	/**
 	 * @brief  将模型的mesh加载到cooking文件中，在使用时读取。减少即时加载时间。内部使用。
@@ -149,46 +149,83 @@ public:
 };
 
 
+DWORD WINAPI run(LPVOID lpParamter);
 
 class CookThread {
-	std::deque<PxTriangleMeshDesc*> tds;
-	std::deque<PxConvexMeshDesc*> cds;
-	bool if_start = false;
 public:
-	static bool cook_thread_exit_flag;
-	void operator ()() {
-		while (!cook_thread_exit_flag)
+	struct CookTask
+	{
+		PxTriangleMeshDesc* tm;
+		PxConvexMeshDesc* cm;
+		std::string cook_file_path;
+	};
+private:
+	volatile static bool cook_thread_exit_flag;
+	static std::deque<CookTask>* tasks;
+	static std::vector<CookThread*>* threads;
+	
+	CookThread() {
+	}
+	~CookThread() {
+	}
+	bool is_start = false;
+	HANDLE h = 0;
+public:
+	
+	void start() {
+		if (is_start) return;
+		is_start = true;
+		HANDLE hThread = CreateThread(NULL, 0, run, (void*)tasks, 0, NULL);
+		CloseHandle(hThread);
+		h = hThread;
+		Logger::debug("start a new thread:" + to_string((int)hThread));
+	}
+
+	bool isStarted() {
+		return this->is_start;
+	}
+
+	static void addTask(CookTask task) {
+		queue_mutex.lock();
+		tasks->push_back(task);
+		queue_mutex.unlock();
+	}
+
+	static CookThread* newInstance() {
+		if (threads->size() == 0 || (threads->size() < 3 && tasks->size() > 5)) {
+			CookThread* t = new CookThread;
+			threads->push_back(t);
+			return t;
+		}
+		return threads->back();
+	}
+
+	static void shutdown() {
+		cook_thread_exit_flag = true;
+	}
+
+	static bool getExitFlag() {
+		return cook_thread_exit_flag;
+	}
+
+	static void remove_thread(HANDLE h) {
+		queue_mutex.lock();
+		for (int i = 0; i < threads->size(); i++)
 		{
-			PxTriangleMeshDesc* temp1 = tds.front();
-			if (temp1 != nullptr && temp1->isValid()) {
-
+			if (threads->at(i)->h == h) {
+				delete threads->at(i);
+				threads->erase(threads->begin() + i);
 			}
-			tds.pop_front();
+		}
+		queue_mutex.unlock();
+	}
 
+	static void free_memory() {
+		for (int i = 0; i < threads->size(); i++)
+		{
+			delete threads->at(i);
 		}
 	}
-	void start() {
-		queue_mutex.lock();
-		if (if_start) return;
-		if_start = true;
-		std::thread cooking_obj((CookThread()));
-		queue_mutex.unlock();
-	}
-
-	void run() {
-
-	}
-
-	void addTriangleMeshDesc(PxTriangleMeshDesc* desc) {
-		queue_mutex.lock();
-		tds.push_back(desc);
-		queue_mutex.unlock();
-	}
-
-	void addConvexMeshDesc(PxConvexMeshDesc* desc) {
-		queue_mutex.lock();
-		cds.push_back(desc);
-		queue_mutex.unlock();
-	}
-
 };
+
+

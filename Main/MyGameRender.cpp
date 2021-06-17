@@ -207,12 +207,13 @@ int myRenderLoop()
 }
 
 
-
 bool last_key = 0;
 //按键时，窗口的处理逻辑
 void windowProcessInput(GLFWwindow *window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE && last_key)
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE && last_key) {
 		glfwSetWindowShouldClose(window, true);
+		CookThread::shutdown();
+	}
 	last_key = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
 }
 

@@ -237,7 +237,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/INCREMENTAL:NO /LIBPATH:../../../Lib/vc15win64 PhysX3Common_x64.lib PhysX3_x64.lib PhysX3Cooking_x64.lib PhysX3CharacterKinematic_x64.lib PhysX3Extensions.lib PhysX3Vehicle.lib PxTask_x64.lib PxFoundation_x64.lib PsFastXml_x64.lib PxPvdSDK_x64.lib /LIBPATH:../../lib/vc15win64 Utils.lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;Render.lib;opengl32.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;Render.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
