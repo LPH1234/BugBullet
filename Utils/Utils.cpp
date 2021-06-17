@@ -51,6 +51,11 @@ BOOL SetConsoleColor(WORD wAttributes)
 }
 
 
+void Logger::notice(std::string str) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE); //blue
+	std::cout << "[NOTICE]\t" << str << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
 void Logger::debug(std::string str) {
 	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN); //green
 	std::cout << "[DEBUG]\t" << str << "\n";
