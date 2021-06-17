@@ -35,6 +35,7 @@ vector<PxActor*> removeActorList;
 
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
+
 //碰撞过滤枚举类型
 struct FilterGroup
 {
@@ -55,7 +56,7 @@ struct FilterGroup
 * @param shader     绘制此模型的shader
 * @return			是否成功
 */
-bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad = false, bool ifStatic = true);
+bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic = true);
 /**
 * @brief			根据一个自定义的渲染模型去创建物理模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
 * @param model      指向渲染模型的指针
@@ -152,8 +153,6 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
 	//设置刚体名称
 	dynamic->setName("littleBall");
-	//userdata指向自己
-	//dynamic->userData = dynamic;
 	//设置碰撞的标签
 	setupFiltering(dynamic, FilterGroup::eBALL, FilterGroup::eSTACK);
 	me->release();
@@ -197,9 +196,24 @@ void createBigBall() {
 	//设置碰撞标签
 	setupFiltering(body, FilterGroup::eBIGBALL, FilterGroup::eSTACK);
 	body->setLinearVelocity(PxVec3(0,0,5));
+
 	gScene->addActor(*body);
 	//shape->release();
 }
+
+PxRigidDynamic* player;
+PxRigidDynamic* initPlayer() {
+
+	PxTransform pos(PxVec3(4, 1, 13));
+	player = PxCreateDynamic(*gPhysics, pos, PxSphereGeometry(0.5), *gMaterial, 10.0f);
+	//设置刚体名称
+	player->setName("player");
+	//设置碰撞标签
+	//player->setLinearVelocity(PxVec3(0, 0, -5));
+	gScene->addActor(*player);
+	return player;
+}
+
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 {
@@ -214,6 +228,7 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 			body->setName("box");
 			//userdata指向自己
 			//body->userData = body;
+
 			//设置碰撞的标签
 			setupFiltering(body, FilterGroup::eSTACK, FilterGroup::eBALL | FilterGroup::eBIGBALL);
 			body->attachShape(*shape);
@@ -270,6 +285,7 @@ void initPhysics(bool interactive)
 
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
+
 	createBigBall();
 
 
@@ -280,7 +296,10 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+
 
 
 
@@ -290,14 +309,18 @@ void initPhysics(bool interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
 
-bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad, bool ifStatic) {
+bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	if (FileUtils::isFileExist(modelPath)) {
 		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
-		ObjLoader loader(model, preLoad);
-		if (ifStatic)
+		
+		if (ifStatic) {
+			ObjLoader loader(model, MESH_TYPE::TRIANGLE);
 			loader.createStaticActorAndAddToScene(); // 静态刚体
-		else
+		}
+		else {
+			ObjLoader loader(model, MESH_TYPE::CONVEX);
 			loader.createDynamicActorAndAddToScene(); // 动态刚体
+		}
 		Logger::debug("创建完成");
 	}
 	else {
@@ -307,7 +330,7 @@ bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* 
 	return true;
 }
 bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
-	ObjLoader loader(model, preLoad);
+	ObjLoader loader(model, MESH_TYPE::TRIANGLE);
 	if (ifStatic)
 		loader.createStaticActorAndAddToScene(); //静态刚体
 	else
@@ -330,7 +353,7 @@ void stepPhysics(bool interactive)
 		removeActorInList();
 		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 	}
-	
+
 }
 
 void cleanupPhysics(bool interactive)

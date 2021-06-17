@@ -57,7 +57,6 @@ private:
 	{
 		// read file via ASSIMP
 		Assimp::Importer importer;
-		cout << "start importer " << endl;
 
 		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 		// check for errors
@@ -66,13 +65,11 @@ private:
 			cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
 			return;
 		}
-		cout << "importer over\n start process node   " << endl;
 		// retrieve the directory path of the filepath
 		directory = path.substr(0, path.find_last_of('//'));
 
 		// process ASSIMP's root node recursively
 		processNode(scene->mRootNode, scene);
-		cout << "process over   " << endl;
 
 	}
 
@@ -118,6 +115,7 @@ private:
 				vector.x = mesh->mNormals[i].x;
 				vector.y = mesh->mNormals[i].y;
 				vector.z = mesh->mNormals[i].z;
+
 				vertex.Normal = vector;
 			}
 			// texture coordinates
@@ -128,12 +126,14 @@ private:
 				// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
 				vec.x = mesh->mTextureCoords[0][i].x;
 				vec.y = mesh->mTextureCoords[0][i].y;
+
 				vertex.TexCoords = vec;
 				// tangent
 				vector.x = mesh->mTangents[i].x;
 				vector.y = mesh->mTangents[i].y;
 				vector.z = mesh->mTangents[i].z;
 				vertex.Tangent = vector;
+
 				// bitangent
 				vector.x = mesh->mBitangents[i].x;
 				vector.y = mesh->mBitangents[i].y;
@@ -148,6 +148,7 @@ private:
 		// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 		{
+
 			aiFace face = mesh->mFaces[i];
 			// retrieve all indices of the face and store them in the indices vector
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
@@ -174,7 +175,7 @@ private:
 		// 4. height maps
 		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
+		//cout << "\t return mesh. \n";
 		// return a mesh object created from the extracted mesh data
 		return Mesh(vertices, indices, textures);
 	}
@@ -202,9 +203,10 @@ private:
 			if (!skip)
 			{   // if texture hasn't been loaded already, load it
 				Texture texture;
-				cout << "准备加载："<<"\t"<< str.C_Str() << "\t" << this->directory << endl;
+
+				cout << "准备加载Texture："<<"\t"<< str.C_Str() << "\t" << this->directory << endl;
 				texture.id = TextureFromFile(str.C_Str(), this->directory);
-				cout << "加载完成"<< endl; 
+				cout << "Texture加载完成"<< endl; 
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);
