@@ -8,6 +8,7 @@
 #include "Model.h"
 #include "../Utils/Convert.h"
 #include "../Utils/Utils.h"
+#include "foundation/PxQuat.h"
 
 
 void loadTexture(char const* path, unsigned int* textureID);
@@ -30,11 +31,15 @@ class BaseModel {
 protected:
 	glm::vec3 Position;
 	glm::vec3 scale_value;
+	glm::vec3 rorate_axis = glm::vec3(0.f, 1.f, 0.f);
+	float rorate_angle = 0;
+
 	Shader* shader;
 	std::string modelPath;
 
 	Model* model;
 	int id;
+	std::string name;
 
 public:
 
@@ -43,17 +48,12 @@ public:
 		this->Position = pos; this->scale_value = scale;  this->shader = shader;   this->modelPath = modelPath;
 
 		if (modelPath.compare("") != 0) {
-			Logger::debug("开始加载模型，Path:" + modelPath);
 			this->model = new Model(modelPath);
 		}
 	}
 
 	virtual ~BaseModel() {
 		delete this->model;
-	}
-
-	virtual std::string& getModelPath() final {
-		return modelPath;
 	}
 
 	virtual void draw() = 0;
@@ -64,9 +64,11 @@ public:
 
 	virtual void ProcessMouse(MOUSE_EVENT_TYPE event) = 0;
 
-	glm::vec3 getPosition() {
-		Logger::debug("getPosition:");
+	std::string& getModelPath() {
+		return modelPath;
+	}
 
+	glm::vec3 getPosition() {
 		return this->Position;
 	}
 
@@ -75,7 +77,7 @@ public:
 	}
 
 	void setPosition(physx::PxVec3 Position) {
-		this->Position = pxVec3ToGlmVec3(Position);
+		pxVec3ToGlmVec3(Position, this->Position);
 	}
 
 	glm::vec3 getScaleValue() {
@@ -90,6 +92,12 @@ public:
 		this->scale_value = pxVec3ToGlmVec3(scale_value);
 	}
 
+	void setRotate(physx::PxQuat q) {
+		physx::PxVec3 tmp;
+		q.toRadiansAndUnitAxis(this->rorate_angle, tmp);
+		pxVec3ToGlmVec3(tmp, this->rorate_axis);
+	}
+
 	void setShader(Shader* shader) {
 		this->shader = shader;
 	}
@@ -98,7 +106,6 @@ public:
 		this->shader->setMat4("model", this->getModel());
 	}
 
-
 	void setModel(Model* model) {
 		this->model = model;
 	}
@@ -106,8 +113,17 @@ public:
 	int getId() {
 		return id;
 	}
+
 	void setId(int id) {
 		this->id = id;
+	}
+
+	std::string getName() {
+		return name;
+	}
+
+	void setName(std::string name) {
+		this->name = name;
 	}
 
 };
@@ -130,8 +146,10 @@ public:
 
 	glm::mat4 getModel() {
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, Position); // 平移到pos
-		model = glm::scale(model, scale_value);	//  缩放标准：1
+		model = glm::translate(model, Position); // 平移到Position
+		//model = glm::rotate(model, glm::radians(rorate_angle), rorate_axis); //绕轴rorate_axis旋转,如果rorate_angle是角度的形式
+		model = glm::rotate(model, rorate_angle, rorate_axis); //绕轴rorate_axis旋转，如果rorate_angle是数字形式
+		model = glm::scale(model, scale_value);	//  缩放为scale_value
 		return model;
 	}
 
@@ -147,12 +165,12 @@ public:
 
 };
 
-class Ball : public BaseModel
+class Ball : public PlainModel
 {
 public:
 
 
-	Ball(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :BaseModel(pos, scale, modelPath, shader) {
+	Ball(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :PlainModel(pos, scale, modelPath, shader) {
 		rotateAngle = 0.0f; MovementSpeed = 2.5f;
 		ifKey[0] = ifKey[1] = ifKey[2] = ifKey[3] = false;
 		rotateRate = 120; axis = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -160,10 +178,6 @@ public:
 
 	~Ball() {}
 
-	void draw() {
-		model->Draw(*shader);
-
-	}
 
 	glm::mat4 getModel() {
 		glm::mat4 model = glm::mat4(1.0f);
@@ -250,9 +264,6 @@ public:
 			MovementSpeed = SPEED;
 	}
 
-	void ProcessMouse(MOUSE_EVENT_TYPE event) {
-
-	}
 
 
 	glm::vec3 Front; //此物体的前方
@@ -272,132 +283,14 @@ public:
 };
 
 
-class Flowerpot : public BaseModel
-{
-public:
-
-	Flowerpot(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :BaseModel(pos, scale, modelPath, shader) {
-		this->Position = pos;
-		this->scale_value = scale;
-
-		float vertices[] = {
-			// positions          // normals           // texture coords
-			-0.25f, -0.5f, -0.25f,  0.0f,  -0.25f, -1.0f, 0.0f,  0.0f,
-			 0.25f, -0.5f, -0.25f,  0.0f,  -0.25f, -1.0f,1.0f,  0.0f,
-			 0.5f,  0.5f, -0.5f,  0.0f,  -0.25f, -1.0f,1.0f,  1.0f,
-			 0.5f,  0.5f, -0.5f,  0.0f,  -0.25f, -1.0f, 1.0f,  1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f,  -0.25f, -1.0f, 0.0f,  1.0f,
-			-0.25f, -0.5f, -0.25f,  0.0f,  -0.25f, -1.0f, 0.0f,  0.0f,
-
-			-0.25f, -0.5f,  0.25f,  0.0f,   -0.25f,  1.0f, 0.0f,  0.0f,
-			 0.25f, -0.5f,  0.25f,  0.0f,   -0.25f,  1.0f,1.0f,  0.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,   -0.25f,  1.0f, 1.0f,  1.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,   -0.25f,  1.0f, 1.0f,  1.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f,   -0.25f,  1.0f, 0.0f,  1.0f,
-			-0.25f, -0.5f,  0.25f,  0.0f,   -0.25f,  1.0f,0.0f,  0.0f,
-
-			-0.5f,  0.5f,  0.5f, -1.0f,   -0.25f,  0.0f,1.0f,  0.0f,
-			-0.5f,  0.5f, -0.5f, -1.0f,   -0.25f,  0.0f,1.0f,  1.0f,
-			-0.25f, -0.5f, -0.25f, -1.0f,   -0.25f,  0.0f,0.0f,  1.0f,
-			-0.25f, -0.5f, -0.25f, -1.0f,   -0.25f,  0.0f,0.0f,  1.0f,
-			-0.25f, -0.5f,  0.25f, -1.0f,   -0.25f,  0.0f, 0.0f,  0.0f,
-			-0.5f,  0.5f,  0.5f, -1.0f,   -0.25f,  0.0f, 1.0f,  0.0f,
-
-			 0.5f,  0.5f,  0.5f,  1.0f,   -0.25f,  0.0f, 1.0f,  0.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f,  -0.25f,  0.0f,1.0f,  1.0f,
-			 0.25f, -0.5f, -0.25f,  1.0f,   -0.25f,  0.0f, 0.0f,  1.0f,
-			 0.25f, -0.5f, -0.25f,  1.0f,   -0.25f,  0.0f, 0.0f,  1.0f,
-			 0.25f, -0.5f,  0.25f,  1.0f,   -0.25f,  0.0f, 0.0f,  0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f,   -0.25f,  0.0f,1.0f,  0.0f,
-
-			-0.25f, -0.5f, -0.25f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-			 0.25f, -0.5f, -0.25f,  0.0f, -1.0f,  0.0f, 1.0f,  1.0f,
-			 0.25f, -0.5f,  0.25f,  0.0f, -1.0f,  0.0f,1.0f,  0.0f,
-			 0.25f, -0.5f,  0.25f,  0.0f, -1.0f,  0.0f,1.0f,  0.0f,
-			-0.25f, -0.5f,  0.25f,  0.0f, -1.0f,  0.0f, 0.0f,  0.0f,
-			-0.25f, -0.5f, -0.25f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-			-0.4375f,  0.25f, -0.4375f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-			 0.4375f,  0.25f, -0.4375f,  0.0f,  1.0f,  0.0f, 1.0f,  1.0f,
-			 0.4375f,  0.25f,  0.4375f,  0.0f,  1.0f,  0.0f,1.0f,  0.0f,
-			 0.4375f,  0.25f,  0.4375f,  0.0f,  1.0f,  0.0f,1.0f,  0.0f,
-			-0.4375f,  0.25f,  0.4375f,  0.0f,  1.0f,  0.0f, 0.0f,  0.0f,
-			-0.4375f,  0.25f, -0.4375f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		};
-		glGenVertexArrays(1, &cubeVAO);
-		glGenBuffers(1, &VBO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		glBindVertexArray(cubeVAO);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-		glEnableVertexAttribArray(2);
-
-
-		glEnableVertexAttribArray(0);
-
-		glGenTextures(1, &diffuseMap);
-
-		loadTexture("pic/container2.jpg", &diffuseMap);
-
-
-	}
-
-	~Flowerpot() {}
-
-	//绘制模型
-	void draw() {
-		//将实现绘制的代码写在这
-			   // bind diffuse map
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-
-		// render the cube
-		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	}
-
-	//得到模型坐标系，以下为默认实现
-	glm::mat4 getModel() {
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, this->Position); // 平移
-		model = glm::scale(model, this->scale_value);	//  缩放标准：1
-		return model;
-	}
-
-	void ProcessKeyboard(Movement direction, float deltaTime) {
-
-	}
-
-	void ProcessMouse(MOUSE_EVENT_TYPE event) {
-
-	}
-
-	unsigned int VBO, cubeVAO;
-	unsigned int diffuseMap;
-
-
-
-};
-
-
-// utility function for loading a 2D texture from file
-// ---------------------------------------------------
-
-class Cube : public BaseModel
+class Cube : public PlainModel
 {
 
 public:
 	bool hasTexture;
 
 
-	Cube(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, std::string texturePath) :BaseModel(pos, scale, modelPath, shader) {
+	Cube(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, std::string texturePath) :PlainModel(pos, scale, modelPath, shader) {
 		this->Position = pos;
 		this->scale_value = scale;
 		this->hasTexture = texturePath != "";
@@ -486,31 +379,13 @@ public:
 
 	}
 
-	//得到模型坐标系，以下为默认实现
-	glm::mat4 getModel() {
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, Position); // 平移
-		model = glm::scale(model, scale_value);	//  缩放标准：1
-		return model;
-	}
-
-
-
-	void ProcessKeyboard(Movement direction, float deltaTime) {
-
-	}
-
-	void ProcessMouse(MOUSE_EVENT_TYPE event) {
-
-	}
-
 
 	unsigned int VBO, cubeVAO;
 	unsigned int diffuseMap;
 
 };
 
-class Sphere : public BaseModel
+class Sphere : public PlainModel
 {
 
 public:
@@ -519,7 +394,7 @@ public:
 	int y_segments;
 	int x_segments;
 
-	Sphere(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, int y_segments, int x_segments) :BaseModel(pos, scale, modelPath, shader) {
+	Sphere(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, int y_segments, int x_segments) :PlainModel(pos, scale, modelPath, shader) {
 		this->Position = pos;
 		this->scale_value = scale;
 		this->x_segments = x_segments;
@@ -603,22 +478,6 @@ public:
 		this->shader->setVec3("objectColor", c);
 	}
 
-	//得到模型坐标系，以下为默认实现
-	glm::mat4 getModel() {
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, Position); // 平移
-		model = glm::scale(model, scale_value);	//  缩放标准：1
-		return model;
-	}
-
-	void ProcessKeyboard(Movement direction, float deltaTime) {
-
-	}
-
-	void ProcessMouse(MOUSE_EVENT_TYPE event) {
-
-	}
-
 	unsigned int VBO, VAO;
 	unsigned int diffuseMap;
 
@@ -626,12 +485,12 @@ public:
 
 
 
-class SkyBox : public BaseModel
+class SkyBox : public PlainModel
 {
 public:
 
 
-	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :BaseModel(pos, scale, modelPath, shader) {
+	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :PlainModel(pos, scale, modelPath, shader) {
 		this->shader = shader;
 		this->Position = pos;
 		this->scale_value = scale;
@@ -805,14 +664,6 @@ public:
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, scale_value);//
 		return model;
-	}
-
-	void ProcessKeyboard(Movement direction, float deltaTime) {
-
-	}
-
-	void ProcessMouse(MOUSE_EVENT_TYPE event) {
-
 	}
 
 

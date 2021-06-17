@@ -28,8 +28,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map, const int STATE);
 // settings
-const unsigned int SCR_WIDTH = 1920/2;
-const unsigned int SCR_HEIGHT = 1080/2;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 // camera
 Camera camera(glm::vec3(0.0f, 5.0f, 3.0f));
@@ -155,45 +155,45 @@ int myRenderLoop()
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	envShader->use();
-	envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
-	//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-	glm::mat4 view = camera.GetViewMatrix();
-	envShader->setMat4("projection", projection);
-	envShader->setMat4("view", view);
-	envShader->setVec3("viewPos", camera.Position);
-	envShader->setInt("material.diffuse", 0);
-	envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-	envShader->setFloat("material.shininess", 32.0f);
-	envShader->setVec3("light.position", lightPosition);
-	envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
-	envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
-	envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+		envShader->use();
+		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
+		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+		envShader->setMat4("projection", projection);
+		envShader->setMat4("view", view);
+		envShader->setVec3("viewPos", camera.Position);
+		envShader->setInt("material.diffuse", 0);
+		envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+		envShader->setFloat("material.shininess", 32.0f);
+		envShader->setVec3("light.position", lightPosition);
+		envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
+		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
+		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 
-	envShader->setMat4("projection", projection);
-	envShader->setMat4("view", view);
+		envShader->setMat4("projection", projection);
+		envShader->setMat4("view", view);
 
-	renderCallback(envShader);
-	//=====================================skyBoxShader=================================
-	// 绘制包围盒
-	//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
+		renderCallback(envShader);
+		//=====================================skyBoxShader=================================
+		// 绘制包围盒
+		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
 
-	skyBoxShader->use();
-	skyBoxShader->setMat4("projection", projection);
-	skyBoxShader->setMat4("view", view);
-
-
-	skybox->setPosition(camera.Position);
-	skyBoxShader->setMat4("model", skybox->getModel());
-	skybox->draw();
+		/*skyBoxShader->use();
+		skyBoxShader->setMat4("projection", projection);
+		skyBoxShader->setMat4("view", view);
 
 
-	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-	// -------------------------------------------------------------------------------
-	glfwSwapBuffers(window);
-	glfwPollEvents();
+		skybox->setPosition(camera.Position);
+		skyBoxShader->setMat4("model", skybox->getModel());
+		skybox->draw();*/
+
+
+		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+		// -------------------------------------------------------------------------------
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
@@ -256,8 +256,8 @@ void playerProcessInput(GLFWwindow *window) {
 		keyPress('F', px, deltaTime);
 		cout << "press f!!" << "\n";
 	}
-	
-	
+
+
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -308,7 +308,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 
-void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map,  const int STATE)
+void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map, const int STATE)
 {
 	map[96] = glfwGetKey(window, 96) == STATE;
 	map[32] = glfwGetKey(window, 32) == STATE;

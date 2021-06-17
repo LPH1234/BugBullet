@@ -194,14 +194,13 @@ PxRigidDynamic* initPlayer() {
 }
 
 
-void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
-{
+void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 	for (PxU32 i = 0; i < size; i++)
 	{
 		for (PxU32 j = 0; j < size - i; j++)
 		{
-			PxTransform localTm(PxVec3(PxReal(j * 2) - PxReal(size - i), PxReal(i * 2 + 1), 0) * halfExtent);
+			PxTransform localTm(PxVec3(PxReal(j * 2) - PxReal(size - i), PxReal(i * 2 + 1), 0) * halfExtent, PxQuat(45, PxVec3(1, 0, 0)));
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
 			//设置刚体名称
 			body->setName("box");
@@ -209,7 +208,7 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 			//设置碰撞的标签
 			setupFiltering(body, FilterGroup::eSTACK, FilterGroup::eBALL | FilterGroup::eBIGBALL);
 			body->attachShape(*shape);
-			PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+			PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
 			gScene->addActor(*body);
 		}
 	}
@@ -266,14 +265,10 @@ void initPhysics(bool interactive)
 	createBigBall();
 
 
-	//std::string path = "model/street/Street environment_V01.obj";
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 
 
@@ -288,7 +283,7 @@ void initPhysics(bool interactive)
 bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	if (FileUtils::isFileExist(modelPath)) {
 		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
-		
+
 		if (ifStatic) {
 			ObjLoader loader(model, MESH_TYPE::TRIANGLE);
 			loader.createStaticActorAndAddToScene(); // 静态刚体
@@ -352,10 +347,10 @@ void keyPress(unsigned char key, const PxTransform& camera, int deltaTime)
 	{
 	case 'B':	createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);						break;
 	case 'F':	createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);	break;
-	//case 'W':   player.
-	//case 'S':
-	//case 'A':
-	//case 'D':
+		//case 'W':   player.
+		//case 'S':
+		//case 'A':
+		//case 'D':
 
 	}
 }

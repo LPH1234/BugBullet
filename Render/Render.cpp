@@ -1,66 +1,19 @@
-﻿//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions
-// are met:
-//  * Redistributions of source code must retain the above copyright
-//    notice, this list of conditions and the following disclaimer.
-//  * Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//  * Neither the name of NVIDIA CORPORATION nor the names of its
-//    contributors may be used to endorse or promote products derived
-//    from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-// OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Copyright (c) 2008-2018 NVIDIA Corporation. All rights reserved.
-// Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
-// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
-
-#include "Render.h"
+﻿#include "Render.h"
 
 #include "../Utils/Utils.h"
 
 #include "models.h"
 
-
 using namespace physx;
-
-
-static float gCylinderData[] = {
-	1.0f,0.0f,1.0f,1.0f,0.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,
-	0.866025f,0.500000f,1.0f,0.866025f,0.500000f,1.0f,0.866025f,0.500000f,0.0f,0.866025f,0.500000f,0.0f,
-	0.500000f,0.866025f,1.0f,0.500000f,0.866025f,1.0f,0.500000f,0.866025f,0.0f,0.500000f,0.866025f,0.0f,
-	-0.0f,1.0f,1.0f,-0.0f,1.0f,1.0f,-0.0f,1.0f,0.0f,-0.0f,1.0f,0.0f,
-	-0.500000f,0.866025f,1.0f,-0.500000f,0.866025f,1.0f,-0.500000f,0.866025f,0.0f,-0.500000f,0.866025f,0.0f,
-	-0.866025f,0.500000f,1.0f,-0.866025f,0.500000f,1.0f,-0.866025f,0.500000f,0.0f,-0.866025f,0.500000f,0.0f,
-	-1.0f,-0.0f,1.0f,-1.0f,-0.0f,1.0f,-1.0f,-0.0f,0.0f,-1.0f,-0.0f,0.0f,
-	-0.866025f,-0.500000f,1.0f,-0.866025f,-0.500000f,1.0f,-0.866025f,-0.500000f,0.0f,-0.866025f,-0.500000f,0.0f,
-	-0.500000f,-0.866025f,1.0f,-0.500000f,-0.866025f,1.0f,-0.500000f,-0.866025f,0.0f,-0.500000f,-0.866025f,0.0f,
-	0.0f,-1.0f,1.0f,0.0f,-1.0f,1.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,
-	0.500000f,-0.866025f,1.0f,0.500000f,-0.866025f,1.0f,0.500000f,-0.866025f,0.0f,0.500000f,-0.866025f,0.0f,
-	0.866026f,-0.500000f,1.0f,0.866026f,-0.500000f,1.0f,0.866026f,-0.500000f,0.0f,0.866026f,-0.500000f,0.0f,
-	1.0f,0.0f,1.0f,1.0f,0.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f
-};
 
 #define MAX_NUM_MESH_VEC3S  21474836
 static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
 
 Cube* cube = nullptr;
 Sphere* sphere = nullptr;
-void renderGeometry(const PxGeometryHolder& h, PxVec3 position, Shader* shader)
+void renderGeometry(const PxGeometryHolder& h, PxTransform& t, Shader* shader)
 {
-	glm::vec3 pos = pxVec3ToGlmVec3(position);
+	glm::vec3 pos = pxVec3ToGlmVec3(t.p);
 	//Logger::debug("pos:   x:" + to_string(position.x) + "   y:" + to_string(position.y) + "   z:" + to_string(position.z));
 
 	switch (h.getType())
@@ -73,6 +26,7 @@ void renderGeometry(const PxGeometryHolder& h, PxVec3 position, Shader* shader)
 		}
 		cube->setPosition(pos);
 		cube->setScaleValue(scale);
+		cube->setRotate(t.q);
 		cube->updateShaderModel();
 		cube->draw();
 	}
@@ -85,6 +39,7 @@ void renderGeometry(const PxGeometryHolder& h, PxVec3 position, Shader* shader)
 		}
 		sphere->setPosition(pos);
 		sphere->setScaleValue(scale);
+		sphere->setRotate(t.q);
 		sphere->updateShaderModel();
 		sphere->setColor(glm::vec3(1.f, 0.f, 0.f));
 		sphere->draw();
@@ -99,6 +54,8 @@ void renderGeometry(const PxGeometryHolder& h, PxVec3 position, Shader* shader)
 	{
 		BaseModel* model = ObjLoader::meshToRenderModel[h.convexMesh().convexMesh];
 		model->setPosition(pos);
+		model->setRotate(t.q);
+
 		model->updateShaderModel();
 		model->draw();
 	}
@@ -107,6 +64,8 @@ void renderGeometry(const PxGeometryHolder& h, PxVec3 position, Shader* shader)
 	{
 		BaseModel* model = ObjLoader::meshToRenderModel[h.triangleMesh().triangleMesh];
 		model->setPosition(pos);
+		model->setRotate(t.q);
+
 		model->updateShaderModel();
 		model->draw();
 	}
@@ -121,7 +80,6 @@ void renderGeometry(const PxGeometryHolder& h, PxVec3 position, Shader* shader)
 
 namespace Snippets
 {
-
 
 	void renderActors(PxRigidActor** actors, const PxU32 numActors, Shader* shader, bool shadows, const PxVec3 & color)
 	{
@@ -141,7 +99,7 @@ namespace Snippets
 				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE)
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				// render object
-				PxVec3 position = shapePose.getPosition();
+				PxTransform t = actors[i]->getGlobalPose();
 
 				if (sleeping)
 				{
@@ -151,7 +109,7 @@ namespace Snippets
 				else {
 					// glColor4f(color.x, color.y, color.z, 1.0f); 
 				}
-				renderGeometry(h, position, shader);
+				renderGeometry(h, t, shader);
 
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
