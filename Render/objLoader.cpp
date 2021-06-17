@@ -147,7 +147,6 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 
 	//TriangleMesh->userData = new int;
 	
-	//TriangleMesh->userData = TriangleMesh;
 	TriangleMesh->setName("map");
 
 	int testid = 88888888;

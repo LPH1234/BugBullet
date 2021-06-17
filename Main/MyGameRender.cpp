@@ -20,7 +20,7 @@ using namespace physx;
 extern void initPhysics(bool interactive);
 extern void stepPhysics(bool interactive);
 extern void cleanupPhysics(bool interactive);
-extern void keyPress(unsigned char key, const PxTransform& camera, int deltaTime);
+extern void keyPress(unsigned char key, const PxTransform& camera);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -252,11 +252,11 @@ void playerProcessInput(GLFWwindow *window) {
 		PxMat33 m(mDir.cross(viewY), viewY, -mDir);
 		px = PxTransform(mEye, PxQuat(m));
 	}
-	if (keyToPressState[GLFW_KEY_F]) {
-		keyPress('F', px, deltaTime);
-		cout << "press f!!" << "\n";
-	}
 
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+		keyPress('F', px);
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)//ÇÐ»»Á¬·¢
+		keyPress('T', px);
 
 }
 

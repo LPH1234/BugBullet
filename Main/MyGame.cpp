@@ -16,24 +16,22 @@ using namespace physx;
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 PxSimulationEventCallback *myCallBack;
-
 PxFoundation*			gFoundation = NULL;
 PxPhysics*				gPhysics = NULL;
-
 PxCooking*				gCooking = NULL;
-
 PxDefaultCpuDispatcher*	gDispatcher = NULL;
 PxScene*				gScene = NULL;
-
 PxMaterial*				gMaterial = NULL;
-
 PxPvd*                  gPvd = NULL;
 
-PxReal stackZ = 3.0f;
+PxReal					stackZ = 3.0f;
+vector<PxActor*>		removeActorList;
+clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
-vector<PxActor*> removeActorList;
-
-clock_t					last = 0, current = 0;
+PxVec3					airPlaneVelocity(0, 0, 0);
+PxRigidDynamic*			airPlane = NULL;
+long long				angelAirPlane = 0.0;
+PxVec3					headForward(1, 0, 0);
 
 //碰撞过滤枚举类型
 struct FilterGroup
@@ -76,7 +74,6 @@ PxFilterFlags testCollisionFilterShader(
 		return PxFilterFlag::eDEFAULT;
 	}
 	// generate contacts for all that were not filtered above
-
 	pairFlags = PxPairFlag::eSOLVE_CONTACT | PxPairFlag::eDETECT_DISCRETE_CONTACT
 		| PxPairFlag::eNOTIFY_TOUCH_FOUND
 		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
@@ -111,7 +108,6 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
 	//PX_UNUSED((pairHeader));
 	//printf("Enter onContact!\n");
-
 	std::vector<PxContactPairPoint> contactPoints;//存储每一个触碰点信息
 	for (PxU32 i = 0; i < nbPairs; i++)
 	{
@@ -128,7 +124,10 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				printf("大球碰方块！\n");
 				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
 
-
+			}
+			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "map"
+				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "map") {
+				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
 			}
 			else {}
 		}
@@ -155,7 +154,6 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
 	//设置刚体名称
 	dynamic->setName("littleBall");
-
 	//设置碰撞的标签
 	setupFiltering(dynamic, FilterGroup::eBALL, FilterGroup::eSTACK);
 	me->release();
@@ -166,6 +164,28 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	return dynamic;
 }
 
+PxRigidDynamic* init3rdplyer(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0)) {
+	if (!t.isValid()) {
+		Logger::error("error:");
+	}
+	PxMaterial* me = gPhysics->createMaterial(0.8f, 0.8f, 0.0f);
+	PxRigidDynamic* player = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
+	//设置刚体名称
+	player->setName("3rdplayer");
+
+	//userdata指向自己
+	//dynamic->userData = dynamic;
+	//设置碰撞的标签
+	setupFiltering(player, FilterGroup::eBALL, FilterGroup::eSTACK);
+	me->release();
+
+	player->setAngularDamping(0.5f);
+	player->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+	//dynamic->setLinearVelocity(velocity);
+	gScene->addActor(*player);
+	return player;
+}
+
 void createBigBall() {
 	//PxShape* shape = gPhysics->createShape(PxSphereGeometry(1), *gMaterial);
 	PxTransform pos(PxVec3(0, 1, -18));
@@ -173,11 +193,35 @@ void createBigBall() {
 	//设置刚体名称
 	body->setName("bigBall");
 	//userdata指向自己
+	//body->userData = body;
 	//设置碰撞标签
 	setupFiltering(body, FilterGroup::eBIGBALL, FilterGroup::eSTACK);
 	body->setLinearVelocity(PxVec3(0, 0, 5));
+
 	gScene->addActor(*body);
 	//shape->release();
+}
+//飞机刚体
+void createAirPlane() {
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
+	PxTransform initPos(PxVec3(2, 1, -15), PxQuat(PxPi / 6, PxVec3(0, 0, 1)));
+	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, initPos, *shape, 8);
+
+	body->setName("airPlane");
+	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	airPlane = body;
+	gScene->addActor(*body);
+	shape->release();
+}
+//改变飞机姿态与速度，使其做圆周运动
+void changeAirPlaneVelocity() {
+	angelAirPlane += 1;
+	angelAirPlane = angelAirPlane % 360;
+	PxQuat rot(PxPi / 180 * angelAirPlane, PxVec3(0, 0, 1));
+	headForward = rot.rotate(PxVec3(1, 0, 0));
+	airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));
+	airPlane->setLinearVelocity(5 * headForward);
 }
 
 PxRigidDynamic* player;
@@ -204,6 +248,8 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
 			//设置刚体名称
 			body->setName("box");
+			//userdata指向自己
+			//body->userData = body;
 
 			//设置碰撞的标签
 			setupFiltering(body, FilterGroup::eSTACK, FilterGroup::eBALL | FilterGroup::eBIGBALL);
@@ -261,13 +307,16 @@ void initPhysics(bool interactive)
 
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-	initPlayer();
-	createBigBall();
+	//createBigBall();
+	createAirPlane();
 
 
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 
@@ -313,17 +362,19 @@ void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
 	//锁帧
-	current = clock();//当前时钟
-	if ((current - last) < 16) {
+	lockFrame_current = clock();//当前时钟
+	if ((lockFrame_current - lockFrame_last) < 16) {
 		//skip，1000clocks/s，则一帧约16ms（60帧）
-		Sleep(16 - (current - last));
+		Sleep(16 - (lockFrame_current - lockFrame_last));
 	}
 	else {
 		gScene->simulate(1.0f / 60.0f);
 		gScene->fetchResults(true);
 		removeActorInList();
-		last = current;//每执行一帧，记录上一帧（即当前帧）时钟
+		changeAirPlaneVelocity();
+		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 	}
+
 }
 
 void cleanupPhysics(bool interactive)
@@ -340,18 +391,37 @@ void cleanupPhysics(bool interactive)
 
 	printf("program exit.\n");
 }
-
-void keyPress(unsigned char key, const PxTransform& camera, int deltaTime)
+bool autoshooting = true;
+clock_t last = 0;
+void keyPress(unsigned char key, const PxTransform& camera)
 {
 	switch (toupper(key))
 	{
-	case 'B':	createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);						break;
-	case 'F':	createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);	break;
-		//case 'W':   player.
-		//case 'S':
-		//case 'A':
-		//case 'D':
-
+	case 'B':
+		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
+		break;
+	case 'F':
+		if (autoshooting) {
+			createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
+			break;
+		}
+		else {
+			clock_t now = clock();
+			if (now - last > 1000) {
+				createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
+				last = now;
+			}
+			break;
+		}
+	case 'T':
+		autoshooting = !autoshooting;
+		if (autoshooting) {
+			cout << "切换成全自动" << endl;
+		}
+		else {
+			cout << "切换成半自动" << endl;
+		}
+		break;
 	}
 }
 
