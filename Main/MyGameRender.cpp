@@ -13,7 +13,11 @@
 
 #include "../Render/models.h"
 #include "../Data/Consts.h"
+
 #include "playercontroller.h"
+
+#include <unordered_map>
+
 
 using namespace physx;
 
@@ -27,7 +31,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-
+void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map, const int STATE);
 // settings
 const unsigned int SCR_WIDTH = 1920/2;
 const unsigned int SCR_HEIGHT = 1080/2;
@@ -56,6 +60,11 @@ Shader* envShader;
 unordered_map<int, bool>keyboard_input(false);//处理键盘输入
 
 Player vehicle;
+
+//
+std::unordered_map<int, bool> keyToPressState;
+std::unordered_map<int, bool> keyToPrePressState;
+
 
 
 void renderCallback(Shader* shader)
@@ -111,6 +120,9 @@ int myRenderLoop()
 	// tell GLFW to capture our mouse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	for (int i = 0; i <= 348; i++)
+		keyToPressState[i] = false;
+
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -157,45 +169,45 @@ int myRenderLoop()
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		envShader->use();
-		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
-		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		envShader->setMat4("projection", projection);
-		envShader->setMat4("view", view);
-		envShader->setVec3("viewPos", camera.Position);
-		envShader->setInt("material.diffuse", 0);
-		envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		envShader->setFloat("material.shininess", 32.0f);
-		envShader->setVec3("light.position", lightPosition);
-		envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
-		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
-		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+	envShader->use();
+	envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
+	//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	glm::mat4 view = camera.GetViewMatrix();
+	envShader->setMat4("projection", projection);
+	envShader->setMat4("view", view);
+	envShader->setVec3("viewPos", camera.Position);
+	envShader->setInt("material.diffuse", 0);
+	envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+	envShader->setFloat("material.shininess", 32.0f);
+	envShader->setVec3("light.position", lightPosition);
+	envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
+	envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
+	envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 
-		envShader->setMat4("projection", projection);
-		envShader->setMat4("view", view);
+	envShader->setMat4("projection", projection);
+	envShader->setMat4("view", view);
 
-		renderCallback(envShader);
-		//=====================================skyBoxShader=================================
-		// 绘制包围盒
-		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
+	renderCallback(envShader);
+	//=====================================skyBoxShader=================================
+	// 绘制包围盒
+	//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
 
-		/*skyBoxShader->use();
-		skyBoxShader->setMat4("projection", projection);
-		skyBoxShader->setMat4("view", view);
-
-
-		skybox->setPosition(camera.Position);
-		skyBoxShader->setMat4("model", skybox->getModel());
-		skybox->draw();*/
+	skyBoxShader->use();
+	skyBoxShader->setMat4("projection", projection);
+	skyBoxShader->setMat4("view", view);
 
 
-		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-		// -------------------------------------------------------------------------------
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+	skybox->setPosition(camera.Position);
+	skyBoxShader->setMat4("model", skybox->getModel());
+	skybox->draw();
+
+
+	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+	// -------------------------------------------------------------------------------
+	glfwSwapBuffers(window);
+	glfwPollEvents();
 	}
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
@@ -209,31 +221,33 @@ int myRenderLoop()
 }
 
 
-
-
+bool last_key = 0;
 //按键时，窗口的处理逻辑
 void windowProcessInput(GLFWwindow *window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE && last_key) {
 		glfwSetWindowShouldClose(window, true);
+		CookThread::shutdown();
+	}
+	last_key = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
 }
 
 //按键时，相机的处理逻辑
 void cameraProcessInput(GLFWwindow *window) {
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	if (keyToPressState[GLFW_KEY_W])
 		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	if (keyToPressState[GLFW_KEY_S])
 		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	if (keyToPressState[GLFW_KEY_A])
 		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	if (keyToPressState[GLFW_KEY_D])
 		camera.ProcessKeyboard(RIGHT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	if (keyToPressState[GLFW_KEY_SPACE])
 		camera.ProcessKeyboard(UP, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	if (keyToPressState[GLFW_KEY_LEFT_CONTROL])
 		camera.ProcessKeyboard(DOWN, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+	if (keyToPressState[GLFW_KEY_LEFT_SHIFT])
 		camera.ProcessKeyboard(SHIFT_PRESS, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+	if (!keyToPressState[GLFW_KEY_LEFT_SHIFT])
 		camera.ProcessKeyboard(SHIFT_RELEASE, deltaTime);
 }
 
@@ -280,10 +294,12 @@ void playerProcessInput(GLFWwindow *window) {
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
+	updateKeyState(window, keyToPressState, GLFW_PRESS);
 	windowProcessInput(window);
 	cameraProcessInput(window);
 	playerProcessInput(window);
 	vehicleProcessInput(window);
+	//updateKeyState(window, keyToPrePressState, GLFW_PRESS);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -322,6 +338,41 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll(yoffset);
 }
 
+
+void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map,  const int STATE)
+{
+	map[96] = glfwGetKey(window, 96) == STATE;
+	map[32] = glfwGetKey(window, 32) == STATE;
+
+	for (int i = 44; i <= 61; i++)
+	{
+		map[i] = glfwGetKey(window, i) == STATE;
+	}
+	for (int i = 65; i <= 93; i++)
+	{
+		map[i] = glfwGetKey(window, i) == STATE;
+	}
+	for (int i = 44; i <= 61; i++)
+	{
+		map[i] = glfwGetKey(window, i) == STATE;
+	}
+	for (int i = 256; i <= 269; i++)
+	{
+		map[i] = glfwGetKey(window, i) == STATE;
+	}
+	for (int i = 280; i <= 314; i++)
+	{
+		map[i] = glfwGetKey(window, i) == STATE;
+	}
+	for (int i = 320; i <= 336; i++)
+	{
+		map[i] = glfwGetKey(window, i) == STATE;
+	}
+	for (int i = 340; i <= 348; i++)
+	{
+		map[i] = glfwGetKey(window, i) == STATE;
+	}
+}
 
 
 #endif

@@ -14,6 +14,7 @@
 class Logger
 {
 public:
+	static void notice(std::string);
 	static void debug(std::string);
 	static void info(std::string);
 	static void warn(std::string);
