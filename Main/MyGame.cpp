@@ -8,6 +8,7 @@
 #include "../Utils/module.h"
 #include "../Render/models.h"
 #include "../Render/Render.h"
+#include <ctime>
 #define PI 3.1415926
 
 using namespace physx;
@@ -28,9 +29,12 @@ PxMaterial*				gMaterial = NULL;
 
 PxPvd*                  gPvd = NULL;
 
-PxReal stackZ = 10.0f;
+PxReal stackZ = 3.0f;
 
 vector<PxActor*> removeActorList;
+
+clock_t					last = 0, current = 0;
+
 //碰撞过滤枚举类型
 struct FilterGroup
 {
@@ -72,8 +76,11 @@ PxFilterFlags testCollisionFilterShader(
 		return PxFilterFlag::eDEFAULT;
 	}
 	// generate contacts for all that were not filtered above
-	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
-	pairFlags ^= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+	pairFlags = PxPairFlag::eSOLVE_CONTACT | PxPairFlag::eDETECT_DISCRETE_CONTACT
+		| PxPairFlag::eNOTIFY_TOUCH_FOUND
+		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+		| PxPairFlag::eNOTIFY_CONTACT_POINTS;
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
@@ -104,10 +111,12 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
 	//PX_UNUSED((pairHeader));
 	//printf("Enter onContact!\n");
+
+	std::vector<PxContactPairPoint> contactPoints;//存储每一个触碰点信息
 	for (PxU32 i = 0; i < nbPairs; i++)
 	{
-		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]->userData);
-		PxRigidActor* actor_1 = (PxRigidActor*)(pairHeader.actors[1]->userData);
+		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]);
+		PxRigidActor* actor_1 = (PxRigidActor*)(pairHeader.actors[1]);
 		if (actor_0 != NULL && actor_1 != NULL) {
 			if (actor_0->getName() == "littleBall"&&actor_1->getName() == "box"
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "box") {
@@ -118,15 +127,13 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| actor_1->getName() == "bigBall"&&actor_0->getName() == "box") {
 				printf("大球碰方块！\n");
 				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
+
+
 			}
 			else {}
 		}
-		/*const PxContactPair& cp = pairs[i];
-		if (cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
-		{
-			printf("碰撞\n");
-		}*/
 	}
+
 }
 module moduleCallBack;
 //删除removeActorList里面的actor
@@ -148,8 +155,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
 	//设置刚体名称
 	dynamic->setName("littleBall");
-	//userdata指向自己
-	dynamic->userData = dynamic;
+
 	//设置碰撞的标签
 	setupFiltering(dynamic, FilterGroup::eBALL, FilterGroup::eSTACK);
 	me->release();
@@ -162,18 +168,18 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 
 void createBigBall() {
 	//PxShape* shape = gPhysics->createShape(PxSphereGeometry(1), *gMaterial);
-	PxTransform pos(PxVec3(0, 1, 13));
+	PxTransform pos(PxVec3(0, 1, -18));
 	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, pos, PxSphereGeometry(1), *gMaterial, 10.0f);
 	//设置刚体名称
 	body->setName("bigBall");
 	//userdata指向自己
-	body->userData = body;
 	//设置碰撞标签
 	setupFiltering(body, FilterGroup::eBIGBALL, FilterGroup::eSTACK);
-	body->setLinearVelocity(PxVec3(0,0,-5));
+	body->setLinearVelocity(PxVec3(0, 0, 5));
 	gScene->addActor(*body);
 	//shape->release();
 }
+
 PxRigidDynamic* player;
 PxRigidDynamic* initPlayer() {
 
@@ -187,6 +193,7 @@ PxRigidDynamic* initPlayer() {
 	return player;
 }
 
+
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
@@ -198,8 +205,7 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
 			//设置刚体名称
 			body->setName("box");
-			//userdata指向自己
-			body->userData = body;
+
 			//设置碰撞的标签
 			setupFiltering(body, FilterGroup::eSTACK, FilterGroup::eBALL | FilterGroup::eBIGBALL);
 			body->attachShape(*shape);
@@ -255,10 +261,11 @@ void initPhysics(bool interactive)
 	gScene->addActor(*groundPlane);
 
 	for (PxU32 i = 0; i < 3; i++)
-		createStack(PxTransform(PxVec3(0, 2, stackZ -= 10.0f)), 10, 0.1f);
+		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
+	initPlayer();
 	createBigBall();
 
-	initPlayer();
+
 	//std::string path = "model/street/Street environment_V01.obj";
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	//createStaticModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
@@ -268,8 +275,7 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Stadium/sports stadium.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+
 
 
 
@@ -282,7 +288,7 @@ void initPhysics(bool interactive)
 bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool preLoad, bool ifStatic) {
 	if (FileUtils::isFileExist(modelPath)) {
 		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
-		ObjLoader loader(model, preLoad);
+		ObjLoader loader(model, MESH_TYPE::TRIANGLE);
 		if (ifStatic)
 			loader.createStaticActorAndAddToScene(); // 静态刚体
 		else
@@ -296,7 +302,7 @@ bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* 
 	return true;
 }
 bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
-	ObjLoader loader(model, preLoad);
+	ObjLoader loader(model, MESH_TYPE::TRIANGLE);
 	if (ifStatic)
 		loader.createStaticActorAndAddToScene(); //静态刚体
 	else
@@ -307,9 +313,18 @@ bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
 void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
-	gScene->simulate(1.0f / 60.0f);
-	gScene->fetchResults(true);
-	removeActorInList();
+	//锁帧
+	current = clock();//当前时钟
+	if ((current - last) < 16) {
+		//skip，1000clocks/s，则一帧约16ms（60帧）
+		Sleep(16 - (current - last));
+	}
+	else {
+		gScene->simulate(1.0f / 60.0f);
+		gScene->fetchResults(true);
+		removeActorInList();
+		last = current;//每执行一帧，记录上一帧（即当前帧）时钟
+	}
 }
 
 void cleanupPhysics(bool interactive)
@@ -337,6 +352,7 @@ void keyPress(unsigned char key, const PxTransform& camera, int deltaTime)
 	//case 'S':
 	//case 'A':
 	//case 'D':
+
 	}
 }
 

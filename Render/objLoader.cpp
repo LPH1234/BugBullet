@@ -12,6 +12,7 @@
 using namespace std;
 
 std::unordered_map<PxBase*, BaseModel*> ObjLoader::meshToRenderModel;
+std::mutex queue_mutex;
 
 extern PxPhysics* gPhysics;
 extern PxCooking* gCooking;
@@ -19,14 +20,329 @@ extern PxScene* gScene;
 extern PxMaterial* gMaterial;
 
 
-ObjLoader::ObjLoader(BaseModel* renderModel, bool preLoad) {
+ObjLoader::ObjLoader(BaseModel* renderModel, MESH_TYPE type) {
 	//初始化
 	this->renderModel = renderModel;
-	std::string obj_file_path = renderModel->getModelPath();
+	this->obj_file_path = renderModel->getModelPath();
 	this->name = obj_file_path.substr(obj_file_path.find_last_of("/") + 1);
+	this->triangle_cooking_file_path = COOKING_DIR + COOKING_TRIANGLE_PREFIX + this->name + COOKING_FILE_SUFFIX;
+	this->convex_cooking_file_path = COOKING_DIR + COOKING_CONVEX_PREFIX + this->name + COOKING_FILE_SUFFIX;
 	this->scale = glmVec3ToPxVec3(renderModel->getScaleValue());
 	this->initPos = glmVec3ToPxVec3(renderModel->getPosition());
-	this->preLoad = preLoad;
+	this->is_triangle_cooked = FileUtils::isFileExist(this->triangle_cooking_file_path);
+	this->is_convex_cooked = FileUtils::isFileExist(this->convex_cooking_file_path);
+
+	bool is_need_load_obj_file = !(type == MESH_TYPE::TRIANGLE ? this->is_triangle_cooked : this->is_convex_cooked);
+
+	if (is_need_load_obj_file) {// 对应mesh的cooking文件不存在,需要重新加载obj文件
+
+		parseObjFile();
+
+	}
+	Logger::info("开始创建Mesh");
+	if (type == MESH_TYPE::TRIANGLE) {
+		genTriangleMesh(this->scale);
+		cookTriangleMesh(this->triangle_mesh_desc, this->triangle_cooking_file_path);
+	}
+	if (type == MESH_TYPE::CONVEX) {
+		genConvexMesh(this->scale);
+		cookConvexMesh(this->convex_mesh_desc, this->convex_cooking_file_path);
+	}
+	Logger::info("Mesh加载完成");
+
+}
+
+ObjLoader::~ObjLoader() {
+	v.clear();
+	f.clear();
+}
+
+void ObjLoader::free_memory() {
+	delete renderModel;
+	if (triangle_mesh != nullptr)
+		triangle_mesh->release();
+	if (convex_mesh != nullptr)
+		convex_mesh->release();
+}
+
+physx::PxTriangleMesh* ObjLoader::genTriangleMesh(physx::PxVec3 scale) {
+	if (this->is_triangle_cooked) {//从cooking中读取
+		this->triangle_mesh = readTriangleMeshFromCookingFile();
+		Logger::debug("存在cooking文件");
+	}
+	else {
+		Logger::debug("不存在cooking文件");
+		const PxU32 numVertices = this->v.size();
+		const PxU32 numTriangles = this->f.size();
+
+		PxVec3* vertices = new PxVec3[numVertices];
+		PxU32* indices = new PxU32[numTriangles * 3];
+
+		// 加载顶点
+		for (int i = 0; i < numVertices; ++i) {
+			PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
+			vertices[i] = vectmp;
+		}
+		//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
+
+		// 加载面和顶点贴图索引
+		auto faceIt = this->f.begin();
+		for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
+			for (int j = 0; j < 3; j++)
+			{
+				if ((*faceIt).size() >= j + 1) {
+					indices[i * 3 + j] = (*faceIt)[j].u;
+				}
+			}
+		}
+
+		PxTriangleMeshDesc* meshDesc = new PxTriangleMeshDesc();
+		meshDesc->points.count = numVertices;
+		meshDesc->points.data = vertices;
+		meshDesc->points.stride = sizeof(PxVec3);
+
+		meshDesc->triangles.count = numTriangles;
+		meshDesc->triangles.data = indices;
+		meshDesc->triangles.stride = sizeof(PxU32) * 3;
+
+		this->triangle_mesh_desc = meshDesc;
+		this->triangle_mesh = gCooking->createTriangleMesh(*meshDesc, gPhysics->getPhysicsInsertionCallback());
+		if (!this->triangle_mesh) {
+			Logger::error("triMesh create fail.");
+		}
+	}
+	meshToRenderModel[this->triangle_mesh] = this->renderModel;
+	return this->triangle_mesh;
+}
+
+
+PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
+
+	// 创建出它的几何体
+	PxTriangleMeshGeometry geom(this->triangle_mesh);
+	// 创建网格面
+	PxRigidStatic* TriangleMesh = gPhysics->createRigidStatic(PxTransform(initPos));
+
+	// 创建三角网格形状 *gMaterial
+	PxShape* shape = gPhysics->createShape(geom, *gMaterial);
+
+	{
+		// 设置厚度， 相当于多了一层 0.03厚的皮肤，也就是为了提前预判
+		shape->setContactOffset(0.03f);
+		// A negative rest offset helps to avoid jittering when the deformed mesh moves away from objects resting on it.
+		// 允许穿透的厚度，当穿透指定的厚度后，就是发生弹开等动作 -0.02f 负数代表穿透后，正数代表穿透前
+		shape->setRestOffset(-0.02f);
+	}
+
+	TriangleMesh->attachShape(*shape);
+	shape->release();
+
+	//TriangleMesh->userData = new int;
+	
+	//TriangleMesh->userData = TriangleMesh;
+	TriangleMesh->setName("map");
+
+	int testid = 88888888;
+	//memcpy(TriangleMesh->userData, &testid, sizeof(int));
+
+
+
+	gScene->addActor(*TriangleMesh);
+	return TriangleMesh;
+}
+
+
+bool ObjLoader::cookTriangleMesh(PxTriangleMeshDesc* meshDesc, std::string cook_file_path) {
+	int rt = writeTriangleMeshToCookingFile(meshDesc, cook_file_path);
+	if (rt == -1) {
+		Logger::error("cook triangle mesh fail!");
+		return false;
+	}
+	if (rt == 1) {
+		Logger::notice("cooking file already existd.");
+		return false;
+	}
+	if (rt == 2) {
+		Logger::notice("TriangleMeshDesc is null!");
+		return false;
+	}
+	if (rt == 3) {
+		Logger::notice("TriangleMeshDesc is invalid!");
+		return false;
+	}
+	return rt == 0;
+}
+
+int ObjLoader::writeTriangleMeshToCookingFile(PxTriangleMeshDesc* meshDesc, std::string cook_file_path) {
+	if (FileUtils::isFileExist(cook_file_path))
+		return 1;
+	if (meshDesc == nullptr)
+		return 2;
+	if (!meshDesc->isValid())
+		return 3;
+	PxDefaultMemoryOutputStream writeBuffer;
+	PxTriangleMeshCookingResult::Enum result;
+	bool status = gCooking->cookTriangleMesh(*meshDesc, writeBuffer, &result);
+	if (!status) return -1;
+
+	// 将流写入到文件
+	FILE * filefd = fopen(cook_file_path.c_str(), "wb+");
+	if (!filefd) {
+		Logger::error("open cooking read fail");
+		return -1;
+	}
+
+	int size = writeBuffer.getSize();
+	fwrite(&size, sizeof(unsigned int), 1, filefd);
+	fwrite(writeBuffer.getData(), sizeof(PxU8), size, filefd);
+	fclose(filefd);
+	return 0;
+}
+
+physx::PxTriangleMesh* ObjLoader::readTriangleMeshFromCookingFile() {
+	// 输入流
+	FILE * filefd = fopen(this->triangle_cooking_file_path.c_str(), "rb+");
+	if (!filefd) {
+		Logger::error("cooking file open fail :" + (this->name + COOKING_FILE_SUFFIX));
+		return nullptr;
+	}
+	int rsize = 0;
+	fread(&rsize, sizeof(unsigned int), 1, filefd);
+	Logger::info((this->name + COOKING_FILE_SUFFIX) + ":cooking file read size:" + to_string(rsize));
+	PxU8 *filebuff = new PxU8[rsize + 1];
+	fread(filebuff, sizeof(PxU8), rsize, filefd);
+
+	PxDefaultMemoryInputData readBuffer(filebuff, rsize);
+	PxTriangleMesh * triangle = gPhysics->createTriangleMesh(readBuffer);
+	delete[] filebuff;
+	return triangle;
+}
+
+
+
+
+
+
+
+
+
+physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
+	if (this->is_convex_cooked) {//从cooking中读取
+		this->convex_mesh = readConvexMeshFromCookingFile();
+		meshToRenderModel[this->convex_mesh] = this->renderModel;
+		Logger::debug("存在cooking");
+		return this->convex_mesh;
+	}
+
+	const PxU32 numVertices = this->v.size();
+	const PxU32 numTriangles = this->f.size();
+	PxVec3* vertices = new PxVec3[numVertices];
+	PxU32* indices = new PxU32[numTriangles * 3];
+
+	// 加载顶点
+	for (int i = 0; i < numVertices; ++i) {
+		PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
+		vertices[i] = vectmp;
+	}
+
+	// 加载面
+	auto faceIt = this->f.begin();
+	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
+		for (int j = 0; j < 3; j++)
+			if ((*faceIt).size() >= j + 1)
+				indices[i * 3 + j] = (*faceIt)[j].u;
+	}
+
+	PxConvexMeshDesc* meshDesc = new PxConvexMeshDesc;
+	meshDesc->points.count = numVertices;
+	meshDesc->points.data = vertices;
+	meshDesc->points.stride = sizeof(PxVec3);
+
+	meshDesc->indices.count = numTriangles;
+	meshDesc->indices.data = indices;
+	meshDesc->indices.stride = 3 * sizeof(PxU32);
+
+	meshDesc->flags = PxConvexFlag::eCOMPUTE_CONVEX;
+
+	bool res = gCooking->validateConvexMesh(*meshDesc);
+	if (!res) {
+		Logger::error("invalid Convex Mesh Desc!");
+	}
+	PX_ASSERT(res);
+
+	PxDefaultMemoryOutputStream buf;
+	PxConvexMeshCookingResult::Enum result;
+
+	if (!gCooking->cookConvexMesh(*meshDesc, buf, &result)) {
+		Logger::error("cook convex mesh fail!");
+	}
+	this->convex_mesh_desc = meshDesc;
+	PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
+	this->convex_mesh = gPhysics->createConvexMesh(input);
+	meshToRenderModel[convex_mesh] = this->renderModel;
+	return convex_mesh;
+}
+
+PxRigidActor* ObjLoader::createDynamicActorAndAddToScene() {
+	// 创建出它的几何体
+	PxConvexMeshGeometry geom(this->convex_mesh);
+	// 创建网格面
+	PxRigidDynamic* convexMesh = gPhysics->createRigidDynamic(PxTransform(initPos));
+
+	// 创建三角网格形状 *gMaterial
+	PxShape* shape = PxRigidActorExt::createExclusiveShape(*convexMesh, geom, *gMaterial);
+
+	{
+		// 设置厚度， 相当于多了一层 0.03厚的皮肤，也就是为了提前预判
+		shape->setContactOffset(0.03f);
+		// A negative rest offset helps to avoid jittering when the deformed mesh moves away from objects resting on it.
+		// 允许穿透的厚度，当穿透指定的厚度后，就是发生弹开等动作 -0.02f 负数代表穿透后，正数代表穿透前
+		shape->setRestOffset(-0.02f);
+	}
+
+	convexMesh->attachShape(*shape);
+	shape->release();
+
+	//convexMesh->userData = new int;
+	//convexMesh->userData = 
+	int testid = 88888888;
+	//memcpy(convexMesh->userData, &testid, sizeof(int));
+
+	gScene->addActor(*convexMesh);
+
+	return convexMesh;
+}
+
+
+
+bool  ObjLoader::cookConvexMesh(PxConvexMeshDesc* meshDesc, std::string cook_file_path) {
+	return false;
+}
+
+int ObjLoader::writeConvexMeshToCookingFile(PxConvexMeshDesc* meshDesc, std::string cook_file_path) {
+	return 0;
+}
+
+physx::PxConvexMesh* ObjLoader::readConvexMeshFromCookingFile() {
+	return nullptr;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void ObjLoader::parseObjFile() {
 	//开始解析obj
 	Logger::debug("打开模型文件：" + name);
 	ifstream obj_file(obj_file_path);
@@ -81,297 +397,5 @@ ObjLoader::ObjLoader(BaseModel* renderModel, bool preLoad) {
 	}
 	obj_file.close(); //关闭obj文件
 
-	if (preLoad) {
-		Logger::info("开始写入cooking文件中...");
-		writeTriangleMeshToCookingFile();
-		Logger::info("完成");
-	}
-	Logger::info("v:" + std::to_string(v.size()) + "   f:" + std::to_string(f.size()));
-}
-
-ObjLoader::~ObjLoader() {
-	v.clear();
-	f.clear();
-}
-
-physx::PxTriangleMesh* ObjLoader::createTriangleMesh(physx::PxVec3 scale)
-{
-
-	const PxU32 numVertices = this->v.size();
-	const PxU32 numTriangles = this->f.size();
-
-	PxVec3* vertices = new PxVec3[numVertices];
-	PxU32* indices = new PxU32[numTriangles * 3];
-
-
-	// 加载顶点
-	for (int i = 0; i < numVertices; ++i) {
-		PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
-		vertices[i] = vectmp;
-	}
-	//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
-
-	// 加载面和顶点贴图索引
-	auto faceIt = this->f.begin();
-	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
-		for (int j = 0; j < 3; j++)
-		{
-			if ((*faceIt).size() >= j + 1) {
-				indices[i * 3 + j] = (*faceIt)[j].u;
-			}
-		}
-	}
-
-	PxTriangleMeshDesc meshDesc;
-	meshDesc.points.count = numVertices;
-	meshDesc.points.data = vertices;
-	meshDesc.points.stride = sizeof(PxVec3);
-
-	meshDesc.triangles.count = numTriangles;
-	meshDesc.triangles.data = indices;
-	meshDesc.triangles.stride = sizeof(PxU32) * 3;
-
-
-	PxTriangleMesh* triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback());
-	if (!triMesh) {
-		Logger::error("triMesh create fail.");
-	}
-
-	meshToRenderModel[triMesh] = this->renderModel;
-	return triMesh;
-}
-
-
-PxRigidActor* ObjLoader::createStaticActorAndAddToScene()
-{
-	PxTriangleMesh* mesh;
-	if (preLoad) //从cooking中读取
-		mesh = readTriangleMeshFromCookingFile();
-	else  //即时创建
-		mesh = createTriangleMesh(scale);
-
-	// 创建出它的几何体
-	PxTriangleMeshGeometry geom(mesh);
-	// 创建网格面
-	PxRigidStatic* TriangleMesh = gPhysics->createRigidStatic(PxTransform(initPos));
-
-	// 创建三角网格形状 *gMaterial
-	PxShape* shape = gPhysics->createShape(geom, *gMaterial);
-
-	{
-		// 设置厚度， 相当于多了一层 0.03厚的皮肤，也就是为了提前预判
-		shape->setContactOffset(0.03f);
-		// A negative rest offset helps to avoid jittering when the deformed mesh moves away from objects resting on it.
-		// 允许穿透的厚度，当穿透指定的厚度后，就是发生弹开等动作 -0.02f 负数代表穿透后，正数代表穿透前
-		shape->setRestOffset(-0.02f);
-	}
-
-	TriangleMesh->attachShape(*shape);
-	shape->release();
-
-	//TriangleMesh->userData = new int;
-	TriangleMesh->userData = TriangleMesh;
-	TriangleMesh->setName("map");
-	
-	int testid = 88888888;
-	//memcpy(TriangleMesh->userData, &testid, sizeof(int));
-
-
-
-	gScene->addActor(*TriangleMesh);
-	return TriangleMesh;
-}
-
-physx::PxConvexMesh* ObjLoader::createConvexMesh(physx::PxVec3  scale) {
-	const PxU32 numVertices = this->v.size();
-	const PxU32 numTriangles = this->f.size();
-
-	PxVec3* vertices = new PxVec3[numVertices];
-	PxU32* indices = new PxU32[numTriangles * 3];
-
-
-	// 加载顶点
-	for (int i = 0; i < numVertices; ++i) {
-		PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
-		vertices[i] = vectmp;
-	}
-	//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
-
-	// 加载面
-	auto faceIt = this->f.begin();
-	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
-		for (int j = 0; j < 3; j++)
-		{
-			if ((*faceIt).size() >= j + 1) {
-				indices[i * 3 + j] = (*faceIt)[j].u;
-			}
-		}
-	}
-
-	PxConvexMeshDesc meshDesc;
-	meshDesc.points.count = numVertices;
-	meshDesc.points.data = vertices;
-	meshDesc.points.stride = sizeof(PxVec3);
-
-	meshDesc.indices.count = numTriangles;
-	meshDesc.indices.data = indices;
-	meshDesc.indices.stride = 3 * sizeof(PxU32);
-
-	meshDesc.flags = PxConvexFlag::eCOMPUTE_CONVEX;
-
-	bool res = gCooking->validateConvexMesh(meshDesc);
-	if (!res) {
-		Logger::error("invalid Convex Mesh Desc!");
-	}
-	PX_ASSERT(res);
-
-	PxDefaultMemoryOutputStream buf;
-	PxConvexMeshCookingResult::Enum result;
-
-	if (!gCooking->cookConvexMesh(meshDesc, buf, &result)) {
-		Logger::error("cook convex mesh fail!");
-	}
-	PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
-	PxConvexMesh* convexMesh = gPhysics->createConvexMesh(input);
-	meshToRenderModel[convexMesh] = this->renderModel;
-
-	return convexMesh;
-
-}
-
-PxRigidActor* ObjLoader::createDynamicActorAndAddToScene()
-{
-	PxConvexMesh* mesh;
-	if (preLoad) //从cooking中读取
-		mesh = readConvexMeshFromCookingFile();
-	else  //即时创建
-		mesh = createConvexMesh(scale);
-
-
-	// 创建出它的几何体
-	PxConvexMeshGeometry geom(mesh);
-	// 创建网格面
-	PxRigidDynamic* convexMesh = gPhysics->createRigidDynamic(PxTransform(initPos));
-
-	// 创建三角网格形状 *gMaterial
-	//PxShape* shape = gPhysics->createShape(geom, *gMaterial);
-	PxShape* shape = PxRigidActorExt::createExclusiveShape(*convexMesh,
-		PxConvexMeshGeometry(mesh), *gMaterial);
-
-	{
-		// 设置厚度， 相当于多了一层 0.03厚的皮肤，也就是为了提前预判
-		shape->setContactOffset(0.03f);
-		// A negative rest offset helps to avoid jittering when the deformed mesh moves away from objects resting on it.
-		// 允许穿透的厚度，当穿透指定的厚度后，就是发生弹开等动作 -0.02f 负数代表穿透后，正数代表穿透前
-		shape->setRestOffset(-0.02f);
-	}
-
-	convexMesh->attachShape(*shape);
-	shape->release();
-
-	convexMesh->userData = new int;
-	//convexMesh->userData = 
-	int testid = 88888888;
-	memcpy(convexMesh->userData, &testid, sizeof(int));
-
-	gScene->addActor(*convexMesh);
-
-	return convexMesh;
-}
-
-
-
-
-int ObjLoader::writeTriangleMeshToCookingFile()
-{
-	if (!this)
-		return -1;
-	const PxU32 numVertices = this->v.size();
-	const PxU32 numTriangles = this->f.size();
-
-	PxVec3* vertices = new PxVec3[numVertices];
-	PxU32* indices = new PxU32[numTriangles * 3];
-
-	// 加载顶点
-	for (int i = 0; i < numVertices; ++i) {
-		PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
-		vertices[i] = vectmp;
-	}
-	//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
-
-	// 加载面
-	auto faceIt = this->f.begin();
-	for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
-		indices[i * 3 + 0] = (*faceIt)[0].u;
-		indices[i * 3 + 1] = (*faceIt)[1].u;
-		if ((*faceIt).size() >= 3)
-			indices[i * 3 + 2] = (*faceIt)[2].u;
-	}
-
-
-	PxTriangleMeshDesc meshDesc;
-	meshDesc.points.count = numVertices;
-	meshDesc.points.data = vertices;
-	meshDesc.points.stride = sizeof(PxVec3);
-
-	meshDesc.triangles.count = numTriangles;
-	meshDesc.triangles.data = indices;
-	meshDesc.triangles.stride = sizeof(PxU32) * 3;
-
-
-
-	PxDefaultMemoryOutputStream writeBuffer;
-	PxTriangleMeshCookingResult::Enum result;
-	bool status = gCooking->cookTriangleMesh(meshDesc, writeBuffer, &result);
-	if (!status)
-		return -1;
-
-	delete[] vertices;
-	delete[] indices;
-
-	// 将流写入到文件
-	FILE * filefd = fopen((this->name + COOKING_FILE_SUFFIX).c_str(), "wb+");
-	if (!filefd) {
-		Logger::error("open cooking read fail");
-		return -1;
-	}
-
-	int size = writeBuffer.getSize();
-	fwrite(&size, sizeof(unsigned int), 1, filefd);
-
-	fwrite(writeBuffer.getData(), sizeof(PxU8), size, filefd);
-	fclose(filefd);
-	return 0;
-}
-
-physx::PxTriangleMesh*  ObjLoader::readTriangleMeshFromCookingFile() {
-	ObjLoader *objtmp1 = this;
-	// 输入流
-	FILE * filefd = fopen((this->name + COOKING_FILE_SUFFIX).c_str(), "rb+");
-	if (!filefd) {
-		Logger::error("file open fail :" + (this->name + COOKING_FILE_SUFFIX));
-		return NULL;
-	}
-	int rsize = 0;
-	fread(&rsize, sizeof(unsigned int), 1, filefd);
-	std::cout << "rsize:" << rsize << std::endl;
-	Logger::info("cooking file read size:" + to_string(rsize));
-	PxU8 *filebuff = new PxU8[rsize + 1];
-	fread(filebuff, sizeof(PxU8), rsize, filefd);
-
-	PxDefaultMemoryInputData readBuffer(filebuff, rsize);
-	PxTriangleMesh * triangle = gPhysics->createTriangleMesh(readBuffer);
-	delete[] filebuff;
-	return triangle;
-}
-
-
-
-int ObjLoader::writeConvexMeshToCookingFile() {
-	return 0;
-}
-
-
-physx::PxConvexMesh* ObjLoader::readConvexMeshFromCookingFile() {
-	return nullptr;
+	Logger::info("顶点数:" + std::to_string(v.size()) + "   三角面片数:" + std::to_string(f.size()));
 }
