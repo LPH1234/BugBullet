@@ -3,6 +3,7 @@
 #ifdef RENDER_SNIPPET
 
 #include <vector>
+#include<unordered_map>
 
 #include "PxPhysicsAPI.h"
 
@@ -12,6 +13,9 @@
 
 #include "../Render/models.h"
 #include "../Data/Consts.h"
+
+#include "playercontroller.h"
+
 #include <unordered_map>
 
 
@@ -21,6 +25,7 @@ extern void initPhysics(bool interactive);
 extern void stepPhysics(bool interactive);
 extern void cleanupPhysics(bool interactive);
 extern void keyPress(unsigned char key, const PxTransform& camera);
+extern PxRigidDynamic* player_ctl;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -52,9 +57,14 @@ SkyBox* skybox;
 Shader* skyBoxShader;
 Shader* envShader;
 
+unordered_map<int, bool>keyboard_input(false);//处理键盘输入
+
+Player vehicle;
+
 //
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
+
 
 
 void renderCallback(Shader* shader)
@@ -134,6 +144,10 @@ int myRenderLoop()
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
+	
+   //vehicle
+	Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
+
 
 	skybox = new SkyBox(camera.Position, glm::vec3(70.0f, 70.0f, 70.0f), "", skyBoxShader);
 	// render loop
@@ -237,7 +251,19 @@ void cameraProcessInput(GLFWwindow *window) {
 		camera.ProcessKeyboard(SHIFT_RELEASE, deltaTime);
 }
 
+//按键时，载具的处理逻辑
+void vehicleProcessInput(GLFWwindow *window) {
+	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+		vehicle.ProcessKeyboard(Player_FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+		vehicle.ProcessKeyboard(Player_BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+		vehicle.ProcessKeyboard(Player_LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+		vehicle.ProcessKeyboard(Player_RIGHT, deltaTime);
+}
 //按键时，游戏角色的处理逻辑
+
 void playerProcessInput(GLFWwindow *window) {
 
 	PxTransform px;
@@ -245,6 +271,7 @@ void playerProcessInput(GLFWwindow *window) {
 	PxVec3 mDir; glmVec3ToPxVec3(camera.Front, mDir);
 	PxVec3 mEye; glmVec3ToPxVec3(camera.Position, mEye);
 	PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0));
+
 
 	if (viewY.normalize() < 1e-6f)
 		px = PxTransform(mEye);
@@ -254,8 +281,12 @@ void playerProcessInput(GLFWwindow *window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 		keyPress('F', px);
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)//切换连发
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS){//切换连发
+		keyboard_input[GLFW_KEY_T] = true;
+	}else if ((glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) && (keyboard_input[GLFW_KEY_T] == true)) {
+		keyboard_input[GLFW_KEY_T] = false;
 		keyPress('T', px);
+	}
 
 }
 
@@ -267,6 +298,7 @@ void processInput(GLFWwindow *window)
 	windowProcessInput(window);
 	cameraProcessInput(window);
 	playerProcessInput(window);
+	vehicleProcessInput(window);
 	//updateKeyState(window, keyToPrePressState, GLFW_PRESS);
 }
 

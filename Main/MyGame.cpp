@@ -28,6 +28,14 @@ PxReal					stackZ = 3.0f;
 vector<PxActor*>		removeActorList;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
+clock_t					lockFrame_last = 0, lockFrame_current = 0;
+
+//切换射击机制
+bool autoshooting = true;
+clock_t last = 0;
+
+//
+PxRigidDynamic* player_ctl=NULL;
 PxVec3					airPlaneVelocity(0, 0, 0);
 PxRigidDynamic*			airPlane = NULL;
 long long				angelAirPlane = 0.0;
@@ -164,12 +172,15 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	return dynamic;
 }
 
-PxRigidDynamic* init3rdplyer(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0)) {
+PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) {
 	if (!t.isValid()) {
 		Logger::error("error:");
 	}
-	PxMaterial* me = gPhysics->createMaterial(0.8f, 0.8f, 0.0f);
-	PxRigidDynamic* player = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
+	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
+	PxRigidDynamic* player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
+	PxVec3 position = player->getGlobalPose().p;
+	cout <<"position: "<<"x: "<<position.x << " y: " << position.y << " z: " << position.z << endl;
+	
 	//设置刚体名称
 	player->setName("3rdplayer");
 	
@@ -183,6 +194,7 @@ PxRigidDynamic* init3rdplyer(const PxTransform& t, const PxGeometry& geometry, c
 	player->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	//dynamic->setLinearVelocity(velocity);
 	gScene->addActor(*player);
+	player_ctl = player;
 	return player;
 }
 
@@ -308,7 +320,13 @@ void initPhysics(bool interactive)
 
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
+	createBigBall();
+	
+	//生成第三人称角色
+	PxTransform born_pos(PxVec3(0, 1, -7));
+	init3rdplayer(born_pos, PxSphereGeometry(1.0f));
 	//createBigBall();
+
 	createAirPlane();
 
 
@@ -394,8 +412,10 @@ void cleanupPhysics(bool interactive)
 
 	printf("program exit.\n");
 }
-bool autoshooting = true;
-clock_t last = 0;
+
+
+
+
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	switch (toupper(key))
