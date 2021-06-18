@@ -19,19 +19,23 @@
 
 #include "../Render/models.h"
 #include "../Data/Consts.h"
+#include <ctime>
+
 
 extern PxRigidDynamic* player_ctl;
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
+extern Camera camera;
 
-
-
+extern PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0));
+extern void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
 void keypress();
 void mouseMove();
 
 
 
 void vehicleProcessKeyboard();
+void playerProcessKeyboard();
 
 
 
@@ -91,61 +95,6 @@ public:
 		updateCameraVectors();
 	}
 
-
-	// processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-	void ProcessKeyboard(PlayerMovement direction, float deltaTime)
-	{
-		cout << direction << endl;
-		//float velocity = MovementSpeed * deltaTime;
-		float velocity = MovementSpeed;
-		cout << "velocity: " << velocity << endl;
-		if (direction == Player_FORWARD)
-		{
-			PxVec3 forward_velocity(0.0f,0.0f,(-1)*velocity);
-			player_ctl->setLinearVelocity(forward_velocity);
-			//Position += Front * velocity;
-			//Position.z -= velocity;
-			//cout << "position.x: " << Position.x << "position.y: " << Position.y << "position.z: " << Position.z << endl;
-			//PxTransform output(PxVec3(Position.x,Position.y,Position.z));
-			//player_ctl->setGlobalPose(output);
-			
-		}
-		if (direction == Player_BACKWARD)
-		{
-			PxVec3 backward_velocity(0.0f, 0.0f,velocity);
-			player_ctl->setLinearVelocity(backward_velocity);
-			/*Position.z +=  velocity;
-			cout << "position.x: " << Position.x << "position.y: " << Position.y << "position.z: " << Position.z << endl;
-			PxTransform output(PxVec3(Position.x, Position.y, Position.z));
-			player_ctl->setGlobalPose(output);
-			*/
-		}
-			
-		if (direction == Player_LEFT)
-		{
-			PxVec3 leftward_velocity((-1)*velocity, 0.0f,0.0f);
-			player_ctl->setLinearVelocity(leftward_velocity);
-          /*Position.x -=  velocity;
-		  cout << "position.x: " << Position.x << "position.y: " << Position.y << "position.z: " << Position.z << endl;
-		  PxTransform output(PxVec3(Position.x, Position.y, Position.z));
-		  player_ctl->setGlobalPose(output);
-		  */
-
-		}
-			
-		if (direction == Player_RIGHT)
-		{
-			PxVec3 rightward_velocity(velocity, 0.0f, 0.0f);
-			player_ctl->setLinearVelocity(rightward_velocity);
-			/*Position.x += velocity;
-			cout << "position.x: " << Position.x << "position.y: " << Position.y << "position.z: " << Position.z << endl;
-			PxTransform output(PxVec3(Position.x, Position.y, Position.z));
-			player_ctl->setGlobalPose(output);
-			*/
-		}
-
-		
-	}
 
 	
 

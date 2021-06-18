@@ -47,7 +47,6 @@ Shader* envShader;
 
 unordered_map<int, bool>keyboard_input(false);//处理键盘输入
 
-Player vehicle;
 
 //
 std::unordered_map<int, bool> keyToPressState;
@@ -133,8 +132,6 @@ int myRenderLoop()
 	atexit(exitCallback); //6
 	initPhysics(true); //6
 	
-   //vehicle
-	Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
 
 	skybox = new SkyBox(camera.Position, glm::vec3(70.0f, 70.0f, 70.0f), "", skyBoxShader);
@@ -239,45 +236,6 @@ void cameraProcessInput(GLFWwindow *window) {
 		camera.ProcessKeyboard(SHIFT_RELEASE, deltaTime);
 }
 
-//按键时，载具的处理逻辑
-void vehicleProcessInput(GLFWwindow *window) {
-	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-		vehicle.ProcessKeyboard(Player_FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-		vehicle.ProcessKeyboard(Player_BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
-		vehicle.ProcessKeyboard(Player_LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-		vehicle.ProcessKeyboard(Player_RIGHT, deltaTime);
-}
-//按键时，游戏角色的处理逻辑
-
-void playerProcessInput(GLFWwindow *window) {
-
-	PxTransform px;
-
-	PxVec3 mDir; glmVec3ToPxVec3(camera.Front, mDir);
-	PxVec3 mEye; glmVec3ToPxVec3(camera.Position, mEye);
-	PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0));
-
-
-	if (viewY.normalize() < 1e-6f)
-		px = PxTransform(mEye);
-	else {
-		PxMat33 m(mDir.cross(viewY), viewY, -mDir);
-		px = PxTransform(mEye, PxQuat(m));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-		keyPress('F', px);
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS){//切换连发
-		keyboard_input[GLFW_KEY_T] = true;
-	}else if ((glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) && (keyboard_input[GLFW_KEY_T] == true)) {
-		keyboard_input[GLFW_KEY_T] = false;
-		keyPress('T', px);
-	}
-
-}
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -287,9 +245,9 @@ void processInput(GLFWwindow *window)
 	windowProcessInput(window);
 	cameraProcessInput(window);
 
-
-	playerProcessInput(window);
-	vehicleProcessInput(window);
+	keypress();
+	/*playerProcessInput(window);
+	vehicleProcessInput(window);*/
 
 	updateKeyState(window, keyToPrePressState, GLFW_PRESS);
 }

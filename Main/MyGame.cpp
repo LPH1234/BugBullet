@@ -28,12 +28,6 @@ PxReal					stackZ = 3.0f;
 vector<PxActor*>		removeActorList;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
-clock_t					lockFrame_last = 0, lockFrame_current = 0;
-
-//切换射击机制
-bool autoshooting = true;
-clock_t last = 0;
-
 //
 PxRigidDynamic* player_ctl=NULL;
 PxVec3					airPlaneVelocity(0, 0, 0);
@@ -323,7 +317,7 @@ void initPhysics(bool interactive)
 	
 	//生成第三人称角色
 	PxTransform born_pos(PxVec3(0, 1, -7));
-	init3rdplayer(born_pos, PxSphereGeometry(1.0f));
+	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
 
 	createAirPlane();
@@ -411,39 +405,6 @@ void cleanupPhysics(bool interactive)
 }
 
 
-
-
-void keyPress(unsigned char key, const PxTransform& camera)
-{
-	switch (toupper(key))
-	{
-	case 'B':
-		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
-		break;
-	case 'F':
-		if (autoshooting) {
-			createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
-			break;
-		}
-		else {
-			clock_t now = clock();
-			if (now - last > 1000) {
-				createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
-				last = now;
-			}
-			break;
-		}
-	case 'T':
-		autoshooting = !autoshooting;
-		if (autoshooting) {
-			cout << "切换成全自动" << endl;
-		}
-		else {
-			cout << "切换成半自动" << endl;
-		}
-		break;
-	}
-}
 
 extern int myRenderLoop();
 int snippetMyMain(int, const char*const*)
