@@ -2,21 +2,9 @@
 
 #ifdef RENDER_SNIPPET
 
-#include <vector>
-#include<unordered_map>
 
-#include "PxPhysicsAPI.h"
+#include "Controller.h"
 
-#include "../Render/Render.h"
-#include "../Render/Camera.h"
-#include <iostream>
-
-#include "../Render/models.h"
-#include "../Data/Consts.h"
-
-#include "playercontroller.h"
-
-#include <unordered_map>
 
 
 using namespace physx;
@@ -298,9 +286,12 @@ void processInput(GLFWwindow *window)
 	updateKeyState(window, keyToPressState, GLFW_PRESS);
 	windowProcessInput(window);
 	cameraProcessInput(window);
+
+
 	playerProcessInput(window);
 	vehicleProcessInput(window);
-	//updateKeyState(window, keyToPrePressState, GLFW_PRESS);
+
+	updateKeyState(window, keyToPrePressState, GLFW_PRESS);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
