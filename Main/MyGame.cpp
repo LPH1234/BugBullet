@@ -28,14 +28,13 @@ PxReal					stackZ = 3.0f;
 vector<PxActor*>		removeActorList;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
-clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
 //切换射击机制
 bool autoshooting = true;
 clock_t last = 0;
 
 //
-PxRigidDynamic* player_ctl=NULL;
+PxRigidDynamic* player_ctl = NULL;
 PxVec3					airPlaneVelocity(0, 0, 0);
 PxRigidDynamic*			airPlane = NULL;
 long long				angelAirPlane = 0.0;
@@ -59,15 +58,10 @@ struct FilterGroup
 * @param scale      模型的缩放系数
 * @param modelPath  模型文件路径
 * @param shader     绘制此模型的shader
-* @return			是否成功
+* @return			物理模型actor
 */
-bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic = true);
-/**
-* @brief			根据一个自定义的渲染模型去创建物理模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
-* @param model      指向渲染模型的指针
-* @return			是否成功
-*/
-bool createSpecialStaticModel(BaseModel* model, bool preLoad = false, bool ifStatic = true);
+PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic = true);
+
 
 //自定义FilterShader，大球或小球跟方块发生碰撞时为pairFlags添加eCONTACT_DEFAULT
 PxFilterFlags testCollisionFilterShader(
@@ -179,8 +173,8 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
 	PxRigidDynamic* player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
 	PxVec3 position = player->getGlobalPose().p;
-	cout <<"position: "<<"x: "<<position.x << " y: " << position.y << " z: " << position.z << endl;
-	
+	cout << "position: " << "x: " << position.x << " y: " << position.y << " z: " << position.z << endl;
+
 	//设置刚体名称
 	player->setName("3rdplayer");
 
@@ -320,7 +314,7 @@ void initPhysics(bool interactive)
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	createBigBall();
-	
+
 	//生成第三人称角色
 	PxTransform born_pos(PxVec3(0, 1, -7));
 	init3rdplayer(born_pos, PxSphereGeometry(1.0f));
@@ -347,34 +341,27 @@ void initPhysics(bool interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
 
-bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
+PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
+	PxRigidActor* rigid;
 	if (FileUtils::isFileExist(modelPath)) {
 		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
-
 		if (ifStatic) {
 			ObjLoader loader(model, MESH_TYPE::TRIANGLE);
-			loader.createStaticActorAndAddToScene(); // 静态刚体
+			rigid = loader.createStaticActorAndAddToScene(); // 静态刚体
 		}
 		else {
 			ObjLoader loader(model, MESH_TYPE::CONVEX);
-			loader.createDynamicActorAndAddToScene(); // 动态刚体
+			rigid = loader.createDynamicActorAndAddToScene(); // 动态刚体
 		}
 		Logger::debug("创建完成");
 	}
 	else {
 		Logger::error("文件不存在：" + modelPath);
-		return false;
+		return nullptr;
 	}
-	return true;
+	return rigid;
 }
-bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
-	ObjLoader loader(model, MESH_TYPE::TRIANGLE);
-	if (ifStatic)
-		loader.createStaticActorAndAddToScene(); //静态刚体
-	else
-		loader.createDynamicActorAndAddToScene();
-	return true;
-}
+
 
 void stepPhysics(bool interactive)
 {

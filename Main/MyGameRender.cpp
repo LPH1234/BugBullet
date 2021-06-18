@@ -21,11 +21,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map, const int STATE);
 // settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1920 / 2;
+const unsigned int SCR_HEIGHT = 1080 / 2;
 
 // camera
-Camera camera(glm::vec3(0.0f, 5.0f, 3.0f));
+Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -39,7 +39,6 @@ glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 //model position
 glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
 
-Camera sCamera(glm::vec3(0.0f, 5.0f, 3.0f));
 
 SkyBox* skybox;
 Shader* skyBoxShader;
@@ -110,7 +109,7 @@ int myRenderLoop()
 
 	for (int i = 0; i <= 348; i++)
 		keyToPressState[i] = false;
-
+	camera.setTarget(glm::vec3(0.f, 2.f, 0.f));
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -132,12 +131,12 @@ int myRenderLoop()
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
-	
+
    //vehicle
 	Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
 
-	skybox = new SkyBox(camera.Position, glm::vec3(70.0f, 70.0f, 70.0f), "", skyBoxShader);
+	skybox = new SkyBox(camera.getPosition(), glm::vec3(70.0f, 70.0f, 70.0f), "", skyBoxShader);
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -159,12 +158,12 @@ int myRenderLoop()
 
 		envShader->use();
 		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
 		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		envShader->setMat4("projection", projection);
 		envShader->setMat4("view", view);
-		envShader->setVec3("viewPos", camera.Position);
+		envShader->setVec3("viewPos", camera.getPosition());
 		envShader->setInt("material.diffuse", 0);
 		envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
 		envShader->setFloat("material.shininess", 32.0f);
@@ -270,9 +269,10 @@ void playerProcessInput(GLFWwindow *window) {
 
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 		keyPress('F', px);
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS){//切换连发
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {//切换连发
 		keyboard_input[GLFW_KEY_T] = true;
-	}else if ((glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) && (keyboard_input[GLFW_KEY_T] == true)) {
+	}
+	else if ((glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) && (keyboard_input[GLFW_KEY_T] == true)) {
 		keyboard_input[GLFW_KEY_T] = false;
 		keyPress('T', px);
 	}
