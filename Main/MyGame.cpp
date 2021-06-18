@@ -227,7 +227,7 @@ void changeAirPlaneVelocity() {
 	PxQuat rot(PxPi / 180 * angelAirPlane, PxVec3(0, 0, 1));
 	headForward = rot.rotate(PxVec3(1, 0, 0));
 	airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));
-	airPlane->setLinearVelocity(5 * headForward);
+	airPlane->setLinearVelocity(20 * headForward);
 }
 
 PxRigidDynamic* player;
@@ -311,9 +311,9 @@ void initPhysics(bool interactive)
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
 	gScene->addActor(*groundPlane);
 
-	for (PxU32 i = 0; i < 3; i++)
-		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-	createBigBall();
+	//for (PxU32 i = 0; i < 3; i++)
+		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
+	//createBigBall();
 	
 	//生成第三人称角色
 	PxTransform born_pos(PxVec3(0, 1, -7));
@@ -331,8 +331,11 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
-
-
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
+	createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
+	//model\vehicle\suv\Models Transport Shuttle_obj.obj
+		
 
 
 	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
@@ -351,7 +354,8 @@ bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* 
 		}
 		else {
 			ObjLoader loader(model, MESH_TYPE::CONVEX);
-			loader.createDynamicActorAndAddToScene(); // 动态刚体
+			airPlane = (PxRigidDynamic*)loader.createDynamicActorAndAddToScene(); // 动态刚体
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, PxQuat(-PxPi / 2, PxVec3(1, 0, 0))));
 		}
 		Logger::debug("创建完成");
 	}
