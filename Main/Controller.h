@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include<unordered_map>
+#include <ctime>
 
 #include "PxPhysicsAPI.h"
 
@@ -19,17 +20,14 @@
 
 #include "../Render/models.h"
 #include "../Data/Consts.h"
-#include <ctime>
+#include "Creater.h"
 
 
-extern PxRigidDynamic* player_ctl;
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
 extern Camera camera;
 
-extern PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0));
-extern void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
-void keypress();
+void keyPress();
 void mouseMove();
 
 
@@ -54,7 +52,7 @@ enum PlayerMovement {
 class Player
 {
 public:
-	
+
 
 private:
 

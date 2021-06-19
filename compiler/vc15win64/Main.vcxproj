@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DF91286C-A048-0858-C381-C4106C184C0B}</ProjectGuid>
     <RootNamespace>SnippetHelloWorld</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>Main</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -271,11 +271,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\Main\ClassicMain.cpp" />
     <ClCompile Include="..\..\Main\Controller.cpp" />
+    <ClCompile Include="..\..\Main\Creater.cpp" />
     <ClCompile Include="..\..\Main\MyGame.cpp" />
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Controller.h" />
+    <ClInclude Include="..\..\Main\Creater.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

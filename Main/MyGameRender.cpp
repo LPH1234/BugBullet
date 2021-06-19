@@ -12,7 +12,7 @@ using namespace physx;
 extern void initPhysics(bool interactive);
 extern void stepPhysics(bool interactive);
 extern void cleanupPhysics(bool interactive);
-extern void keyPress(unsigned char key, const PxTransform& camera);
+
 extern PxRigidDynamic* player_ctl;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -21,11 +21,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map, const int STATE);
 // settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1920 / 2;
+const unsigned int SCR_HEIGHT = 1080 / 2;
 
 // camera
-Camera camera(glm::vec3(0.0f, 5.0f, 3.0f));
+Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -39,7 +39,6 @@ glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 //model position
 glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
 
-Camera sCamera(glm::vec3(0.0f, 5.0f, 3.0f));
 
 SkyBox* skybox;
 Shader* skyBoxShader;
@@ -109,7 +108,6 @@ int myRenderLoop()
 
 	for (int i = 0; i <= 348; i++)
 		keyToPressState[i] = false;
-
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -131,10 +129,10 @@ int myRenderLoop()
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
-	
 
 
-	skybox = new SkyBox(camera.Position, glm::vec3(70.0f, 70.0f, 70.0f), "", skyBoxShader);
+
+	skybox = new SkyBox(camera.getPosition(), glm::vec3(7000.0f, 7000.0f, 7000.0f), "", skyBoxShader);
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -156,12 +154,13 @@ int myRenderLoop()
 
 		envShader->use();
 		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 10000.f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 12000.f);
+		camera.trackDynamicPosition();
 		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		envShader->setMat4("projection", projection);
 		envShader->setMat4("view", view);
-		envShader->setVec3("viewPos", camera.Position);
+		envShader->setVec3("viewPos", camera.getPosition());
 		envShader->setInt("material.diffuse", 0);
 		envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
 		envShader->setFloat("material.shininess", 32.0f);
@@ -179,15 +178,14 @@ int myRenderLoop()
 		// 绘制包围盒
 		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
 
-		/*skyBoxShader->use();
+		skyBoxShader->use();
 		skyBoxShader->setMat4("projection", projection);
 		skyBoxShader->setMat4("view", view);
 
 
-		skybox->setPosition(camera.Position);
+		skybox->setPosition(camera.getPosition());
 		skyBoxShader->setMat4("model", skybox->getModel());
-		skybox->draw();*/
-
+		skybox->draw();
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -234,6 +232,12 @@ void cameraProcessInput(GLFWwindow *window) {
 		camera.ProcessKeyboard(SHIFT_PRESS, deltaTime);
 	if (!keyToPressState[GLFW_KEY_LEFT_SHIFT])
 		camera.ProcessKeyboard(SHIFT_RELEASE, deltaTime);
+	if (keyToPressState[GLFW_KEY_F1])
+		camera.setMode(VIEW_TYPE::FIRST_PERSON);
+	if (keyToPressState[GLFW_KEY_F3])
+		camera.setMode(VIEW_TYPE::THIRD_PERSON);
+	if (keyToPressState[GLFW_KEY_F2])
+		camera.setMode(VIEW_TYPE::FREE);
 }
 
 
@@ -245,9 +249,7 @@ void processInput(GLFWwindow *window)
 	windowProcessInput(window);
 	cameraProcessInput(window);
 
-	keypress();
-	/*playerProcessInput(window);
-	vehicleProcessInput(window);*/
+	keyPress();
 
 	updateKeyState(window, keyToPrePressState, GLFW_PRESS);
 }
@@ -279,6 +281,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	lastY = ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
+	mouseMove();
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called

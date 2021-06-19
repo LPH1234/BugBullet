@@ -13,6 +13,9 @@
     <ClCompile Include="..\..\Main\Controller.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Main\Creater.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="源文件">
@@ -24,6 +27,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Controller.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Main\Creater.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
