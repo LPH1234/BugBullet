@@ -21,10 +21,9 @@ extern PxMaterial*				gMaterial;
 extern PxPvd*                  gPvd;
 
 extern physx::PxRigidDynamic* player;
+extern PxRigidDynamic* player_ctl;
 extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
-
-
 
 
 /**
