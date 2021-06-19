@@ -1,14 +1,9 @@
 ﻿#include <ctype.h>
 #include <iostream>
-#include "PxPhysicsAPI.h"
-#include "../Common/Print.h"
-#include "../Common/PVD.h"
-#include "../Utils/Utils.h"
-#include "../Render/objLoader.h"
-#include "../Utils/module.h"
-#include "../Render/models.h"
-#include "../Render/Render.h"
 #include <ctime>
+
+#include "Creater.h"
+
 #define PI 3.1415926
 
 using namespace physx;
@@ -340,9 +335,12 @@ void createModel(std::string path, int scale, PxVec3& offset) {
 
 }
 
+module moduleCallBack;
+PxReal					stackZ = 3.0f;
+extern Camera camera;
 extern Shader* envShader;
-PlainModel *street;
-Ball *ball;
+clock_t	 lockFrame_last = 0, lockFrame_current = 0;
+
 
 void initPhysics(bool interactive)
 {
@@ -394,6 +392,8 @@ void initPhysics(bool interactive)
 	//createChain(PxTransform(PxVec3(0.0f, 2.0f, -10.0f)), 5, PxBoxGeometry(1.0f, 0.3f, 0.3f), 2.0f, createBreakableFixed);
 	//createJoint();
 
+	camera.setTarget(player);
+
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
@@ -404,42 +404,11 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 
 
-
-
-	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
-
 	if (!interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
 
-bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
-	if (FileUtils::isFileExist(modelPath)) {
-		BaseModel* model = new PlainModel(pos, scale, modelPath, shader);
 
-		if (ifStatic) {
-			ObjLoader loader(model, MESH_TYPE::TRIANGLE);
-			loader.createStaticActorAndAddToScene(); // 静态刚体
-		}
-		else {
-			ObjLoader loader(model, MESH_TYPE::CONVEX);
-			loader.createDynamicActorAndAddToScene(); // 动态刚体
-		}
-		Logger::debug("创建完成");
-	}
-	else {
-		Logger::error("文件不存在：" + modelPath);
-		return false;
-	}
-	return true;
-}
-bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
-	ObjLoader loader(model, MESH_TYPE::TRIANGLE);
-	if (ifStatic)
-		loader.createStaticActorAndAddToScene(); //静态刚体
-	else
-		loader.createDynamicActorAndAddToScene();
-	return true;
-}
 
 void stepPhysics(bool interactive)
 {
@@ -476,39 +445,6 @@ void cleanupPhysics(bool interactive)
 }
 
 
-
-
-void keyPress(unsigned char key, const PxTransform& camera)
-{
-	switch (toupper(key))
-	{
-	case 'B':
-		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
-		break;
-	case 'F':
-		if (autoshooting) {
-			createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
-			break;
-		}
-		else {
-			clock_t now = clock();
-			if (now - last > 1000) {
-				createDynamic(camera, PxSphereGeometry(0.1f), camera.rotate(PxVec3(0, 0, -1)) * 20);
-				last = now;
-			}
-			break;
-		}
-	case 'T':
-		autoshooting = !autoshooting;
-		if (autoshooting) {
-			cout << "切换成全自动" << endl;
-		}
-		else {
-			cout << "切换成半自动" << endl;
-		}
-		break;
-	}
-}
 
 extern int myRenderLoop();
 int snippetMyMain(int, const char*const*)

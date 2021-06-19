@@ -13,6 +13,12 @@
     <ClCompile Include="..\..\Main\Controller.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+<<<<<<< HEAD
+=======
+    <ClCompile Include="..\..\Main\Creater.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+>>>>>>> d572d616d96aeccb41121cce8020b046d7775a93
   </ItemGroup>
   <ItemGroup>
     <Filter Include="源文件">
@@ -24,6 +30,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Controller.h">
+<<<<<<< HEAD
+=======
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Main\Creater.h">
+>>>>>>> d572d616d96aeccb41121cce8020b046d7775a93
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

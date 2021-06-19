@@ -271,11 +271,19 @@
   <ItemGroup>
     <ClCompile Include="..\..\Main\ClassicMain.cpp" />
     <ClCompile Include="..\..\Main\Controller.cpp" />
+<<<<<<< HEAD
+=======
+    <ClCompile Include="..\..\Main\Creater.cpp" />
+>>>>>>> d572d616d96aeccb41121cce8020b046d7775a93
     <ClCompile Include="..\..\Main\MyGame.cpp" />
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Controller.h" />
+<<<<<<< HEAD
+=======
+    <ClInclude Include="..\..\Main\Creater.h" />
+>>>>>>> d572d616d96aeccb41121cce8020b046d7775a93
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
