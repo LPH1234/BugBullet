@@ -25,8 +25,6 @@ extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
 
 
-
-
 /**
 * @brief			创建一个普通的渲染模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
 * @param pos        模型的初始位置

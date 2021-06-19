@@ -12,6 +12,7 @@ PxRigidDynamic*	airPlane = nullptr;
 PxRigidDynamic* player = nullptr;
 PlainModel *street = nullptr;
 
+
 vector<PxActor*>		removeActorList;
 PxVec3					airPlaneVelocity(0, 0, 0);
 long long				angelAirPlane = 0.0;
