@@ -134,7 +134,7 @@ int myRenderLoop()
 	initPhysics(true); //6
 	
    //vehicle
-	Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
+	//Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
 
 	skybox = new SkyBox(camera.Position, glm::vec3(70.0f, 70.0f, 70.0f), "", skyBoxShader);

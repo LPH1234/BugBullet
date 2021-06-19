@@ -28,8 +28,6 @@ PxReal					stackZ = 3.0f;
 vector<PxActor*>		removeActorList;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
-clock_t					lockFrame_last = 0, lockFrame_current = 0;
-
 //切换射击机制
 bool autoshooting = true;
 clock_t last = 0;
@@ -124,12 +122,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 		if (actor_0 != NULL && actor_1 != NULL) {
 			if (actor_0->getName() == "littleBall"&&actor_1->getName() == "box"
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "box") {
-				printf("小球碰方块！\n");
+				//printf("小球碰方块！\n");
 				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
 			}
 			else if (actor_0->getName() == "bigBall"&&actor_1->getName() == "box"
 				|| actor_1->getName() == "bigBall"&&actor_0->getName() == "box") {
-				printf("大球碰方块！\n");
+				//printf("大球碰方块！\n");
 				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
 
 			}
@@ -213,10 +211,71 @@ void createBigBall() {
 	gScene->addActor(*body);
 	//shape->release();
 }
+
+//创造Joint
+PxJoint* createBreakableFixed(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1)
+{
+	PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, t0, a1, t1);
+	j->setBreakForce(1000, 100000);
+	j->setConstraintFlag(PxConstraintFlag::eDRIVE_LIMITS_ARE_FORCES, true);
+	j->setConstraintFlag(PxConstraintFlag::eDISABLE_PREPROCESSING, true);
+	return j;
+}
+typedef PxJoint* (*JointCreateFunction)(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1);
+
+// create a chain rooted at the origin and extending along the x-axis, all transformed by the argument t.
+
+void createChain(const PxTransform& t, PxU32 length, const PxGeometry& g, PxReal separation, JointCreateFunction createJoint)
+{
+	PxVec3 offset(separation / 2, 0, 0);
+	PxTransform localTm(offset);
+	PxRigidDynamic* prev = NULL;
+	cout << "localTm:" << localTm.p.x << "\t" << localTm.p.y << "\t" << localTm.p.z << "\t"
+		<< localTm.q.x << "\t" << localTm.q.y << "\t" << localTm.q.z << "\t" << localTm.q.w << "\n";
+	for (PxU32 i = 0; i < length; i++)
+	{
+		PxRigidDynamic* current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
+		cout << "localTm:" << (t * localTm).p.x << "\t" << (t * localTm).p.y << "\t" << (t * localTm).p.z << "\t"
+			<< (t * localTm).q.x << "\t" << (t * localTm).q.y << "\t" << (t * localTm).q.z << "\t" << (t * localTm).q.w << "\n";
+		(*createJoint)(prev, prev ? PxTransform(offset) : t, current, PxTransform(-offset));
+		gScene->addActor(*current);
+		prev = current;
+		localTm.p.x += separation;
+	}
+}
+//组合Joint
+void createJoint() {
+	PxShape* shape1 = gPhysics->createShape(PxBoxGeometry(1, 0.4, 0.4), *gMaterial);
+	PxShape* shape2 = gPhysics->createShape(PxBoxGeometry(0.4, 1, 0.4), *gMaterial);
+	PxTransform pos1(PxVec3(0, 1, -10)), pos1_2(PxVec3(0, 3, -10)), pos2(PxVec3(-0.6, 2.8, -10));
+	PxRigidDynamic* body1 = PxCreateDynamic(*gPhysics, pos1, *shape1, 8);
+	PxRigidDynamic* body1_2 = PxCreateDynamic(*gPhysics, pos1_2, *shape2, 8);
+	//PxRigidDynamic* body2 = PxCreateDynamic(*gPhysics, pos2, *shape2, 8);
+	body1->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	body1->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	body1_2->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	body1_2->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	//body2->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	//body2->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+
+	//PxFixedJoint* j = PxFixedJointCreate(*gPhysics, body1, PxTransform(PxVec3(-0.6,0.6,0)), body2, PxTransform(PxVec3(0,-1.2,0)));
+	PxFixedJoint* j = PxFixedJointCreate(*gPhysics, body1, PxTransform(PxVec3(1, 0, 0)), body1_2, PxTransform(PxVec3(0, -1, 0)));
+	j->setBreakForce(1000000, 10);
+	j->setConstraintFlag(PxConstraintFlag::eDRIVE_LIMITS_ARE_FORCES, true);
+	j->setConstraintFlag(PxConstraintFlag::eDISABLE_PREPROCESSING, true);
+
+	gScene->addActor(*body1);
+	gScene->addActor(*body1_2);
+	//gScene->addActor(*body2);
+	shape1->release();
+	shape2->release();
+
+}
 //飞机刚体
 void createAirPlane() {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
-	PxTransform initPos(PxVec3(2, 1, -15), PxQuat(PxPi / 6, PxVec3(0, 0, 1)));
+	//PxTransform initPos(PxVec3(2, 1, -15), PxQuat(PxPi / 6, PxVec3(0, 0, 1)));
+	PxTransform initPos(PxVec3(2, 1, -15));
 	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, initPos, *shape, 8);
 
 	body->setName("airPlane");
@@ -224,6 +283,10 @@ void createAirPlane() {
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	airPlane = body;
 	gScene->addActor(*body);
+
+	//尾翼
+	PxShape* shape2 = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
+
 	shape->release();
 }
 //改变飞机姿态与速度，使其做圆周运动
@@ -290,6 +353,7 @@ void initPhysics(bool interactive)
 	gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
 
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
+	PxInitExtensions(*gPhysics, gPvd);
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
@@ -317,20 +381,21 @@ void initPhysics(bool interactive)
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
 	gScene->addActor(*groundPlane);
 
-	for (PxU32 i = 0; i < 3; i++)
-		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-	createBigBall();
+	//for (PxU32 i = 0; i < 3; i++)
+		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
+	//createBigBall();
 	
 	//生成第三人称角色
-	PxTransform born_pos(PxVec3(0, 1, -7));
-	init3rdplayer(born_pos, PxSphereGeometry(1.0f));
+	//PxTransform born_pos(PxVec3(0, 1, -7));
+	//init3rdplayer(born_pos, PxSphereGeometry(1.0f));
 	//createBigBall();
 
 	createAirPlane();
-
+	//createChain(PxTransform(PxVec3(0.0f, 2.0f, -10.0f)), 5, PxBoxGeometry(1.0f, 0.3f, 0.3f), 2.0f, createBreakableFixed);
+	//createJoint();
 
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
