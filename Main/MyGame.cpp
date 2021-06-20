@@ -35,16 +35,16 @@ long long				angelAirPlane = 0.0;
 PxVec3					headForward(1, 0, 0);
 
 //碰撞过滤枚举类型
-struct FilterGroup
-{
-	enum Enum
-	{
-		eBALL = (1 << 0),		//发射的小球
-		eWALL = (1 << 1),		//墙壁
-		eSTACK = (1 << 2),		//小方块
-		eBIGBALL = (1 << 3),	//大球
-	};
-};
+//struct FilterGroup
+//{
+//	enum Enum
+//	{
+//		eBALL = (1 << 0),		//发射的小球
+//		eWALL = (1 << 1),		//墙壁
+//		eSTACK = (1 << 2),		//小方块
+//		eBIGBALL = (1 << 3),	//大球
+//	};
+//};
 
 /**
 * @brief			创建一个普通的渲染模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
@@ -54,7 +54,7 @@ struct FilterGroup
 * @param shader     绘制此模型的shader
 * @return			是否成功
 */
-bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic = true);
+//bool createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic = true);
 /**
 * @brief			根据一个自定义的渲染模型去创建物理模型，物理模型是static rigid / dynamic rigid， triangle mesh / convex mesh
 * @param model      指向渲染模型的指针
@@ -146,7 +146,7 @@ void removeActorInList() {
 }
 
 
-PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0))
+PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity)
 {
 	if (!t.isValid()) {
 		Logger::error("error:");
@@ -335,11 +335,8 @@ void createModel(std::string path, int scale, PxVec3& offset) {
 
 }
 
-module moduleCallBack;
-PxReal					stackZ = 3.0f;
 extern Camera camera;
 extern Shader* envShader;
-clock_t	 lockFrame_last = 0, lockFrame_current = 0;
 
 
 void initPhysics(bool interactive)
