@@ -11,9 +11,12 @@ static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
 
 Cube* cube = nullptr;
 Sphere* sphere = nullptr;
-void renderGeometry(const PxGeometryHolder& h, PxTransform& t, Shader* shader)
+PlainModel* bullet = nullptr;
+
+void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shader)
 {
-	glm::vec3 pos = pxVec3ToGlmVec3(t.p);
+	PxTransform& t = actor->getGlobalPose();
+	glm::vec3& pos = pxVec3ToGlmVec3(t.p);
 	//Logger::debug("pos:   x:" + to_string(position.x) + "   y:" + to_string(position.y) + "   z:" + to_string(position.z));
 
 	switch (h.getType())
@@ -47,7 +50,17 @@ void renderGeometry(const PxGeometryHolder& h, PxTransform& t, Shader* shader)
 	break;
 	case PxGeometryType::eCAPSULE:
 	{
-
+		if (std::strcmp(actor->getName(), ACTOR_NAME_PLAYER_BULLET.c_str()) == 0) //子弹
+		{
+			glm::vec3 scale(h.capsule().halfHeight, h.capsule().radius, h.capsule().radius);
+			if (bullet == nullptr)
+				bullet = new PlainModel(pos, scale, "model/bullet/bullet3/bullet.obj", shader);
+			bullet->setPosition(pos);
+			bullet->setScaleValue(scale);
+			bullet->setRotate(t.q);
+			bullet->updateShaderModel();
+			bullet->draw();
+		}
 	}
 	break;
 	case PxGeometryType::eCONVEXMESH:
@@ -99,7 +112,7 @@ namespace Snippets
 				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE)
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				// render object
-				PxTransform t = actors[i]->getGlobalPose();
+
 
 				if (sleeping)
 				{
@@ -109,7 +122,7 @@ namespace Snippets
 				else {
 					// glColor4f(color.x, color.y, color.z, 1.0f); 
 				}
-				renderGeometry(h, t, shader);
+				renderGeometry(actors[i], h, shader);
 
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

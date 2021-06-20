@@ -242,3 +242,25 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 	}
 	shape->release();
 }
+
+
+void createBullet(const PxTransform& t, const PxVec3& velocity) {
+
+	if (!t.isValid()) {
+		Logger::error("error:");
+	}
+	PxCapsuleGeometry e(0.01, 0.01);
+	PxMaterial* me = gPhysics->createMaterial(0.9f, 0.9f, 0.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, e, *me, 0.01f);
+	//设置刚体名称
+	dynamic->setName(ACTOR_NAME_PLAYER_BULLET.c_str());
+	//设置碰撞的标签
+	setupFiltering(dynamic, FilterGroup::ePLAYERBULLET, FilterGroup::eSTACK);
+	me->release();
+	/*PxQuat rot(PxPi / 180 * 90, PxVec3(1, 0, 0));
+	dynamic->setGlobalPose(PxTransform(t.p, rot));*/
+	dynamic->setAngularDamping(0.05f);
+	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+	dynamic->setLinearVelocity(velocity);
+	gScene->addActor(*dynamic);
+}

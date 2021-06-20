@@ -165,123 +165,6 @@ public:
 
 };
 
-class Ball : public PlainModel
-{
-public:
-
-
-	Ball(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :PlainModel(pos, scale, modelPath, shader) {
-		rotateAngle = 0.0f; MovementSpeed = 2.5f;
-		ifKey[0] = ifKey[1] = ifKey[2] = ifKey[3] = false;
-		rotateRate = 120; axis = glm::vec3(1.0f, 0.0f, 0.0f);
-	}
-
-	~Ball() {}
-
-
-	glm::mat4 getModel() {
-		glm::mat4 model = glm::mat4(1.0f);
-		// render the loaded model
-		model = glm::translate(model, this->Position); // 平移到场景中央，y为10的位置
-		model = glm::scale(model, this->scale_value);	// 
-		if (!ifKey[0] && !ifKey[1] && !ifKey[2] && !ifKey[3]) return model = glm::rotate(model, glm::radians(rotateAngle), axis);;
-		if (ifKey[0] && ifKey[2])
-			axis = this->Right + this->Front;
-		else if (ifKey[1] && ifKey[3])
-			axis = this->Right + this->Front;
-		else if (ifKey[0] && ifKey[3])
-			axis = this->Right - this->Front;
-		else if (ifKey[1] && ifKey[2])
-			axis = this->Right - this->Front;
-		else if (ifKey[0])
-			axis = this->Right;
-		else if (ifKey[1])
-			axis = this->Right;
-		else if (ifKey[2])
-			axis = this->Front;
-		else if (ifKey[3])
-			axis = this->Front;
-		model = glm::rotate(model, glm::radians(rotateAngle), axis);
-		ifKey[0] = ifKey[1] = ifKey[2] = ifKey[3] = false;
-		return model;
-	}
-
-	//在街道平面上移动。
-	void setOrientation(glm::vec3 front, glm::vec3 right) {
-		Front = glm::normalize(front);
-		Front.y = 0;
-		Right = glm::normalize(right);
-		Right.y = 0;
-	}
-
-	void ProcessKeyboard(Movement direction, float deltaTime)
-	{
-		float velocity = MovementSpeed * deltaTime;
-		if (direction == FORWARD) {
-			Position += Front * velocity;
-			ifKey[0] = true;
-		}
-		if (direction == BACKWARD) {
-			Position -= Front * velocity;
-			ifKey[1] = true;
-		}
-		if (direction == LEFT) {
-			Position -= Right * velocity;
-			ifKey[2] = true;
-		}
-		if (direction == RIGHT) {
-			Position += Right * velocity;
-			ifKey[3] = true;
-		}
-
-
-		if (ifKey[0] && ifKey[2])
-			rotateAngle = (rotateAngle - velocity * rotateRate);
-		else if (ifKey[1] && ifKey[3])
-			rotateAngle = (rotateAngle + velocity * rotateRate);
-		else if (ifKey[0] && ifKey[3])
-			rotateAngle = (rotateAngle - velocity * rotateRate);
-		else if (ifKey[1] && ifKey[2])
-			rotateAngle = (rotateAngle + velocity * rotateRate);
-		else if (ifKey[0])
-			rotateAngle = (rotateAngle - velocity * rotateRate);
-		else if (ifKey[1])
-			rotateAngle = (rotateAngle + velocity * rotateRate);
-		else if (ifKey[2])
-			rotateAngle = (rotateAngle - velocity * rotateRate);
-		else if (ifKey[3])
-			rotateAngle = (rotateAngle + velocity * rotateRate);
-
-		if (fabs(rotateAngle) > 360) rotateAngle = 0.0f;
-
-		if (direction == UP)
-			Position += glm::vec3(0, 1, 0) * velocity;
-		if (direction == DOWN)
-			Position += glm::vec3(0, -1, 0) * velocity;
-		if (direction == SHIFT_PRESS)
-			MovementSpeed = SPEED * 2;
-		if (direction == SHIFT_RELEASE)
-			MovementSpeed = SPEED;
-	}
-
-
-
-	glm::vec3 Front; //此物体的前方
-	glm::vec3 Right;//此物体的右方
-	std::string path; //obj模型文件路径
-
-
-	float MovementSpeed; //此物体移动速度
-
-	int rotateRate;
-	float rotateAngle;
-	glm::vec3 axis;
-
-	bool ifKey[4];
-
-
-};
-
 
 class Cube : public PlainModel
 {
@@ -484,61 +367,15 @@ public:
 };
 
 
-
 class SkyBox : public PlainModel
 {
 public:
-
 
 	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :PlainModel(pos, scale, modelPath, shader) {
 		this->shader = shader;
 		this->Position = pos;
 		this->scale_value = scale;
 
-		GLfloat cubeVertices[] = {
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,	// A
-		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,	// B
-		0.5f, 0.5f, 0.5f,1.0f, 1.0f,	// C
-		0.5f, 0.5f, 0.5f,1.0f, 1.0f,	// C
-		-0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// D
-		-0.5f, -0.5f, 0.5f,0.0f, 0.0f,	// A
-
-
-		-0.5f, -0.5f, -0.5f,0.0f, 0.0f,	// E
-		-0.5f, 0.5f, -0.5f,0.0, 1.0f,   // H
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// F
-		-0.5f, -0.5f, -0.5f,0.0f, 0.0f,	// E
-
-		-0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// D
-		-0.5f, 0.5f, -0.5f,1.0, 1.0f,   // H
-		-0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// E
-		-0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// E
-		-0.5f, -0.5f, 0.5f,0.0f, 0.0f,	// A
-		-0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// D
-
-		0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// F
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// C
-		0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// C
-		0.5f, -0.5f, 0.5f, 0.0f, 0.0f,	// B
-		0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// F
-
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		-0.5f, 0.5f, -0.5f,0.0, 1.0f,   // H
-		-0.5f, 0.5f, 0.5f,0.0f, 0.0f,	// D
-		-0.5f, 0.5f, 0.5f,0.0f, 0.0f,	// D
-		0.5f, 0.5f, 0.5f,1.0f, 0.0f,	// C
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-
-		-0.5f, -0.5f, 0.5f,0.0f, 0.0f,	// A
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,// E
-		0.5f, -0.5f, -0.5f,1.0f, 1.0f,	// F
-		0.5f, -0.5f, -0.5f,1.0f, 1.0f,	// F
-		0.5f, -0.5f, 0.5f,1.0f, 0.0f,	// B
-		-0.5f, -0.5f, 0.5f,0.0f, 0.0f,	// A
-		};
 		// 指定包围盒的顶点属性 位置
 		GLfloat skyboxVertices[] = {
 			// 背面
@@ -590,24 +427,6 @@ public:
 			-1.0f, -1.0f, -1.0f,  // B
 		};
 
-
-		// Section2 准备缓存对象
-		glGenVertexArrays(1, &cubeVAOId);
-		glGenBuffers(1, &cubeVBOId);
-		glBindVertexArray(cubeVAOId);
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBOId);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-		// 顶点位置数据
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-			5 * sizeof(GL_FLOAT), (GLvoid*)0);
-		glEnableVertexAttribArray(0);
-		// 顶点纹理数据
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
-			5 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT)));
-		glEnableVertexAttribArray(1);
-		glBindVertexArray(0);
-
-
 		glGenVertexArrays(1, &skyBoxVAOId);
 		glGenBuffers(1, &skyBoxVBOId);
 		glBindVertexArray(skyBoxVAOId);
@@ -619,8 +438,6 @@ public:
 		glEnableVertexAttribArray(0);
 		glBindVertexArray(0);
 
-		// Section3 加载纹理
-		loadTexture("pic/container.jpg", &cubeTextId);
 		std::vector<const char*> faces;
 		faces.push_back("pic/skyboxes/sky/right.jpg");
 		faces.push_back("pic/skyboxes/sky/left.jpg");
@@ -629,14 +446,7 @@ public:
 		faces.push_back("pic/skyboxes/sky/front.jpg");
 		faces.push_back("pic/skyboxes/sky/back.jpg");
 
-
 		skyBoxTextId = loadCubeMapTexture(faces);
-		// Section4 准备着色器程序
-
-		 /*glEnable(GL_DEPTH_TEST);
-		 glEnable(GL_CULL_FACE);*/
-
-
 
 	}
 
@@ -667,7 +477,6 @@ public:
 	}
 
 
-	GLuint cubeVAOId, cubeVBOId;
 	GLuint skyBoxVAOId, skyBoxVBOId;
 	GLuint cubeTextId;
 	GLuint skyBoxTextId;
