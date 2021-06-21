@@ -238,6 +238,9 @@ public:
 	glm::vec3 getRight() {
 		return this->Right;
 	}
+	glm::vec3 getUp() {
+		return this->Up;
+	}
 	float getZoom() {
 		return this->Zoom;
 	}

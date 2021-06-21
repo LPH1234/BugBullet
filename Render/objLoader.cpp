@@ -91,7 +91,6 @@ physx::PxTriangleMesh* ObjLoader::genTriangleMesh(physx::PxVec3 scale) {
 			PxVec3 vectmp(this->v[i].x * scale.x, this->v[i].y * scale.y, this->v[i].z * scale.z);
 			vertices[i] = vectmp;
 		}
-		//memcpy(vertices + 1, &objtmp->v[0], sizeof(PxVec3)* (numVertices));
 
 		// 加载面和顶点贴图索引
 		auto faceIt = this->f.begin();
@@ -126,9 +125,9 @@ physx::PxTriangleMesh* ObjLoader::genTriangleMesh(physx::PxVec3 scale) {
 
 PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 
-	// 创建出它的几何体
+	// 创建几何体
 	PxTriangleMeshGeometry geom(this->triangle_mesh);
-	// 创建网格面
+	// 创建TriangleMesh网格
 	PxRigidStatic* TriangleMesh = gPhysics->createRigidStatic(PxTransform(initPos));
 
 	// 创建三角网格形状 *gMaterial
@@ -145,11 +144,12 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 	TriangleMesh->attachShape(*shape);
 	shape->release();
 
-	//TriangleMesh->userData = new int;
-	
+	//设置名称
 	TriangleMesh->setName("map");
 
-	int testid = 88888888;
+	//用户数据
+	//TriangleMesh->userData = new int;
+	//int testid = 88888888;
 	//memcpy(TriangleMesh->userData, &testid, sizeof(int));
 
 
@@ -291,12 +291,12 @@ physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 }
 
 PxRigidActor* ObjLoader::createDynamicActorAndAddToScene() {
-	// 创建出它的几何体
+	// 创建几何体
 	PxConvexMeshGeometry geom(this->convex_mesh);
-	// 创建网格面
+	// 创建convex网格面
 	PxRigidDynamic* convexMesh = gPhysics->createRigidDynamic(PxTransform(initPos));
 
-	// 创建三角网格形状
+	// 创建convex网格形状
 	PxShape* shape = PxRigidActorExt::createExclusiveShape(*convexMesh, geom, *gMaterial);
 
 	{
@@ -310,9 +310,9 @@ PxRigidActor* ObjLoader::createDynamicActorAndAddToScene() {
 	convexMesh->attachShape(*shape);
 	shape->release();
 
+	//用户自定义数据
 	//convexMesh->userData = new int;
-	//convexMesh->userData = 
-	int testid = 88888888;
+	//int testid = 88888888;
 	//memcpy(convexMesh->userData, &testid, sizeof(int));
 
 	gScene->addActor(*convexMesh);
