@@ -122,6 +122,9 @@ int myRenderLoop()
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
+	
+   //vehicle
+	//Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
 	// var init
 	// -----------------------------

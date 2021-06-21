@@ -22,7 +22,7 @@ void createModel(std::string path, int scale, PxVec3& offset) {
 PxReal					stackZ = 3.0f;
 extern Camera camera;
 extern Shader* envShader;
-clock_t	 lockFrame_last = 0, lockFrame_current = 0;
+clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
 
 void initPhysics(bool interactive)
@@ -34,6 +34,7 @@ void initPhysics(bool interactive)
 	gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
 
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
+	PxInitExtensions(*gPhysics, gPvd);
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
@@ -71,14 +72,14 @@ void initPhysics(bool interactive)
 
 	//生成第三人称角色
 	PxTransform born_pos(PxVec3(0, 1, -7));
-	//init3rdplayer(born_pos, PxSphereGeometry(0.5f));
-	initvehicle(born_pos, PxSphereGeometry(0.5f));
+	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
+	//initvehicle(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
 
-	//createAirPlane();
+	createAirPlane();
 
-	//camera.setTarget(player);
-	camera.setTarget(vehicle);
+	camera.setTarget(player);
+	//camera.setTarget(vehicle);
 
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
@@ -132,6 +133,7 @@ void stepPhysics(bool interactive)
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
+	changeAirPlaneVelocity();
 	removeActorInList();
 }
 

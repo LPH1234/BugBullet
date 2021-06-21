@@ -8,6 +8,8 @@
 #include "../Render/models.h"
 #include "../Render/Render.h"
 #include "../Data/Data.h"
+#include <cmath>
+#include "../Data/Consts.h"
 
 
 
@@ -70,6 +72,8 @@ PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
 void createBigBall();
 void createAirPlane();
 void changeAirPlaneVelocity();
+double getAngel(PxVec3 a, PxVec3 b);
+bool lessThan180(PxVec3 a, PxVec3 base);
 
 PxRigidDynamic* initPlayer();
 

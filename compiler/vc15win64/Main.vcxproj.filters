@@ -1,36 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\Main\ClassicMain.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\MyGame.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\MyGameRender.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\Controller.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\Creater.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\Main\ClassicMain.cpp" />
+    <ClCompile Include="..\..\Main\Controller.cpp" />
+    <ClCompile Include="..\..\Main\Creater.cpp" />
+    <ClCompile Include="..\..\Main\MyGame.cpp" />
+    <ClCompile Include="..\..\Main\MyGameRender.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{2a6776df-c1d4-4d30-a4ce-1f46c5424aa3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{d179dd44-08f9-4dfe-814f-f6a08029673e}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\Main\Controller.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Main\Creater.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    <ClInclude Include="..\..\Main\Controller.h" />
+    <ClInclude Include="..\..\Main\Creater.h" />
   </ItemGroup>
 </Project>
