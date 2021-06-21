@@ -47,6 +47,7 @@ struct FilterGroup
 		eWALL = (1 << 1),		//墙壁
 		eSTACK = (1 << 2),		//小方块
 		eBIGBALL = (1 << 3),	//大球
+		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
 	};
 };
 
@@ -74,3 +75,5 @@ PxRigidDynamic* initPlayer();
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
+
+void createBullet(const PxTransform& t, const PxVec3& velocity);

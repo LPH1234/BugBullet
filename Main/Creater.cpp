@@ -19,6 +19,8 @@ vector<PxActor*>		removeActorList;
 PxVec3					airPlaneVelocity(0, 0, 0);
 long long				angelAirPlane = 0.0;
 PxVec3					headForward(1, 0, 0);
+extern Camera camera;
+
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	PxRigidActor* rigid;
@@ -273,4 +275,34 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 		}
 	}
 	shape->release();
+}
+
+// h:21.6   r:2.25   half_height:8.55
+//14.7   2.4  body
+//7.0    1.6  head
+void createBullet(const PxTransform& t, const PxVec3& velocity) {
+
+	if (!t.isValid()) {
+		Logger::error("error:");
+	}
+	PxQuat q1 = t.q + PxQuat(PxPi / 180 * 90, glmVec3ToPxVec3(camera.getRight()));
+	//PxTransform t1(t.p, q1);
+	glm::vec3 bullet_init_vec3(1.f, 0.f, 0.f);
+	float cos_tmp = glm::dot(camera.getFront(), bullet_init_vec3)/getVec3Length(camera.getFront())/getVec3Length(bullet_init_vec3);
+	PxTransform t1(t.p, PxQuat(glm::acos(cos_tmp) , glmVec3ToPxVec3(-glm::normalize(glm::cross(camera.getFront(), bullet_init_vec3)))));  //不能是90度，要转到当前的前方
+	//std::cout << "xita:" << glm::acos(cos_tmp)  << "\n";
+	PxCapsuleGeometry e(0.005, 0.006);
+	PxMaterial* me = gPhysics->createMaterial(0.9f, 0.9f, 0.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t1, e, *me, 0.01f);
+	//设置刚体名称
+	dynamic->setName(ACTOR_NAME_PLAYER_BULLET.c_str());
+	//设置碰撞的标签
+	setupFiltering(dynamic, FilterGroup::ePLAYERBULLET, FilterGroup::eSTACK);
+	me->release();
+	dynamic->setAngularDamping(0.9f);
+	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+	dynamic->setLinearVelocity(velocity);
+	gScene->addActor(*dynamic);
+
+
 }

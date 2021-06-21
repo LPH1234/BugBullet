@@ -12,3 +12,6 @@ physx::PxVec3 glmVec3ToPxVec3(glm::vec3& gv);
 
 void pxVec3ToGlmVec3(physx::PxVec3& pv, glm::vec3& gv);
 glm::vec3 pxVec3ToGlmVec3(physx::PxVec3& pv);
+
+float getVec3Length(glm::vec3& v);
+float getVec3Length(physx::PxVec3& v);

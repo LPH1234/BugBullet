@@ -10,6 +10,11 @@ extern Camera camera;
 bool autoshooting = true;//射击机制
 clock_t last = 0;
 
+
+void processOtherControlEvents() {
+	mouseClick();
+}
+
 void keyPress() {
 
 	if (!camera.isHandling()) {
@@ -20,11 +25,26 @@ void keyPress() {
 }
 
 
-
-
-
 void mouseMove() {
 
+}
+
+void mouseClick() {
+	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_LEFT]) {
+		PxTransform px;
+
+		PxVec3 mDir; glmVec3ToPxVec3(camera.getFront(), mDir);
+		PxVec3 mEye; glmVec3ToPxVec3(camera.getPosition(), mEye);
+		PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0));
+
+		if (viewY.normalize() < 1e-6f)
+			px = PxTransform(mEye);
+		else {
+			PxMat33 m(mDir.cross(viewY), viewY, -mDir);
+			px = PxTransform(mEye, PxQuat(m));
+		}
+		createBullet(px, px.rotate(PxVec3(0, 0, -1)) * 200);
+	}
 }
 
 
@@ -149,13 +169,4 @@ void playerProcessKeyboard() {
 	}
 	player->setLinearVelocity(forward + backward + leftward + rightward);
 
-	/*if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-		keyPress('F', px);
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {//切换连发
-		keyboard_input[GLFW_KEY_T] = true;
-	}
-	else if ((glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) && (keyboard_input[GLFW_KEY_T] == true)) {
-		keyboard_input[GLFW_KEY_T] = false;
-		keyPress('T', px);
-	}*/
 }
