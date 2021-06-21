@@ -72,12 +72,14 @@ void initPhysics(bool interactive)
 
 	//生成第三人称角色
 	PxTransform born_pos(PxVec3(0, 1, -7));
-	init3rdplayer(born_pos, PxSphereGeometry(1.0f));
+	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
+	//initvehicle(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
 
 	createAirPlane();
 
 	camera.setTarget(player);
+	//camera.setTarget(vehicle);
 
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
@@ -91,14 +93,11 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
 	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
 	//model\vehicle\suv\Models Transport Shuttle_obj.obj
+	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
 		
 
 
 	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
-
-
-
-
 
 	if (!interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
@@ -120,7 +119,7 @@ void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
 	//锁帧
-	lockFrame_current = clock();//当前时钟
+	/*lockFrame_current = clock();//当前时钟
 	if ((lockFrame_current - lockFrame_last) < 16) {
 		//skip，1000clocks/s，则一帧约16ms（60帧）
 		Sleep(16 - (lockFrame_current - lockFrame_last));
@@ -129,10 +128,13 @@ void stepPhysics(bool interactive)
 		gScene->simulate(1.0f / 60.0f);
 		gScene->fetchResults(true);
 		removeActorInList();
-		changeAirPlaneVelocity();
+		//changeAirPlaneVelocity();
 		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
-	}
-
+	}*/
+	gScene->simulate(1.0f / 60.0f);
+	gScene->fetchResults(true);
+	changeAirPlaneVelocity();
+	removeActorInList();
 }
 
 void cleanupPhysics(bool interactive)

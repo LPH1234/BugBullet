@@ -17,9 +17,10 @@ extern PxRigidDynamic* player_ctl;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map, const int STATE);
+void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
 const unsigned int SCR_WIDTH = 1920 / 2;
 const unsigned int SCR_HEIGHT = 1080 / 2;
@@ -44,13 +45,10 @@ SkyBox* skybox;
 Shader* skyBoxShader;
 Shader* envShader;
 
-unordered_map<int, bool>keyboard_input(false);//¥¶¿Ìº¸≈Ã ‰»Î
 
-
-//
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
-
+bool mouseButtonPressState[3];
 
 
 void renderCallback(Shader* shader)
@@ -100,14 +98,13 @@ int myRenderLoop()
 
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	// tell GLFW to capture our mouse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	for (int i = 0; i <= 348; i++)
-		keyToPressState[i] = false;
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -116,16 +113,12 @@ int myRenderLoop()
 		return -1;
 	}
 
-
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 
-	// build and compile shaders
-	// -------------------------
 	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
 	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
-
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -133,6 +126,18 @@ int myRenderLoop()
    //vehicle
 	//Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
+	// var init
+	// -----------------------------
+	for (int i = 0; i <= 348; i++) {
+		keyToPressState[i] = false;
+		keyToPrePressState[i] = false;
+	}
+	mouseButtonPressState[0] = false;
+	mouseButtonPressState[1] = false;
+	mouseButtonPressState[2] = false;
+
+	// build and compile shaders
+	// -------------------------
 
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(7000.0f, 7000.0f, 7000.0f), "", skyBoxShader);
 	// render loop
@@ -148,6 +153,10 @@ int myRenderLoop()
 		// input
 		// -----
 		processInput(window);
+
+		// self define actions processor
+		// -----
+		processOtherControlEvents();
 
 		// render
 		// ------
@@ -247,13 +256,13 @@ void cameraProcessInput(GLFWwindow *window) {
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
-	updateKeyState(window, keyToPressState, GLFW_PRESS);
+	updateKeyState(window, keyToPressState);
 	windowProcessInput(window);
 	cameraProcessInput(window);
 
 	keyPress();
 
-	updateKeyState(window, keyToPrePressState, GLFW_PRESS);
+	updateKeyState(window, keyToPrePressState);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -286,6 +295,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	mouseMove();
 }
 
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	mouseButtonPressState[button] = action == GLFW_PRESS;
+	// button: GLFW_MOUSE_BUTTON_LEFT\GLFW_MOUSE_BUTTON_MIDDLE\GLFW_MOUSE_BUTTON_RIGHT
+}
+
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -294,8 +310,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 
-void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map, const int STATE)
+void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map)
 {
+	const int STATE = GLFW_PRESS;
 	map[96] = glfwGetKey(window, 96) == STATE;
 	map[32] = glfwGetKey(window, 32) == STATE;
 

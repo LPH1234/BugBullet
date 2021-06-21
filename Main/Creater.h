@@ -9,6 +9,7 @@
 #include "../Render/Render.h"
 #include "../Data/Data.h"
 #include <cmath>
+#include "../Data/Consts.h"
 
 
 
@@ -22,6 +23,8 @@ extern PxMaterial*				gMaterial;
 extern PxPvd*                  gPvd;
 
 extern physx::PxRigidDynamic* player;
+extern physx::PxRigidDynamic* vehicle;
+
 extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
 
@@ -46,6 +49,7 @@ struct FilterGroup
 		eWALL = (1 << 1),		//墙壁
 		eSTACK = (1 << 2),		//小方块
 		eBIGBALL = (1 << 3),	//大球
+		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
 	};
 };
 
@@ -63,6 +67,8 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 
 PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
 
+PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
+
 void createBigBall();
 void createAirPlane();
 void changeAirPlaneVelocity();
@@ -73,3 +79,5 @@ PxRigidDynamic* initPlayer();
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
+
+void createBullet(const PxTransform& t, const PxVec3& velocity);

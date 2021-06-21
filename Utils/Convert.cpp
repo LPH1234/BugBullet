@@ -24,3 +24,11 @@ glm::vec3 pxVec3ToGlmVec3(physx::PxVec3& pv) {
 	pxVec3ToGlmVec3(pv, gv);
 	return gv;
 }
+
+
+float getVec3Length(glm::vec3& v) {
+	return sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+float getVec3Length(physx::PxVec3& v) {
+	return sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
+}
