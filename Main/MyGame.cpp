@@ -68,11 +68,11 @@ void initPhysics(bool interactive)
 	
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-	createBigBall();
+	//createBigBall();
 
 	//生成第三人称角色
-	//PxTransform born_pos(PxVec3(0, 1, -7));
-	//init3rdplayer(born_pos, PxSphereGeometry(1.0f));
+	PxTransform born_pos(PxVec3(0, 1, -7));
+	init3rdplayer(born_pos, PxSphereGeometry(1.0f));
 	//createBigBall();
 
 	createAirPlane();

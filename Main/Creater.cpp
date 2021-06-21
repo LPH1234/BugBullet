@@ -1,5 +1,9 @@
 #include"Creater.h"
-
+#define TURN_LEFT 0;
+#define TURN_RIGHT 1;
+#define STRAIGHT 2;
+#define GO_UP 3;
+#define GO_dOWN 4;
 
 PxFoundation*			gFoundation = nullptr;
 PxPhysics*				gPhysics = nullptr;
@@ -14,9 +18,13 @@ PlainModel *street = nullptr;
 
 
 vector<PxActor*>		removeActorList;
-PxVec3					airPlaneVelocity(0, 0, 0);
+PxVec3					airPlaneVelocity(0, 0, 0);//飞机速度
 long long				angelAirPlane = 0.0;
-PxVec3					headForward(1, 0, 0);
+PxVec3					headForward(1, 0, 0);//机头朝向
+PxVec3					backForward(0, 1, 0);//机背朝向
+PxVec3					swingForward(0, 0, 1);//机翼朝向
+vector<bool>			turningState(5, false);//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
+long long				rollingAngel = 0, pitchingAngel = 0;//滚转角、俯仰角
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	PxRigidActor* rigid;
@@ -98,13 +106,14 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 			if (actor_0->getName() == "littleBall"&&actor_1->getName() == "box"
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "box") {
 				printf("小球碰方块！\n");
-				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
+				//removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
+				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
 			}
 			else if (actor_0->getName() == "bigBall"&&actor_1->getName() == "box"
 				|| actor_1->getName() == "bigBall"&&actor_0->getName() == "box") {
 				printf("大球碰方块！\n");
-				removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
-
+				//removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
+				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
 			}
 			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "map"
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "map") {
@@ -188,7 +197,8 @@ void createBigBall() {
 //飞机刚体
 void createAirPlane() {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
-	PxTransform initPos(PxVec3(2, 1, -15), PxQuat(PxPi / 6, PxVec3(0, 0, 1)));
+	//PxTransform initPos(PxVec3(2, 1, -15), PxQuat(PxPi / 6, PxVec3(0, 0, 1)));
+	PxTransform initPos(PxVec3(2, 1, -15));
 	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, initPos, *shape, 8);
 
 	body->setName("airPlane");
@@ -196,16 +206,221 @@ void createAirPlane() {
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	airPlane = body;
 	gScene->addActor(*body);
+
+	//机翼和尾翼
+	PxShape* swing_s = gPhysics->createShape(PxBoxGeometry(0.15, 0.04, 0.3), *gMaterial);
+	PxShape* tail_s = gPhysics->createShape(PxBoxGeometry(0.1, 0.15, 0.04), *gMaterial);
+	PxRigidDynamic* swing1 = PxCreateDynamic(*gPhysics, initPos, *swing_s, 0.01);
+	PxRigidDynamic* swing2 = PxCreateDynamic(*gPhysics, initPos, *swing_s, 0.01);
+	PxRigidDynamic* tail = PxCreateDynamic(*gPhysics, initPos, *tail_s, 0.01);
+	gScene->addActor(*swing1);
+	gScene->addActor(*swing2);
+	gScene->addActor(*tail);
+
+	PxFixedJointCreate(*gPhysics, body, PxTransform(PxVec3(0, 0, -0.2)), swing1, PxTransform(PxVec3(0, 0, 0.3)));
+	PxFixedJointCreate(*gPhysics, body, PxTransform(PxVec3(0, 0, 0.2)), swing2, PxTransform(PxVec3(0, 0, -0.3)));
+	PxFixedJointCreate(*gPhysics, body, PxTransform(PxVec3(-0.3, 0, 0)), tail, PxTransform(PxVec3(0, -0.24, 0)));
 	shape->release();
+	swing_s->release();
+	tail_s->release();
+
+	turningState[2] = true;
 }
-//改变飞机姿态与速度，使其做圆周运动
+//获得两个向量之间的夹角
+double getAngel(PxVec3 a, PxVec3 b) {
+	double cosine = a.getNormalized().dot(b.getNormalized());
+	double angel = acos(cosine);
+	angel *= 180 / PxPi;
+	return angel;
+}
+//以右手定则判断两向量之间夹角是否小于180
+bool lessThan180(PxVec3 a, PxVec3 base) {
+	a = a.getNormalized();
+	base = base.getNormalized();
+	PxVec3 up = base.cross(a);
+	double cosine = up.getNormalized().dot(PxVec3(0, 0, 1));
+	if (cosine >= 0)return true;
+	else return false;
+}
+
+int currentAngel_x = 0, currentAngel_z = 0;
+//改变飞机姿态与速度，能够通过上下左右控制俯仰和左右转弯
 void changeAirPlaneVelocity() {
-	angelAirPlane += 1;
+	//直行
+	if (turningState[2]) {
+		airPlane->setLinearVelocity(5 * headForward);
+		turningState[0] = false;
+		turningState[1] = false;
+		turningState[3] = false;
+		turningState[4] = false;
+	}
+	//左转
+	else if(turningState[0]){
+		if (rollingAngel < 45) {
+			rollingAngel += 1;
+			/*PxQuat rot1(-PxPi / 180 * rollingAngel, headForward);
+			PxQuat rot2(PxPi / 180 * (rollingAngel * 2 + currentAngel_x), PxVec3(0, 1, 0));
+			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
+			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));*/
+			PxQuat rot1(PxPi / 180 * (-1), headForward);
+			PxQuat rot2(PxPi / 180 * (1), PxVec3(0, 1, 0));
+			headForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
+			backForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2*airPlane->getGlobalPose().q));
+			airPlane->setLinearVelocity(5 * headForward);
+			//cout << getAngel(headForward, PxVec3(1, 0, 0)) << "\n";
+		}
+		else if (rollingAngel < 90) {
+			rollingAngel += 1;
+			long long angel = 90 - rollingAngel;
+			/*PxQuat rot1(-PxPi / 180 * angel, headForward);
+			PxQuat rot2(PxPi / 180 * (90 + currentAngel_x), PxVec3(0, 1, 0));
+			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
+			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));*/
+			PxQuat rot1(PxPi / 180 * (1), headForward);
+			PxQuat rot2(PxPi / 180 * (1), PxVec3(0, 1, 0));
+			headForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
+			backForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2*airPlane->getGlobalPose().q));
+			airPlane->setLinearVelocity(5 * headForward);
+		}
+		else {
+			turningState[0] = false;
+			turningState[1] = false;
+			turningState[2] = true;
+			turningState[3] = false;
+			turningState[4] = false;
+			rollingAngel = 0;
+			//currentAngel_x = 0;
+			currentAngel_x += 90;
+			currentAngel_x %= 360;
+			/*airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, PxQuat(PxPi/2*(currentAngel_x/90),PxVec3(0,1,0))));
+			headForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(1, 0, 0));
+			backForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 1, 0));
+			swingForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 0, 1));*/
+			cout << "左转结束\n";
+			//airPlane->setLinearVelocity(5 * headForward);
+		}
+		
+	}
+	//右转
+	else if (turningState[1]) {
+		if (rollingAngel < 45) {
+			rollingAngel += 1;
+			PxQuat rot1(PxPi / 180 * rollingAngel, headForward);
+			PxQuat rot2(PxPi / 180 * (-rollingAngel * 2 + currentAngel_x), PxVec3(0, 1, 0));
+			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
+			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));
+			airPlane->setLinearVelocity(5 * headForward);
+		}
+		else if (rollingAngel < 90) {
+			rollingAngel += 1;
+			long long angel = 90 - rollingAngel;
+			PxQuat rot1(PxPi / 180 * angel, headForward);
+			PxQuat rot2(PxPi / 180 * (-90 + currentAngel_x), PxVec3(0, 1, 0));
+			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
+			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));
+			airPlane->setLinearVelocity(5 * headForward);
+		}
+		else {
+			turningState[0] = false;
+			turningState[1] = false;
+			turningState[2] = true;
+			turningState[3] = false;
+			turningState[4] = false;
+			rollingAngel = 0;
+			//currentAngel_x = 0;
+			currentAngel_x -= 90;
+			currentAngel_x %= 360;
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))));
+			headForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(1, 0, 0));
+			backForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 1, 0));
+			swingForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 0, 1));
+			cout << "右转结束\n";
+			//airPlane->setLinearVelocity(5 * headForward);
+		}
+
+	}
+	//上仰
+	else if (turningState[3]) {
+		//PxVec3 axis_z = headForward.cross(backForward).getNormalized();
+		if (pitchingAngel < 90) {
+			pitchingAngel += 1;
+			/*PxQuat rot(PxPi / 180 * (pitchingAngel + currentAngel_z), swingForward);
+			headForward = (rot).rotate(PxVec3(1, 0, 0));
+			backForward = (rot).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));*/
+			PxQuat rot(PxPi / 180 * (1), swingForward);
+			headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
+			backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot*airPlane->getGlobalPose().q));
+			airPlane->setLinearVelocity(5 * headForward);
+		}
+		else {
+			turningState[0] = false;
+			turningState[1] = false;
+			turningState[2] = true;
+			turningState[3] = false;
+			turningState[4] = false;
+			pitchingAngel = 0;
+			currentAngel_z += 90;
+			currentAngel_z %= 360;
+			cout << "上仰结束\n";
+			//airPlane->setLinearVelocity(5 * headForward);
+		}
+
+	}
+	//俯冲
+	else if (turningState[4]) {
+	if (pitchingAngel < 90) {
+		pitchingAngel += 1;
+		/*PxQuat rot(PxPi / 180 * (pitchingAngel + currentAngel_z), swingForward);
+		headForward = (rot).rotate(PxVec3(1, 0, 0));
+		backForward = (rot).rotate(PxVec3(0, 1, 0));
+		swingForward = (rot).rotate(PxVec3(0, 0, 1));
+		airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));*/
+		PxQuat rot(PxPi / 180 * (-1), swingForward);
+		headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
+		backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
+		swingForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
+		airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot*airPlane->getGlobalPose().q));
+		airPlane->setLinearVelocity(5 * headForward);
+	}
+	else {
+		turningState[0] = false;
+		turningState[1] = false;
+		turningState[2] = true;
+		turningState[3] = false;
+		turningState[4] = false;
+		pitchingAngel = 0;
+		currentAngel_z -= 90;
+		currentAngel_z %= 360;
+		cout << "俯冲结束\n";
+		//airPlane->setLinearVelocity(5 * headForward);
+	}
+
+	}
+	else {
+
+	}
+	/*angelAirPlane += 1;
 	angelAirPlane = angelAirPlane % 360;
 	PxQuat rot(PxPi / 180 * angelAirPlane, PxVec3(0, 0, 1));
 	headForward = rot.rotate(PxVec3(1, 0, 0));
 	airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));
-	airPlane->setLinearVelocity(5 * headForward);
+	airPlane->setLinearVelocity(5 * headForward);*/
 }
 
 PxRigidDynamic* initPlayer() {

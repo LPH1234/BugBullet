@@ -5,6 +5,7 @@
 //全局变量区
 const float velocity = 0.5f;
 extern Camera camera;
+extern vector<bool>	turningState;
 
 
 bool autoshooting = true;//射击机制
@@ -12,10 +13,11 @@ clock_t last = 0;
 
 void keyPress() {
 
-	if (!camera.isHandling()) {
+	//if (!camera.isHandling()) {
 		vehicleProcessKeyboard();
 		playerProcessKeyboard();
-	}
+		planeProcessKeyboard();
+	//}
 
 }
 
@@ -108,4 +110,23 @@ void playerProcessKeyboard() {
 		keyboard_input[GLFW_KEY_T] = false;
 		keyPress('T', px);
 	}*/
+}
+
+void planeProcessKeyboard() {
+	if (keyToPressState[GLFW_KEY_LEFT]) {
+		turningState[0] = true;
+		turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_RIGHT]) {
+		turningState[1] = true;
+		turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_UP]) {
+		turningState[3] = true;
+		turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_DOWN]) {
+		turningState[4] = true;
+		turningState[2] = false;
+	}
 }
