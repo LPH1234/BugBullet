@@ -43,7 +43,7 @@ void mouseClick() {
 			PxMat33 m(mDir.cross(viewY), viewY, -mDir);
 			px = PxTransform(mEye, PxQuat(m));
 		}
-		createBullet(px, px.rotate(PxVec3(0, 0, -1)) * 20);
+		createBullet(px, px.rotate(PxVec3(0, 0, -1)) * 200);
 	}
 }
 

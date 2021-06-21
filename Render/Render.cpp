@@ -52,7 +52,7 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 	{
 		if (std::strcmp(actor->getName(), ACTOR_NAME_PLAYER_BULLET.c_str()) == 0) //子弹
 		{
-			glm::vec3 scale(h.capsule().halfHeight, h.capsule().radius, h.capsule().radius);
+			glm::vec3 scale(h.capsule().halfHeight * 2, h.capsule().radius * 2, h.capsule().radius * 2);
 			if (bullet == nullptr)
 				bullet = new PlainModel(pos, scale, "model/bullet/bullet3/bullet.obj", shader);
 			bullet->setPosition(pos);

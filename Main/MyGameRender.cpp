@@ -295,37 +295,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	mouseButtonPressState[button] = (action == GLFW_PRESS);
-	return;
+	mouseButtonPressState[button] = action == GLFW_PRESS;
 	// button: GLFW_MOUSE_BUTTON_LEFT\GLFW_MOUSE_BUTTON_MIDDLE\GLFW_MOUSE_BUTTON_RIGHT
-	if (action == GLFW_PRESS) switch (button)
-	{
-	case GLFW_MOUSE_BUTTON_LEFT:
-		cout << "Mosue left button clicked!";
-		break;
-	case GLFW_MOUSE_BUTTON_MIDDLE:
-		cout << "Mosue middle button clicked!";
-		break;
-	case GLFW_MOUSE_BUTTON_RIGHT:
-		cout << "Mosue right button clicked!";
-		break;
-	default:
-		return;
-	}
-	if (action == GLFW_RELEASE) switch (button)
-	{
-	case GLFW_MOUSE_BUTTON_LEFT:
-		cout << "Mosue left button rrrrr!";
-		break;
-	case GLFW_MOUSE_BUTTON_MIDDLE:
-		cout << "Mosue middle button rrrrr!";
-		break;
-	case GLFW_MOUSE_BUTTON_RIGHT:
-		cout << "Mosue right button rrrrr!";
-		break;
-	default:
-		return;
-	}
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
