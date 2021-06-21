@@ -21,6 +21,8 @@ extern PxMaterial*				gMaterial;
 extern PxPvd*                  gPvd;
 
 extern physx::PxRigidDynamic* player;
+extern physx::PxRigidDynamic* vehicle;
+
 extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
 
@@ -61,6 +63,8 @@ void removeActorInList();
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0));
 
 PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
+
+PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
 
 void createBigBall();
 void createAirPlane();

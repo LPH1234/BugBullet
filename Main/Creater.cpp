@@ -12,6 +12,8 @@ PxRigidDynamic*	airPlane = nullptr;
 PxRigidDynamic* player = nullptr;
 PlainModel *street = nullptr;
 
+PxRigidDynamic* vehicle = nullptr;
+extern Shader* envShader;
 
 vector<PxActor*>		removeActorList;
 PxVec3					airPlaneVelocity(0, 0, 0);
@@ -150,7 +152,10 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 		Logger::error("error:");
 	}
 	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
-	player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
+	//player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
+	//vehicle =createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
+	player = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(5.0f, 0.0f, 4.0f), glm::vec3(0.1f, 0.1f, 0.1f), "model/vehicle/Alien Animal Updated in Blender-2.81a/animal1.obj", envShader,false));
+
 	PxVec3 position = player->getGlobalPose().p;
 	cout << "position: " << "x: " << position.x << " y: " << position.y << " z: " << position.z << endl;
 
@@ -170,6 +175,32 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 	return player;
 }
 
+PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry) {
+	if (!t.isValid()) {
+		Logger::error("error:");
+	}
+	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
+	//player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
+	vehicle = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/82-koenigsegg-agera/a.obj", envShader, false));
+
+	PxVec3 position = vehicle->getGlobalPose().p;
+	//cout << "position: " << "x: " << position.x << " y: " << position.y << " z: " << position.z << endl;
+	cout << "create vehicle" << endl;
+	//设置刚体名称
+	vehicle->setName("vehicle");
+
+	//userdata指向自己
+	//dynamic->userData = dynamic;
+	//设置碰撞的标签
+	setupFiltering(vehicle, FilterGroup::eBALL, FilterGroup::eSTACK);
+	me->release();
+
+	vehicle->setAngularDamping(0.5f);
+	vehicle->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+	//dynamic->setLinearVelocity(velocity);
+	gScene->addActor(*vehicle);
+	return vehicle;
+}
 void createBigBall() {
 	//PxShape* shape = gPhysics->createShape(PxSphereGeometry(1), *gMaterial);
 	PxTransform pos(PxVec3(0, 1, -18));
