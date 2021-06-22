@@ -12,7 +12,8 @@ PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 module moduleCallBack;
 
-
+//第三人称角色位置
+PxTransform born_pos(PxVec3(0, 10, -7));
 
 
 void createModel(std::string path, int scale, PxVec3& offset) {
@@ -66,13 +67,12 @@ void initPhysics(bool interactive)
 	//for (PxU32 i = 0; i < 3; i++)
 		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	//createBigBall();
-	
+
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	//createBigBall();
 
-	//生成第三人称角色
-	PxTransform born_pos(PxVec3(0, 1, -7));
+
 	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
 	//initvehicle(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
@@ -103,6 +103,7 @@ void initPhysics(bool interactive)
 		
 
 
+
 	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
 
 	if (!interactive)
@@ -125,23 +126,21 @@ void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
 	//锁帧
-	/*lockFrame_current = clock();//当前时钟
-	if ((lockFrame_current - lockFrame_last) < 16) {
-		//skip，1000clocks/s，则一帧约16ms（60帧）
-		Sleep(16 - (lockFrame_current - lockFrame_last));
-	}
-	else {
-		gScene->simulate(1.0f / 60.0f);
-		gScene->fetchResults(true);
-		removeActorInList();
-		//changeAirPlaneVelocity();
-		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
-	}*/
-	gScene->simulate(1.0f / 60.0f);
+	lockFrame_current = clock();//当前时钟
+	//if ((lockFrame_current - lockFrame_last) < 16) {
+	//	//skip，1000clocks/s，则一帧约16ms（60帧）
+	//	//Sleep(16 - (lockFrame_current - lockFrame_last));
+	//}
+	//else {
+	//	gScene->simulate(((lockFrame_current - lockFrame_last) / 16.0f) / 60.0f);
+	//}
+	gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	gScene->fetchResults(true);
+	removeActorInList();
 	changeAirPlaneVelocity();
 	GunTower.runguntower(player);
-	removeActorInList();
+	lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
+
 }
 
 void cleanupPhysics(bool interactive)

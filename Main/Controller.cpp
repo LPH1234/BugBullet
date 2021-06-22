@@ -5,7 +5,11 @@
 //全局变量区
 const float velocity =5.0f;
 extern Camera camera;
+
 extern vector<bool>	turningState;
+
+extern PxTransform born_pos;
+
 
 
 bool autoshooting = true;//射击机制
@@ -62,7 +66,7 @@ void vehicleProcessKeyboard() {
 	//cout << "x: " << prevelocity.x << "y: " << prevelocity.y << "z: " << prevelocity.z << endl;
 	if (keyToPressState[GLFW_KEY_W]) {
 		//glmVec3ToPxVec3(camera.getFront() * velocity,forward);
-		totalvelocity +=  glmVec3ToPxVec3(camera.getFront() * velocity);
+		totalvelocity += glmVec3ToPxVec3(camera.getFront() * velocity);
 		//player->setLinearVelocity(totalvelocity);
 	}
 	if (keyToPressState[GLFW_KEY_S]) {
@@ -70,19 +74,19 @@ void vehicleProcessKeyboard() {
 		//PxVec3 totalvelocity = PxVec3(prevelocity.x, prevelocity.y,(-1)*velocity);
 		//player->setLinearVelocity(totalvelocity);
 		//glmVec3ToPxVec3(-(camera.getFront() * velocity), backward);
-		totalvelocity +=  -glmVec3ToPxVec3(camera.getFront() * velocity);
+		totalvelocity += -glmVec3ToPxVec3(camera.getFront() * velocity);
 	}
-	if (keyToPressState[GLFW_KEY_A] ) {
+	if (keyToPressState[GLFW_KEY_A]) {
 		//PxVec3 totalvelocity = prevelocity - glmVec3ToPxVec3(camera.getRight() * velocity);
 		//player->setLinearVelocity(totalvelocity);
 		//glmVec3ToPxVec3(-(camera.getRight() * velocity), leftward);
-		totalvelocity += - glmVec3ToPxVec3(camera.getRight() * velocity);
+		totalvelocity += -glmVec3ToPxVec3(camera.getRight() * velocity);
 	}
-	if (keyToPressState[GLFW_KEY_D] ) {
+	if (keyToPressState[GLFW_KEY_D]) {
 		//PxVec3 totalvelocity = prevelocity + glmVec3ToPxVec3(camera.getRight() * velocity);;
 		//player->setLinearVelocity(totalvelocity);
 		//glmVec3ToPxVec3((camera.getRight() * velocity), rightward);
-		totalvelocity +=  glmVec3ToPxVec3(camera.getRight() * velocity);
+		totalvelocity += glmVec3ToPxVec3(camera.getRight() * velocity);
 	}
 
 	/*if (keyToPrePressState[GLFW_KEY_SPACE] && !keyToPressState[GLFW_KEY_SPACE]) {
@@ -90,7 +94,9 @@ void vehicleProcessKeyboard() {
 		player->addForce(jumpup);
 	}*/
 	vehicle->setLinearVelocity(totalvelocity + prevelocity);
-
+	if (keyToPrePressState['`']) {
+		player->setGlobalPose(born_pos);
+	}
 	//player->setLinearVelocity(forward + backward + leftward + rightward);
 	//if (keyToPressState[GLFW_KEY_U]) {
 	//	PxVec3 forward_velocity(0.0f, 0.0f, (-1)*velocity);
@@ -103,8 +109,6 @@ void vehicleProcessKeyboard() {
 	//	vehicle.ProcessKeyboard(Player_LEFT, deltaTime);
 	//if (keyToPressState[GLFW_KEY_K])
 	//	vehicle.ProcessKeyboard(Player_RIGHT, deltaTime);
-
-
 }
 
 void playerProcessKeyboard() {
