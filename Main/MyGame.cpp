@@ -24,6 +24,7 @@ extern Camera camera;
 extern Shader* envShader;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
+guntower GunTower;
 
 void initPhysics(bool interactive)
 {
@@ -75,6 +76,11 @@ void initPhysics(bool interactive)
 	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
 	//initvehicle(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
+   
+
+	glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+	GunTower.initguntower(pos1);
+	
 
 	createAirPlane();
 
@@ -134,6 +140,7 @@ void stepPhysics(bool interactive)
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
 	changeAirPlaneVelocity();
+	GunTower.runguntower(player);
 	removeActorInList();
 }
 

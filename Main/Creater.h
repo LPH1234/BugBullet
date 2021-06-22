@@ -10,7 +10,7 @@
 #include "../Data/Data.h"
 #include <cmath>
 #include "../Data/Consts.h"
-
+#include <ctime>
 
 
 
@@ -24,6 +24,12 @@ extern PxPvd*                  gPvd;
 
 extern physx::PxRigidDynamic* player;
 extern physx::PxRigidDynamic* vehicle;
+
+//ÅÚËþ
+extern physx::PxRigidDynamic* guntower_1;
+extern physx::PxRigidDynamic* guntower_2;
+extern physx::PxRigidDynamic* guntower_3;
+extern physx::PxRigidDynamic* guntower_4;
 
 extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
@@ -69,6 +75,8 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
 
 PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
 
+
+
 void createBigBall();
 void createAirPlane();
 void changeAirPlaneVelocity();
@@ -81,3 +89,14 @@ PxRigidDynamic* initPlayer();
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
 
 void createBullet(const PxTransform& t, const PxVec3& velocity);
+
+class guntower 
+{
+private:
+	PxVec3 towerpos;
+	clock_t timer_last=0;
+public:
+	PxVec3 initguntower(glm::vec3 pos);
+	void autoattack(PxRigidDynamic* target,PxVec3 pos);
+	void runguntower(PxRigidDynamic* target);
+};

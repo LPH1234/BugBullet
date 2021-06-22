@@ -50,7 +50,6 @@ enum PlayerMovement {
 	Player_RIGHT
 };
 
-
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Player
 {

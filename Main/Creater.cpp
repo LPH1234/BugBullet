@@ -17,6 +17,11 @@ PxRigidDynamic* player = nullptr;
 PlainModel *street = nullptr;
 
 PxRigidDynamic* vehicle = nullptr;
+PxRigidDynamic* guntower_1 = nullptr;
+PxRigidDynamic* guntower_2 = nullptr;
+PxRigidDynamic* guntower_3 = nullptr;
+PxRigidDynamic* guntower_4 = nullptr;
+
 extern Shader* envShader;
 
 vector<PxActor*>		removeActorList;
@@ -212,6 +217,10 @@ PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry) {
 	gScene->addActor(*vehicle);
 	return vehicle;
 }
+
+
+
+
 void createBigBall() {
 	//PxShape* shape = gPhysics->createShape(PxSphereGeometry(1), *gMaterial);
 	PxTransform pos(PxVec3(0, 1, -18));
@@ -520,4 +529,31 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 	gScene->addActor(*dynamic);
 
 
+}
+
+PxVec3 guntower::initguntower(glm::vec3 pos) {
+	//glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+	glm::vec3 pos1(pos.x, pos.y-0.75f, pos.z);
+	guntower_1 = reinterpret_cast<PxRigidDynamic*>(createModel(pos1, glm::vec3(0.05f, 0.05f, 0.05f), "model/vehicle/tower/c.obj", envShader));
+	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
+	//PxTransform mDir = PxTransform(target->getGlobalPose().p-mPos);
+	//PxVec3 mDir = (target->getGlobalPose().p - mPos);
+	//autoattack(PxTransform(mPos), mDir);
+	guntower::towerpos = mPos;
+	return mPos;
+}
+
+void guntower::autoattack(PxRigidDynamic* target,PxVec3 pos) {
+	PxVec3 velocity = (target->getGlobalPose().p - pos);
+	createDynamic(PxTransform(pos), PxSphereGeometry(0.1f), velocity);
+	cout << "gunshot" << endl;
+}
+void guntower::runguntower(PxRigidDynamic* target) {
+	PxVec3 e= guntower::towerpos;
+	clock_t timer_now = clock();
+	if (timer_now - timer_last > 1000) {
+		autoattack(target, e);
+		timer_last = timer_now;
+	}
+	
 }
