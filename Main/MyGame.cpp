@@ -23,8 +23,9 @@ void createModel(std::string path, int scale, PxVec3& offset) {
 PxReal					stackZ = 3.0f;
 extern Camera camera;
 extern Shader* envShader;
-clock_t	 lockFrame_last = 0, lockFrame_current = 0;
+clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
+guntower GunTower;
 
 void initPhysics(bool interactive)
 {
@@ -35,6 +36,7 @@ void initPhysics(bool interactive)
 	gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
 
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
+	PxInitExtensions(*gPhysics, gPvd);
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
@@ -68,14 +70,22 @@ void initPhysics(bool interactive)
 
 	for (PxU32 i = 0; i < 3; i++)
 		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-	createBigBall();
+	//createBigBall();
 
 
 	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
+	//initvehicle(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
+   
+
+	glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+	GunTower.initguntower(pos1);
+	
 
 	createAirPlane();
+
 	camera.setTarget(player);
+	//camera.setTarget(vehicle);
 
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
@@ -84,19 +94,17 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
-	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader, false);
+	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
 	//model\vehicle\suv\Models Transport Shuttle_obj.obj
+	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
+		
 
 
 
 	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
-
-
-
-
 
 	if (!interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
@@ -130,6 +138,7 @@ void stepPhysics(bool interactive)
 	gScene->fetchResults(true);
 	removeActorInList();
 	changeAirPlaneVelocity();
+	GunTower.runguntower(player);
 	lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 
 }

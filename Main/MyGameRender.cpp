@@ -15,6 +15,7 @@ extern void cleanupPhysics(bool interactive);
 
 extern PxRigidDynamic* player_ctl;
 
+extern guntower Guntower;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -121,6 +122,9 @@ int myRenderLoop()
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
+	
+   //vehicle
+	//Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
 	// var init
 	// -----------------------------
