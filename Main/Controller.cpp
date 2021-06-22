@@ -5,6 +5,7 @@
 //全局变量区
 const float velocity = 0.5f;
 extern Camera camera;
+extern PxTransform born_pos;
 
 
 bool autoshooting = true;//射击机制
@@ -71,6 +72,9 @@ void vehicleProcessKeyboard() {
 	if (keyToPrePressState[GLFW_KEY_SPACE] && !keyToPressState[GLFW_KEY_SPACE]) {
 		PxVec3 jumpup(0.0f, 500, 0.0f);
 		player->addForce(jumpup);
+	}
+	if (keyToPrePressState['`']) {
+		player->setGlobalPose(born_pos);
 	}
 
 	//if (keyToPressState[GLFW_KEY_U]) {

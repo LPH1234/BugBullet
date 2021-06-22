@@ -53,7 +53,6 @@ bool mouseButtonPressState[3];
 
 void renderCallback(Shader* shader)
 {
-	stepPhysics(true);
 	PxScene* scene;
 	PxGetPhysics().getScenes(&scene, 1);
 	PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
@@ -160,11 +159,16 @@ int myRenderLoop()
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// PhysX物理模拟，确定所有物体的下一状态
+		// -------------------------------------------------------------------------------
+		stepPhysics(true);
+
+		// 开始渲染工作
+		// -------------------------------------------------------------------------------
 		envShader->use();
 		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 12000.f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 12500.f);
 		camera.trackDynamicPosition();
-		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		envShader->setMat4("projection", projection);
 		envShader->setMat4("view", view);
@@ -177,11 +181,8 @@ int myRenderLoop()
 		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
 		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
+		renderCallback(envShader);//场景内物体的渲染
 
-		envShader->setMat4("projection", projection);
-		envShader->setMat4("view", view);
-
-		renderCallback(envShader);
 		//=====================================skyBoxShader=================================
 		// 绘制包围盒
 		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
