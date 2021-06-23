@@ -44,11 +44,9 @@ ObjLoader::ObjLoader(BaseModel* renderModel, MESH_TYPE type) {
 	Logger::info("开始创建Mesh");
 	if (type == MESH_TYPE::TRIANGLE) {
 		genTriangleMesh(this->scale);
-		//cookTriangleMesh(this->triangle_mesh_desc, this->triangle_cooking_file_path);
 	}
 	if (type == MESH_TYPE::CONVEX) {
 		genConvexMesh(this->scale);
-		//cookConvexMesh(this->convex_mesh_desc, this->convex_cooking_file_path);
 	}
 	Logger::info("Mesh加载完成");
 
@@ -144,15 +142,6 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 	TriangleMesh->attachShape(*shape);
 	shape->release();
 
-	//设置名称
-	TriangleMesh->setName("map");
-
-	//用户数据
-	//TriangleMesh->userData = new int;
-	//int testid = 88888888;
-	//memcpy(TriangleMesh->userData, &testid, sizeof(int));
-
-
 
 	gScene->addActor(*TriangleMesh);
 	return TriangleMesh;
@@ -231,8 +220,6 @@ physx::PxTriangleMesh* ObjLoader::readTriangleMeshFromCookingFile() {
 
 
 
-
-
 physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 	if (this->is_convex_cooked) {//从cooking中读取
 		this->convex_mesh = readConvexMeshFromCookingFile();
@@ -243,7 +230,6 @@ physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 		const PxU32 numVertices = this->v.size();
 		const PxU32 numTriangles = this->f.size();
 		PxVec3* vertices = new PxVec3[numVertices];
-		//PxU32* indices = new PxU32[numTriangles * 3];
 
 		// 加载顶点
 		for (int i = 0; i < numVertices; ++i) {
@@ -251,22 +237,10 @@ physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 			vertices[i] = vectmp;
 		}
 
-		// 加载面
-		/*auto faceIt = this->f.begin();
-		for (int i = 0; i < numTriangles && faceIt != this->f.end(); faceIt++, ++i) {
-			for (int j = 0; j < 3; j++)
-				if ((*faceIt).size() >= j + 1)
-					indices[i * 3 + j] = (*faceIt)[j].u;
-		}*/
-
 		PxConvexMeshDesc* meshDesc = new PxConvexMeshDesc();
 		meshDesc->points.count = numVertices;
 		meshDesc->points.data = vertices;
 		meshDesc->points.stride = sizeof(PxVec3);
-
-		/*meshDesc->indices.count = numTriangles;
-		meshDesc->indices.data = indices;
-		meshDesc->indices.stride = 3 * sizeof(PxU32);*/
 
 		meshDesc->flags = PxConvexFlag::eCOMPUTE_CONVEX;
 
@@ -275,7 +249,6 @@ physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 			Logger::error("invalid Convex Mesh Desc!");
 		}
 		//PX_ASSERT(res);
-
 		PxDefaultMemoryOutputStream buf;
 		PxConvexMeshCookingResult::Enum result;
 
@@ -309,11 +282,6 @@ PxRigidActor* ObjLoader::createDynamicActorAndAddToScene() {
 
 	convexMesh->attachShape(*shape);
 	shape->release();
-
-	//用户自定义数据
-	//convexMesh->userData = new int;
-	//int testid = 88888888;
-	//memcpy(convexMesh->userData, &testid, sizeof(int));
 
 	gScene->addActor(*convexMesh);
 
