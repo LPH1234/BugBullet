@@ -9,7 +9,7 @@
 #include "../Render/Render.h"
 #include "../Data/Data.h"
 
-
+#include <list>
 
 
 extern PxFoundation*			gFoundation;
@@ -24,6 +24,7 @@ extern physx::PxRigidDynamic* player;
 extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
 
+extern list<PxParticleSystem*> renderParticleSystemList; //储存粒子系统的链表
 
 
 
@@ -75,3 +76,5 @@ PxRigidDynamic* initPlayer();
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
 
 void createBullet(const PxTransform& t, const PxVec3& velocity);
+
+void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity = PxVec3(0.f,0.f,0.f), PxVec3 force = PxVec3(0.f, 0.f, 0.f));

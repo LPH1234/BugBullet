@@ -12,6 +12,7 @@ static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
 Cube* cube = nullptr;
 Sphere* sphere = nullptr;
 PlainModel* bullet = nullptr;
+PlainModel* particle = nullptr;
 
 void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shader)
 {
@@ -143,6 +144,45 @@ namespace Snippets
 		}
 	}
 
+	void renderParticles(list<PxParticleSystem*>& particleSystemList, Shader* shader) {
+		if(particle == nullptr)
+			particle = new PlainModel(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.03f, 0.03f, 0.03f), "model/particle/particle.obj", shader);
+
+		list<PxParticleSystem*>::iterator it; //声明一个迭代器
+		for (it = particleSystemList.begin(); it != particleSystemList.end(); it++) {
+			PxParticleSystem* ps = *it;
+			// lock SDK buffers of *PxParticleSystem* ps for reading
+			PxParticleReadData* rd = ps->lockParticleReadData();
+			char str[12];
+			sprintf(str, "%d", ps);
+			// access particle data from PxParticleReadData
+			if (rd)
+			{
+				PxStrideIterator<const PxParticleFlags> flagsIt(rd->flagsBuffer);
+				PxStrideIterator<const PxVec3> positionIt(rd->positionBuffer);
+				PxStrideIterator<const PxVec3> vIt(rd->velocityBuffer);
+				for (unsigned i = 0; i < rd->validParticleRange; ++i, ++flagsIt, ++positionIt, ++vIt)
+				{
+					if (*flagsIt & PxParticleFlag::eVALID)
+					{
+						// access particle position
+						const PxVec3& position = *positionIt;
+						const PxVec3& velocity = *vIt;
+						std::cout << str <<"th\t"<< i << "\t号粒子位置：" << position.x << "\t" << position.y << "\t" << position.z;
+						std::cout << "\tv:" <<  velocity.x << "\t"<< velocity.y << "\t"<< velocity.z;
+						cout << "\n" ;
+						particle->setPosition(glm::vec3(position.x,position.y,position.z));
+						particle->updateShaderModel();
+						particle->draw();
+					}
+				}
+				// return ownership of the buffers back to the SDK
+				rd->unlock();
+			}
+
+		}
+		
+	}
 
 
 } //namespace Snippets

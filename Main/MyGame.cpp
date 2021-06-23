@@ -29,6 +29,8 @@ void initPhysics(bool interactive)
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
+	PxRegisterParticles(*gPhysics);
+
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
 	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD; // 开启CCD：continuous collision detection
 	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);

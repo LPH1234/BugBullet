@@ -62,6 +62,7 @@ void renderCallback(Shader* shader)
 		std::vector<PxRigidActor*> actors(nbActors);
 		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
 		Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
+		Snippets::renderParticles(renderParticleSystemList, shader);
 	}
 }
 
