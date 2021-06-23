@@ -3,6 +3,7 @@
 #include <ctime>
 
 #include "Creater.h"
+#include "Actor.h"
 
 #define PI 3.1415926
 
@@ -11,10 +12,9 @@ using namespace physx;
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 module moduleCallBack;
-
+AirPlane				*Plane_1;
 //第三人称角色位置
 PxTransform born_pos(PxVec3(10, 0, -7));
-
 
 void createModel(std::string path, int scale, PxVec3& offset) {
 
@@ -69,10 +69,7 @@ void initPhysics(bool interactive)
 	//for (PxU32 i = 0; i < 3; i++)
 		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	//createBigBall();
-
-	for (PxU32 i = 0; i < 3; i++)
-		createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-	//createBigBall();
+	//createAbleBreakWall();
 
 
 	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
@@ -93,9 +90,13 @@ void initPhysics(bool interactive)
 	GunTower.initlist(pos_list);
 	
 
-	createAirPlane();
+	//createAirPlane();
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f), 
+		"model/vehicle/Fighter-jet/AnyConv.com__Fighter jet.obj", envShader, false));
+	Plane_1 = new AirPlane(PxVec3(0,0,1),PxVec3(0,1,0),PxVec3(-1,0,0), temp);
 
-	camera.setTarget(player);
+	//camera.setTarget(player);
+	camera.setTarget(Plane_1->body);
 	//camera.setTarget(vehicle);
 
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
@@ -105,7 +106,7 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
 	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
@@ -153,6 +154,9 @@ void stepPhysics(bool interactive)
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
+	//changeAirPlaneVelocity();
+	//Plane_1->controlAirPlane();
+	Plane_1->manualControlAirPlane();
 	changeAirPlaneVelocity();
 	GunTower.runguntower(player);
 	removeActorInList();

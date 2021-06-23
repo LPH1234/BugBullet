@@ -317,6 +317,7 @@ bool lessThan180(PxVec3 a, PxVec3 base) {
 }
 
 int currentAngel_x = 0, currentAngel_z = 0;
+int emitBulletTime = 0;
 //改变飞机姿态与速度，能够通过上下左右控制俯仰和左右转弯
 void changeAirPlaneVelocity() {
 	//直行
@@ -331,12 +332,6 @@ void changeAirPlaneVelocity() {
 	else if (turningState[0]) {
 		if (rollingAngel < 45) {
 			rollingAngel += 1;
-			/*PxQuat rot1(-PxPi / 180 * rollingAngel, headForward);
-			PxQuat rot2(PxPi / 180 * (rollingAngel * 2 + currentAngel_x), PxVec3(0, 1, 0));
-			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
-			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));*/
 			PxQuat rot1(PxPi / 180 * (-1), headForward);
 			PxQuat rot2(PxPi / 180 * (1), PxVec3(0, 1, 0));
 			headForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
@@ -344,17 +339,10 @@ void changeAirPlaneVelocity() {
 			swingForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
 			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2*airPlane->getGlobalPose().q));
 			airPlane->setLinearVelocity(5 * headForward);
-			//cout << getAngel(headForward, PxVec3(1, 0, 0)) << "\n";
 		}
 		else if (rollingAngel < 90) {
 			rollingAngel += 1;
 			long long angel = 90 - rollingAngel;
-			/*PxQuat rot1(-PxPi / 180 * angel, headForward);
-			PxQuat rot2(PxPi / 180 * (90 + currentAngel_x), PxVec3(0, 1, 0));
-			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
-			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));*/
 			PxQuat rot1(PxPi / 180 * (1), headForward);
 			PxQuat rot2(PxPi / 180 * (1), PxVec3(0, 1, 0));
 			headForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
@@ -373,10 +361,6 @@ void changeAirPlaneVelocity() {
 			//currentAngel_x = 0;
 			currentAngel_x += 90;
 			currentAngel_x %= 360;
-			/*airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, PxQuat(PxPi/2*(currentAngel_x/90),PxVec3(0,1,0))));
-			headForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(1, 0, 0));
-			backForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 1, 0));
-			swingForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 0, 1));*/
 			cout << "左转结束\n";
 			//airPlane->setLinearVelocity(5 * headForward);
 		}
@@ -429,11 +413,6 @@ void changeAirPlaneVelocity() {
 		//PxVec3 axis_z = headForward.cross(backForward).getNormalized();
 		if (pitchingAngel < 90) {
 			pitchingAngel += 1;
-			/*PxQuat rot(PxPi / 180 * (pitchingAngel + currentAngel_z), swingForward);
-			headForward = (rot).rotate(PxVec3(1, 0, 0));
-			backForward = (rot).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));*/
 			PxQuat rot(PxPi / 180 * (1), swingForward);
 			headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
 			backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
@@ -457,32 +436,27 @@ void changeAirPlaneVelocity() {
 	}
 	//俯冲
 	else if (turningState[4]) {
-		if (pitchingAngel < 90) {
-			pitchingAngel += 1;
-			/*PxQuat rot(PxPi / 180 * (pitchingAngel + currentAngel_z), swingForward);
-			headForward = (rot).rotate(PxVec3(1, 0, 0));
-			backForward = (rot).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));*/
-			PxQuat rot(PxPi / 180 * (-1), swingForward);
-			headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
-			backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot*airPlane->getGlobalPose().q));
-			airPlane->setLinearVelocity(5 * headForward);
-		}
-		else {
-			turningState[0] = false;
-			turningState[1] = false;
-			turningState[2] = true;
-			turningState[3] = false;
-			turningState[4] = false;
-			pitchingAngel = 0;
-			currentAngel_z -= 90;
-			currentAngel_z %= 360;
-			cout << "俯冲结束\n";
-			//airPlane->setLinearVelocity(5 * headForward);
-		}
+	if (pitchingAngel < 90) {
+		pitchingAngel += 1;
+		PxQuat rot(PxPi / 180 * (-1), swingForward);
+		headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
+		backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
+		swingForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
+		airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot*airPlane->getGlobalPose().q));
+		airPlane->setLinearVelocity(5 * headForward);
+	}
+	else {
+		turningState[0] = false;
+		turningState[1] = false;
+		turningState[2] = true;
+		turningState[3] = false;
+		turningState[4] = false;
+		pitchingAngel = 0;
+		currentAngel_z -= 90;
+		currentAngel_z %= 360;
+		cout << "俯冲结束\n";
+		//airPlane->setLinearVelocity(5 * headForward);
+	}
 
 	}
 	else {
@@ -494,6 +468,63 @@ void changeAirPlaneVelocity() {
 	headForward = rot.rotate(PxVec3(1, 0, 0));
 	airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));
 	airPlane->setLinearVelocity(5 * headForward);*/
+
+	emitBulletTime++;
+	if (emitBulletTime % 60 == 0) {
+		createDynamic(airPlane->getGlobalPose().transform(PxTransform(headForward)), PxSphereGeometry(0.1), 25 * headForward);
+	}
+}
+
+// fixed, breakable joint
+PxJoint* createBreakableFixed(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1)
+{
+	PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, t0, a1, t1);
+	j->setBreakForce(10, 100);
+	j->setProjectionLinearTolerance(0.1000000f);
+	j->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+	j->setConstraintFlag(PxConstraintFlag::eDRIVE_LIMITS_ARE_FORCES, true);
+	j->setConstraintFlag(PxConstraintFlag::eDISABLE_PREPROCESSING, true);
+
+	return j;
+}
+void createAbleBreakWall() {
+	//PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.1, 0.1, 0.1), *gMaterial);
+	vector<vector<PxRigidDynamic*>> allDynamic(5, vector<PxRigidDynamic*>(10));
+
+	PxTransform t(PxVec3(-0.9, 0.1, 0));
+	float separation = 0.2f;
+	PxVec3 offset(separation/2, 0, 0);
+	PxVec3 offset2(0, separation / 2, 0);
+	PxTransform localTm(offset);
+	PxRigidDynamic* prev = NULL;
+
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 10; j++) {
+			PxRigidDynamic* current = PxCreateDynamic(*gPhysics, t*localTm, PxBoxGeometry(0.1, 0.1, 0.1), *gMaterial, 100);
+			allDynamic[i][j] = (current);
+			//连接左边
+			if (j == 0) {
+				prev = NULL;
+			}
+			createBreakableFixed(prev, prev ? PxTransform(offset) : t.transform(PxTransform(PxVec3(0, 0.2*i, 0))), current, PxTransform(-offset));
+			//连接下边
+			if (i-1<0) {
+				prev = NULL;
+			}
+			else {
+				prev = allDynamic[i-1][j];
+			}
+			PxJoint* jj=createBreakableFixed(prev, prev ? PxTransform(offset2) : t.transform(PxTransform(PxVec3(0.2*j, 0, 0))), current, PxTransform(-offset2));
+			if (i == 0) {
+				jj->setBreakForce(100000, 100000);
+			}
+			gScene->addActor(*current);
+			prev = current;
+			localTm.p.x += separation;
+		}
+		localTm.p.x = separation / 2;
+		localTm.p.y += separation;
+	}
 }
 
 

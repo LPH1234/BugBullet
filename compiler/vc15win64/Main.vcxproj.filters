@@ -18,6 +18,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Main\Actor.h" />
+      <Filter>头文件</Filter>
     <ClInclude Include="..\..\Main\Characters.h">
       <Filter>头文件</Filter>
     </ClInclude>

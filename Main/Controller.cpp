@@ -1,12 +1,12 @@
 #include "Controller.h"
 
 
-
 //全局变量区
 const float velocity =5.0f;
 extern Camera camera;
 
 extern vector<bool>	turningState;
+extern AirPlane* Plane_1;
 
 extern PxTransform born_pos;
 
@@ -186,20 +186,49 @@ void playerProcessKeyboard() {
 }
 
 void planeProcessKeyboard() {
+	//半自动飞行
+	/*if (keyToPressState[GLFW_KEY_LEFT]&& Plane_1->turningState[2]) {
+		Plane_1->turningState[0] = true;
+		Plane_1->turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_RIGHT] && Plane_1->turningState[2]) {
+		Plane_1->turningState[1] = true;
+		Plane_1->turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_UP] && Plane_1->turningState[2]) {
+		Plane_1->turningState[3] = true;
+		Plane_1->turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_DOWN] && Plane_1->turningState[2]) {
+		Plane_1->turningState[4] = true;
+		Plane_1->turningState[2] = false;
+	}*/
+
+	//手动飞行
+	//按下时设true
 	if (keyToPressState[GLFW_KEY_LEFT]) {
-		turningState[0] = true;
-		turningState[2] = false;
+		Plane_1->turningState[0] = true;
 	}
 	if (keyToPressState[GLFW_KEY_RIGHT]) {
-		turningState[1] = true;
-		turningState[2] = false;
+		Plane_1->turningState[1] = true;
 	}
 	if (keyToPressState[GLFW_KEY_UP]) {
-		turningState[3] = true;
-		turningState[2] = false;
+		Plane_1->turningState[3] = true;
 	}
 	if (keyToPressState[GLFW_KEY_DOWN]) {
-		turningState[4] = true;
-		turningState[2] = false;
+		Plane_1->turningState[4] = true;
+	}
+	//松开时设false
+	if (!keyToPressState[GLFW_KEY_LEFT] && keyToPrePressState[GLFW_KEY_LEFT]) {
+		Plane_1->turningState[0] = false;
+	}
+	if (!keyToPressState[GLFW_KEY_RIGHT] && keyToPrePressState[GLFW_KEY_RIGHT]) {
+		Plane_1->turningState[1] = false;
+	}
+	if (!keyToPressState[GLFW_KEY_UP] && keyToPrePressState[GLFW_KEY_UP]) {
+		Plane_1->turningState[3] = false;
+	}
+	if (!keyToPressState[GLFW_KEY_DOWN] && keyToPrePressState[GLFW_KEY_DOWN]) {
+		Plane_1->turningState[4] = false;
 	}
 }
