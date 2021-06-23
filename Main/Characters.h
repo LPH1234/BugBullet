@@ -1,12 +1,16 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <unordered_map>
 
 #include "PxRigidDynamic.h"
 #include "PxPhysicsAPI.h"
 #include "foundation/PxPreprocessor.h"
 
 #include "../Utils/Convert.h"
+
+extern std::unordered_map<int, bool> keyToPressState;
+extern std::unordered_map<int, bool> keyToPrePressState;
 
 class BaseCharacter {
 	physx::PxRigidDynamic* rigid = nullptr;
