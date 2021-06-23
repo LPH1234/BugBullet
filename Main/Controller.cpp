@@ -49,6 +49,8 @@ void mouseClick() {
 			PxMat33 m(mDir.cross(viewY), viewY, -mDir);
 			px = PxTransform(mEye, PxQuat(m));
 		}
+		if (camera.getMode() == VIEW_TYPE::THIRD_PERSON)
+			px.p = player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 2.f);
 		createBullet(px, px.rotate(PxVec3(0, 0, -1)) * 200);
 	}
 }
