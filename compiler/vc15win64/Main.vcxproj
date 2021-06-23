@@ -278,6 +278,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Main\Controller.h" />
     <ClInclude Include="..\..\Main\Creater.h" />
+    <ClInclude Include="..\..\Main\Characters.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -47,9 +47,9 @@ void mouseClick() {
 			px.p = player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 2.f);
 		createBullet(px, px.rotate(PxVec3(0, 0, -1)) * 200);
 	}
-	if (mouseButtonPressState[1]) {
+	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT]) { //Êó±êÓÒ¼ü
 		//createParticles(50, false, player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 3.f), PxVec3(0.f,2.f,0.f), PxVec3(0.f,-1.f,0.f));
-		createParticles(50, false, player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 8.f), PxVec3(0.f,0.f,0.f), PxVec3(0.f,-0.1f,0.f));
+		createParticles(50, false, player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 4.f), PxVec3(0.f, 0.f, 0.f), PxVec3(0.f, -0.1f, 0.f));
 	}
 }
 

@@ -32,5 +32,8 @@
     <ClInclude Include="..\..\Main\Creater.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Main\Characters.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

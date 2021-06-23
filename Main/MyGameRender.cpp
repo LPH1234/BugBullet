@@ -53,7 +53,6 @@ bool mouseButtonPressState[3];
 
 void renderCallback(Shader* shader)
 {
-	stepPhysics(true);
 	PxScene* scene;
 	PxGetPhysics().getScenes(&scene, 1);
 	PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
@@ -156,8 +155,12 @@ int myRenderLoop()
 		// -----
 		processOtherControlEvents();
 
-		// render
-		// ------
+		// 物理模拟
+		//---------------------------
+		stepPhysics(true);
+
+		// 渲染
+		//---------------------------
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -178,11 +181,7 @@ int myRenderLoop()
 		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
 		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-
-		envShader->setMat4("projection", projection);
-		envShader->setMat4("view", view);
-
-		renderCallback(envShader);
+		renderCallback(envShader); //渲染场景内的物体和粒子
 		//=====================================skyBoxShader=================================
 		// 绘制包围盒
 		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
@@ -247,6 +246,8 @@ void cameraProcessInput(GLFWwindow *window) {
 		camera.setMode(VIEW_TYPE::THIRD_PERSON);
 	if (keyToPressState[GLFW_KEY_F2])
 		camera.setMode(VIEW_TYPE::FREE);
+	if (keyToPressState[GLFW_KEY_F4])
+		camera.setMode(VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION);
 }
 
 

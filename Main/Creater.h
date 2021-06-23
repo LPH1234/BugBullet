@@ -70,11 +70,9 @@ void createBigBall();
 void createAirPlane();
 void changeAirPlaneVelocity();
 
-PxRigidDynamic* initPlayer();
-
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
 
 void createBullet(const PxTransform& t, const PxVec3& velocity);
 
-void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity = PxVec3(0.f,0.f,0.f), PxVec3 force = PxVec3(0.f, 0.f, 0.f));
+void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity = PxVec3(0.f, 0.f, 0.f), PxVec3 force = PxVec3(0.f, 0.f, 0.f));

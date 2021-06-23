@@ -210,18 +210,6 @@ void changeAirPlaneVelocity() {
 	airPlane->setLinearVelocity(5 * headForward);
 }
 
-PxRigidDynamic* initPlayer() {
-
-	PxTransform pos(PxVec3(4, 1, 13));
-	player = PxCreateDynamic(*gPhysics, pos, PxSphereGeometry(0.5), *gMaterial, 10.0f);
-	//设置刚体名称
-	player->setName("player");
-	//设置碰撞标签
-	//player->setLinearVelocity(PxVec3(0, 0, -5));
-	gScene->addActor(*player);
-	return player;
-}
-
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
@@ -257,8 +245,8 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 	PxQuat q1 = t.q + PxQuat(PxPi / 180 * 90, glmVec3ToPxVec3(camera.getRight()));
 	//PxTransform t1(t.p, q1);
 	glm::vec3 bullet_init_vec3(1.f, 0.f, 0.f);
-	float cos_tmp = glm::dot(camera.getFront(), bullet_init_vec3)/getVec3Length(camera.getFront())/getVec3Length(bullet_init_vec3);
-	PxTransform t1(t.p, PxQuat(glm::acos(cos_tmp) , glmVec3ToPxVec3(-glm::normalize(glm::cross(camera.getFront(), bullet_init_vec3)))));  //不能是90度，要转到当前的前方
+	float cos_tmp = glm::dot(camera.getFront(), bullet_init_vec3) / getVec3Length(camera.getFront()) / getVec3Length(bullet_init_vec3);
+	PxTransform t1(t.p, PxQuat(glm::acos(cos_tmp), glmVec3ToPxVec3(-glm::normalize(glm::cross(camera.getFront(), bullet_init_vec3)))));  //不能是90度，要转到当前的前方
 	//std::cout << "xita:" << glm::acos(cos_tmp)  << "\n";
 	PxCapsuleGeometry e(0.005, 0.006);
 	PxMaterial* me = gPhysics->createMaterial(0.9f, 0.9f, 0.0f);
@@ -278,7 +266,7 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 
 
 
-void createParticles(int numParticles,bool perOffset, PxVec3 initPos, PxVec3 velocity, PxVec3 force) {
+void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity, PxVec3 force) {
 
 	PxParticleSystem* ps = gPhysics->createParticleSystem(numParticles, perOffset);;
 
@@ -290,10 +278,10 @@ void createParticles(int numParticles,bool perOffset, PxVec3 initPos, PxVec3 vel
 	PxVec3 *newAppParticleVelocities = new PxVec3[numParticles];
 	PxVec3 *newAppParticleforces = new PxVec3[numParticles];
 	PxParticleCreationData particleCreationData;
-	ps->setGridSize(1.0f);
+	/*ps->setGridSize(1.0f);
 	ps->setMaxMotionDistance(0.3);
 	ps->setRestOffset(0.1f * 0.3f);
-	ps->setContactOffset(0.1f * 0.3f * 2);
+	ps->setContactOffset(0.1f * 0.3f * 2);*/
 	ps->setDamping(1.f);
 	ps->setRestitution(1.f);
 	ps->setDynamicFriction(1.f);

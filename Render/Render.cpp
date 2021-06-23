@@ -8,6 +8,8 @@ using namespace physx;
 
 #define MAX_NUM_MESH_VEC3S  21474836
 static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
+extern PxScene* gScene;
+
 
 Cube* cube = nullptr;
 Sphere* sphere = nullptr;
@@ -145,9 +147,9 @@ namespace Snippets
 	}
 
 	void renderParticles(list<PxParticleSystem*>& particleSystemList, Shader* shader) {
-		if(particle == nullptr)
+		if (particle == nullptr)
 			particle = new PlainModel(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.03f, 0.03f, 0.03f), "model/particle/particle.obj", shader);
-
+		vector<PxParticleSystem*> remove_list;
 		list<PxParticleSystem*>::iterator it; //声明一个迭代器
 		for (it = particleSystemList.begin(); it != particleSystemList.end(); it++) {
 			PxParticleSystem* ps = *it;
@@ -155,6 +157,7 @@ namespace Snippets
 			PxParticleReadData* rd = ps->lockParticleReadData();
 			char str[12];
 			sprintf(str, "%d", ps);
+			bool stop_flag = true;
 			// access particle data from PxParticleReadData
 			if (rd)
 			{
@@ -168,20 +171,33 @@ namespace Snippets
 						// access particle position
 						const PxVec3& position = *positionIt;
 						const PxVec3& velocity = *vIt;
-						std::cout << str <<"th\t"<< i << "\t号粒子位置：" << position.x << "\t" << position.y << "\t" << position.z;
-						std::cout << "\tv:" <<  velocity.x << "\t"<< velocity.y << "\t"<< velocity.z;
-						cout << "\n" ;
-						particle->setPosition(glm::vec3(position.x,position.y,position.z));
+						std::cout << str << "th\t" << i << "\t号粒子位置：" << position.x << "\t" << position.y << "\t" << position.z;
+						std::cout << "\tv:" << velocity.x << "\t" << velocity.y << "\t" << velocity.z;
+						cout << "\n";
+						if (velocity.x != 0.f || velocity.y != 0.f || velocity.z != 0.f)
+							stop_flag = false; //如果速度不为0
+						particle->setPosition(glm::vec3(position.x, position.y, position.z));
 						particle->updateShaderModel();
 						particle->draw();
 					}
 				}
 				// return ownership of the buffers back to the SDK
 				rd->unlock();
+				if (stop_flag) {//如果这个粒子系统中所有的粒子都停止运动了，就移除它
+					remove_list.push_back(ps);
+				}
 			}
 
 		}
-		
+		for (size_t i = 0; i < remove_list.size(); i++)
+		{
+			PxParticleSystem* ps = remove_list[i];
+			particleSystemList.remove(ps);
+			ps->releaseParticles();
+			gScene->removeActor(*ps);
+			ps->release();
+		}
+
 	}
 
 
