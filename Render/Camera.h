@@ -34,7 +34,8 @@ enum Movement {
 enum VIEW_TYPE {
 	FREE,
 	FIRST_PERSON,
-	THIRD_PERSON
+	THIRD_PERSON,
+	BEHIND_PERSON_TRACK_ALL_DIRECTION,
 };
 
 
@@ -121,18 +122,22 @@ public:
 	// processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
 	{
-		float x_sensitivity, y_sensitivity;
+		float x_sensitivity = 0.f, y_sensitivity = 0.f;
 		if (this->mode == VIEW_TYPE::FREE) {
 			x_sensitivity = FREE_X_SENSITIVITY;
 			y_sensitivity = FREE_Y_SENSITIVITY;
+		}
+		if (this->mode == VIEW_TYPE::FIRST_PERSON) {
+			x_sensitivity = FIRST_X_SENSITIVITY;
+			y_sensitivity = FIRST_Y_SENSITIVITY;
 		}
 		if (this->mode == VIEW_TYPE::THIRD_PERSON) {
 			x_sensitivity = THIRD_X_SENSITIVITY;
 			y_sensitivity = THIRD_Y_SENSITIVITY;
 		}
-		if (this->mode == VIEW_TYPE::FIRST_PERSON) {
-			x_sensitivity = FIRST_X_SENSITIVITY;
-			y_sensitivity = FIRST_Y_SENSITIVITY;
+		if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
+			x_sensitivity = THIRD_X_SENSITIVITY;
+			y_sensitivity = THIRD_Y_SENSITIVITY;
 		}
 		xoffset *= x_sensitivity;
 		yoffset *= y_sensitivity;
@@ -166,6 +171,17 @@ public:
 			}
 			this->track_radius += yoffset;
 		}
+		if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
+			if (yoffset + this->track_radius <= MIN_TRACK_RADIUS) {
+				track_radius = MIN_TRACK_RADIUS;
+				return;
+			}
+			if (yoffset + this->track_radius >= MAX_TRACK_RADIUS) {
+				track_radius = MAX_TRACK_RADIUS;
+				return;
+			}
+			this->track_radius += yoffset;
+		}
 
 		//Zoom -= (float)yoffset;
 		/*if (Zoom < 1.0f)
@@ -183,16 +199,22 @@ public:
 				return;
 			}
 			pxVec3ToGlmVec3(target->getGlobalPose().p, this->target_position);
+			if (this->mode == VIEW_TYPE::FIRST_PERSON) {
+				Position.y = target_position.y + 1.0f;
+				Position.x = target_position.x;
+				Position.z = target_position.z;
+			}
 			if (this->mode == VIEW_TYPE::THIRD_PERSON) {
 				Position.y = target_position.y - (Pitch / 180.f) * track_radius;
 				float curr_radians = sqrtf(track_radius * track_radius - (target_position.y - Position.y) * (target_position.y - Position.y));
 				Position.x = target_position.x + cos(Yaw) * curr_radians;
 				Position.z = target_position.z + sin(Yaw) * curr_radians;
 			}
-			if (this->mode == VIEW_TYPE::FIRST_PERSON) {
-				Position.y = target_position.y + 1.0f;
-				Position.x = target_position.x;
-				Position.z = target_position.z;
+			if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
+				Position.y = target_position.y - (0 / 180.f) * track_radius;
+				float curr_radians = sqrtf(track_radius * track_radius - (target_position.y - Position.y) * (target_position.y - Position.y));
+				Position.x = target_position.x + cos(-90) * curr_radians;
+				Position.z = target_position.z + sin(-90) * curr_radians;
 			}
 		}
 		updateCameraVectors();
@@ -261,6 +283,15 @@ private:
 			Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 			Up = glm::normalize(glm::cross(Right, Front));
 		}
+		if (this->mode == VIEW_TYPE::FIRST_PERSON) {
+			front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+			front.y = sin(glm::radians(Pitch));
+			front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+			Front = glm::normalize(front);
+			// also re-calculate the Right and Up vector
+			Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+			Up = glm::normalize(glm::cross(Right, Front));
+		}
 		if (this->mode == VIEW_TYPE::THIRD_PERSON) {
 			//切面方程：(x0-a)(x-a)+(y0-b)(y-b)+(z0-c)(z-c) = R*R  
 			front.x = target_position.x - Position.x;
@@ -274,16 +305,20 @@ private:
 			//glm::vec3 up_tmp(front.x, (track_radius*track_radius - (Position.x - target_position.x)*(front.x - target_position.x) - (Position.z - target_position.z)*(front.z - target_position.z)) / (Position.y - target_position.y) + target_position.y, front.z);
 			//Up = glm::normalize(up_tmp);
 			//Right = glm::normalize(glm::cross(Front, Up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-
 		}
-		if (this->mode == VIEW_TYPE::FIRST_PERSON) {
-			front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-			front.y = sin(glm::radians(Pitch));
-			front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+		if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
+			//切面方程：(x0-a)(x-a)+(y0-b)(y-b)+(z0-c)(z-c) = R*R  
+			front.x = target_position.x - Position.x;
+			front.y = target_position.y - Position.y;
+			front.z = target_position.z - Position.z;
 			Front = glm::normalize(front);
 			// also re-calculate the Right and Up vector
-			Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+			Right = glm::normalize(glm::cross(Front, WorldUp) + glm::vec3(0.f, -1.f, 0.f));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 			Up = glm::normalize(glm::cross(Right, Front));
+
+			//glm::vec3 up_tmp(front.x, (track_radius*track_radius - (Position.x - target_position.x)*(front.x - target_position.x) - (Position.z - target_position.z)*(front.z - target_position.z)) / (Position.y - target_position.y) + target_position.y, front.z);
+			//Up = glm::normalize(up_tmp);
+			//Right = glm::normalize(glm::cross(Front, Up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		}
 	}
 };

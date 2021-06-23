@@ -13,8 +13,8 @@ PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 module moduleCallBack;
 AirPlane				*Plane_1;
-
-
+//第三人称角色位置
+PxTransform born_pos(PxVec3(10, 0, -7));
 
 void createModel(std::string path, int scale, PxVec3& offset) {
 
@@ -25,6 +25,7 @@ extern Camera camera;
 extern Shader* envShader;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 
+guntower GunTower;
 
 void initPhysics(bool interactive)
 {
@@ -38,6 +39,8 @@ void initPhysics(bool interactive)
 	PxInitExtensions(*gPhysics, gPvd);
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
+
+	PxRegisterParticles(*gPhysics);
 
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
 	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD; // 开启CCD：continuous collision detection
@@ -68,11 +71,24 @@ void initPhysics(bool interactive)
 	//createBigBall();
 	//createAbleBreakWall();
 
-	//生成第三人称角色
-	PxTransform born_pos(PxVec3(0, 1, -7));
+
 	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
 	//initvehicle(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
+   
+
+	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+	GunTower.initguntower(pos1);*/
+	vector<glm::vec3>pos_list;
+	glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+	int nb_tower = 5;
+	for (int i = 0; i < nb_tower; i++) {
+		pos_list.push_back(pos1);
+		pos1.x += i * 1.0f;
+		pos1.y += i * 1.0f;
+	}
+	GunTower.initlist(pos_list);
+	
 
 	//createAirPlane();
 	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f), 
@@ -84,7 +100,7 @@ void initPhysics(bool interactive)
 	//camera.setTarget(vehicle);
 
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
@@ -97,6 +113,7 @@ void initPhysics(bool interactive)
 	//model\vehicle\suv\Models Transport Shuttle_obj.obj
 	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
 		
+
 
 
 	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
@@ -121,24 +138,35 @@ void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
 	//锁帧
-	/*lockFrame_current = clock();//当前时钟
-	if ((lockFrame_current - lockFrame_last) < 16) {
+	lockFrame_current = clock();//当前时钟
+	/*if ((lockFrame_current - lockFrame_last) < 16) {
 		//skip，1000clocks/s，则一帧约16ms（60帧）
 		Sleep(16 - (lockFrame_current - lockFrame_last));
 	}
 	else {
-		gScene->simulate(1.0f / 60.0f);
+		gScene->simulate(((lockFrame_current - lockFrame_last) / 16.0f) / 60.0f);
 		gScene->fetchResults(true);
 		removeActorInList();
-		//changeAirPlaneVelocity();
+		changeAirPlaneVelocity();
+		GunTower.runguntower(player);
 		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
+	
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
 	//changeAirPlaneVelocity();
 	//Plane_1->controlAirPlane();
 	Plane_1->manualControlAirPlane();
+	changeAirPlaneVelocity();
+	GunTower.runguntower(player);
 	removeActorInList();
+	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
+	/*gScene->fetchResults(true);
+	removeActorInList();
+	changeAirPlaneVelocity();
+	GunTower.runguntower(player);
+	lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
+	*/
 }
 
 void cleanupPhysics(bool interactive)

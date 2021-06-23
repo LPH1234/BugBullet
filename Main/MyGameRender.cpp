@@ -15,6 +15,7 @@ extern void cleanupPhysics(bool interactive);
 
 extern PxRigidDynamic* player_ctl;
 
+extern guntower Guntower;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -22,8 +23,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
-const unsigned int SCR_WIDTH = 1920 / 2;
-const unsigned int SCR_HEIGHT = 1080 / 2;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
@@ -53,7 +54,6 @@ bool mouseButtonPressState[3];
 
 void renderCallback(Shader* shader)
 {
-	stepPhysics(true);
 	PxScene* scene;
 	PxGetPhysics().getScenes(&scene, 1);
 	PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
@@ -62,6 +62,7 @@ void renderCallback(Shader* shader)
 		std::vector<PxRigidActor*> actors(nbActors);
 		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
 		Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
+		Snippets::renderParticles(renderParticleSystemList, shader);
 	}
 }
 
@@ -122,7 +123,7 @@ int myRenderLoop()
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
-	
+
    //vehicle
 	//Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
@@ -158,16 +159,25 @@ int myRenderLoop()
 		// -----
 		processOtherControlEvents();
 
-		// render
-		// ------
+		// 物理模拟
+		//---------------------------
+		stepPhysics(true);
+
+		// 渲染
+		//---------------------------
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// PhysX物理模拟，确定所有物体的下一状态
+		// -------------------------------------------------------------------------------
+		stepPhysics(true);
+
+		// 开始渲染工作
+		// -------------------------------------------------------------------------------
 		envShader->use();
 		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 12000.f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 12500.f);
 		camera.trackDynamicPosition();
-		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		envShader->setMat4("projection", projection);
 		envShader->setMat4("view", view);
@@ -180,11 +190,8 @@ int myRenderLoop()
 		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
 		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
+		renderCallback(envShader); //渲染场景内的物体和粒子
 
-		envShader->setMat4("projection", projection);
-		envShader->setMat4("view", view);
-
-		renderCallback(envShader);
 		//=====================================skyBoxShader=================================
 		// 绘制包围盒
 		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
@@ -249,6 +256,8 @@ void cameraProcessInput(GLFWwindow *window) {
 		camera.setMode(VIEW_TYPE::THIRD_PERSON);
 	if (keyToPressState[GLFW_KEY_F2])
 		camera.setMode(VIEW_TYPE::FREE);
+	if (keyToPressState[GLFW_KEY_F4])
+		camera.setMode(VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION);
 }
 
 

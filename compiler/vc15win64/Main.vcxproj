@@ -280,6 +280,8 @@
     <ClInclude Include="..\..\Main\Actor.h" />
     <ClInclude Include="..\..\Main\Controller.h" />
     <ClInclude Include="..\..\Main\Creater.h" />
+    <ClInclude Include="..\..\Main\Characters.h" />
+    <ClInclude Include="..\..\Main\SceneObjects.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
