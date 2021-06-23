@@ -8,8 +8,11 @@
 #include "../Render/models.h"
 #include "../Render/Render.h"
 #include "../Data/Data.h"
+#include "../Data/Consts.h"
 
 #include <list>
+#include <cmath>
+#include <ctime>
 
 
 extern PxFoundation*			gFoundation;
@@ -21,11 +24,17 @@ extern PxMaterial*				gMaterial;
 extern PxPvd*                  gPvd;
 
 extern physx::PxRigidDynamic* player;
-extern physx::PxRigidDynamic*	airPlane;
-extern PlainModel *street;
+extern physx::PxRigidDynamic* vehicle;
 
 extern list<PxParticleSystem*> renderParticleSystemList; //储存粒子系统的链表
+//炮塔
+extern physx::PxRigidDynamic* guntower_1;
+extern physx::PxRigidDynamic* guntower_2;
+extern physx::PxRigidDynamic* guntower_3;
+extern physx::PxRigidDynamic* guntower_4;
 
+extern physx::PxRigidDynamic*	airPlane;
+extern PlainModel *street;
 
 
 /**
@@ -66,9 +75,15 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 
 PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
 
+PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
+
+
+
 void createBigBall();
 void createAirPlane();
 void changeAirPlaneVelocity();
+double getAngel(PxVec3 a, PxVec3 b);
+bool lessThan180(PxVec3 a, PxVec3 base);
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
@@ -76,3 +91,19 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
 void createBullet(const PxTransform& t, const PxVec3& velocity);
 
 void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity = PxVec3(0.f, 0.f, 0.f), PxVec3 force = PxVec3(0.f, 0.f, 0.f));
+
+
+class guntower
+{
+private:
+	PxVec3 towerpos;
+	clock_t timer_last = 0;
+	vector<PxVec3> towerpos_list;
+	vector<clock_t>timer_list;
+
+public:
+	PxVec3 initguntower(glm::vec3 pos);
+	void autoattack(PxRigidDynamic* target, PxVec3 pos);
+	void runguntower(PxRigidDynamic* target);
+	void initlist(vector<glm::vec3> pos_list);
+};

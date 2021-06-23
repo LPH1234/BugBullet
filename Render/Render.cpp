@@ -41,7 +41,7 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 	{
 		glm::vec3 scale(h.sphere().radius, h.sphere().radius, h.sphere().radius);
 		if (sphere == nullptr) {
-			sphere = new Sphere(pos, scale, "", shader, 10, 10);
+			sphere = new Sphere(pos, scale, "", shader, 30, 30);
 		}
 		sphere->setPosition(pos);
 		sphere->setScaleValue(scale);

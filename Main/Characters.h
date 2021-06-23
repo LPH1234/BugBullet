@@ -62,3 +62,10 @@ class Player : public BaseCharacter {
 
 
 };
+
+
+class Plane : public BaseCharacter {
+
+
+
+};
