@@ -6,9 +6,11 @@
     <ClCompile Include="..\..\Main\Creater.cpp" />
     <ClCompile Include="..\..\Main\MyGame.cpp" />
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
+    <ClCompile Include="..\..\Main\Actor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Controller.h" />
     <ClInclude Include="..\..\Main\Creater.h" />
+    <ClInclude Include="..\..\Main\Actor.h" />
   </ItemGroup>
 </Project>

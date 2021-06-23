@@ -74,6 +74,7 @@ void createAirPlane();
 void changeAirPlaneVelocity();
 double getAngel(PxVec3 a, PxVec3 b);
 bool lessThan180(PxVec3 a, PxVec3 base);
+void createAbleBreakWall();
 
 PxRigidDynamic* initPlayer();
 
