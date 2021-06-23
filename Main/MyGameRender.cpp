@@ -23,8 +23,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
-const unsigned int SCR_WIDTH = 1920 / 2;
-const unsigned int SCR_HEIGHT = 1080 / 2;
+const unsigned int SCR_WIDTH = 1920 ;
+const unsigned int SCR_HEIGHT = 1080 ;
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));

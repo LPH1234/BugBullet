@@ -13,7 +13,7 @@ PxDefaultErrorCallback	gErrorCallback;
 module moduleCallBack;
 
 //第三人称角色位置
-PxTransform born_pos(PxVec3(0, 10, -7));
+PxTransform born_pos(PxVec3(10, 0, -7));
 
 
 void createModel(std::string path, int scale, PxVec3& offset) {
@@ -78,8 +78,17 @@ void initPhysics(bool interactive)
 	//createBigBall();
    
 
+	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+	GunTower.initguntower(pos1);*/
+	vector<glm::vec3>pos_list;
 	glm::vec3 pos1(5.0f, 5.0f, 0.0f);
-	GunTower.initguntower(pos1);
+	int nb_tower = 5;
+	for (int i = 0; i < nb_tower; i++) {
+		pos_list.push_back(pos1);
+		pos1.x += i * 1.0f;
+		pos1.y += i * 1.0f;
+	}
+	GunTower.initlist(pos_list);
 	
 
 	createAirPlane();
@@ -94,7 +103,7 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
 	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
@@ -127,20 +136,31 @@ void stepPhysics(bool interactive)
 	PX_UNUSED(interactive);
 	//锁帧
 	lockFrame_current = clock();//当前时钟
-	//if ((lockFrame_current - lockFrame_last) < 16) {
-	//	//skip，1000clocks/s，则一帧约16ms（60帧）
-	//	//Sleep(16 - (lockFrame_current - lockFrame_last));
-	//}
-	//else {
-	//	gScene->simulate(((lockFrame_current - lockFrame_last) / 16.0f) / 60.0f);
-	//}
-	gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
+	/*if ((lockFrame_current - lockFrame_last) < 16) {
+		//skip，1000clocks/s，则一帧约16ms（60帧）
+		Sleep(16 - (lockFrame_current - lockFrame_last));
+	}
+	else {
+		gScene->simulate(((lockFrame_current - lockFrame_last) / 16.0f) / 60.0f);
+		gScene->fetchResults(true);
+		removeActorInList();
+		changeAirPlaneVelocity();
+		GunTower.runguntower(player);
+		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
+	
+	}*/
+	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
+	changeAirPlaneVelocity();
+	GunTower.runguntower(player);
+	removeActorInList();
+	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
+	/*gScene->fetchResults(true);
 	removeActorInList();
 	changeAirPlaneVelocity();
 	GunTower.runguntower(player);
 	lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
-
+	*/
 }
 
 void cleanupPhysics(bool interactive)
