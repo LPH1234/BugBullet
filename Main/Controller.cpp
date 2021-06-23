@@ -170,8 +170,11 @@ void playerProcessKeyboard() {
 	}
 
 	if (keyToPrePressState[GLFW_KEY_SPACE] && !keyToPressState[GLFW_KEY_SPACE]) {
-		PxVec3 jumpup(0.0f, 500, 0.0f);
+		PxVec3 jumpup(0.0f, 5000, 0.0f);
 		player->addForce(jumpup);
+	}
+	if (keyToPressState['`']) {
+		player->setGlobalPose(born_pos);
 	}
 	player->setLinearVelocity(forward + backward + leftward + rightward);
 }

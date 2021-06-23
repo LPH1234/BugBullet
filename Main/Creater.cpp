@@ -116,7 +116,8 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "box") {
 				printf("小球碰方块！\n");
 				//removeActorList.push_back((actor_0->getName() == "box" ? actor_0 : actor_1));
-				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
+				//removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
+				removeActorList.push_back(actor_0); removeActorList.push_back(actor_1);
 			}
 			else if (actor_0->getName() == "bigBall"&&actor_1->getName() == "box"
 				|| actor_1->getName() == "bigBall"&&actor_0->getName() == "box") {
@@ -127,6 +128,20 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "map"
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "map") {
 				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
+			}
+			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "3rdplayer"
+				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "3rdplayer") {
+				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
+				PxRigidDynamic* temp1 = reinterpret_cast<PxRigidDynamic*>((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
+				UserData* ball = reinterpret_cast<UserData*>(temp1->userData);
+				UserData* temp = reinterpret_cast<UserData*>(player->userData);
+				if (temp->health-ball->health > 0) {
+					temp->health -= ball->health;
+					cout << "player - " << ball->health << endl;
+				}
+				else {
+					cout << "player died" << endl;
+				}
 			}
 			else {}
 		}
@@ -159,6 +174,16 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	dynamic->setAngularDamping(0.5f);
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setLinearVelocity(velocity);
+	/*UserData data;
+	(data).id = 1;
+	(data).name = "littleBall";
+	(data).health = 10;
+	cout << data.id << endl;*/
+
+	dynamic->userData = new UserData(1,"ab",10,100);
+	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
+	//cout << temp->id << endl;
+	//cout << a << endl;
 	gScene->addActor(*dynamic);
 	return dynamic;
 }
@@ -170,8 +195,9 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
 	//player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
 	//vehicle =createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
-	player = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(5.0f, 0.0f, 4.0f), glm::vec3(0.1f, 0.1f, 0.1f), "model/vehicle/Alien Animal Updated in Blender-2.81a/animal1.obj", envShader,false));
-
+	//player = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(5.0f, 0.0f, 4.0f), glm::vec3(0.05f, 0.05f, 0.05f), "model/vehicle/Alien Animal Updated in Blender-2.81a/animal1.obj", envShader,false));
+	player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
+	//player->userData = data;
 	PxVec3 position = player->getGlobalPose().p;
 	cout << "position: " << "x: " << position.x << " y: " << position.y << " z: " << position.z << endl;
 
@@ -183,6 +209,9 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 	//设置碰撞的标签
 	setupFiltering(player, FilterGroup::eBALL, FilterGroup::eSTACK);
 	me->release();
+
+	player->userData = new UserData(1, "ab", 100,100);
+	//UserData* temp = reinterpret_cast<UserData*>(player->userData);
 
 	player->setAngularDamping(0.5f);
 	player->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
@@ -240,9 +269,10 @@ void createBigBall() {
 void createAirPlane() {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
 	//PxTransform initPos(PxVec3(2, 1, -15), PxQuat(PxPi / 6, PxVec3(0, 0, 1)));
-	PxTransform initPos(PxVec3(2, 1, -15));
+	PxTransform initPos(PxVec3(10, 1, -5));
 	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, initPos, *shape, 8);
-
+	//vehicle = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/82-koenigsegg-agera/a.obj", envShader, false));
+	
 	body->setName("airPlane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
@@ -534,26 +564,46 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 PxVec3 guntower::initguntower(glm::vec3 pos) {
 	//glm::vec3 pos1(5.0f, 5.0f, 0.0f);
 	glm::vec3 pos1(pos.x, pos.y-0.75f, pos.z);
+	
 	guntower_1 = reinterpret_cast<PxRigidDynamic*>(createModel(pos1, glm::vec3(0.05f, 0.05f, 0.05f), "model/vehicle/tower/c.obj", envShader));
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 	//PxTransform mDir = PxTransform(target->getGlobalPose().p-mPos);
 	//PxVec3 mDir = (target->getGlobalPose().p - mPos);
 	//autoattack(PxTransform(mPos), mDir);
-	guntower::towerpos = mPos;
+	//guntower::towerpos = mPos;
+
+	//guntower::towerpos_list.push_back(mPos);
+	//guntower::timer_list.push_back(0);
 	return mPos;
 }
-
+void guntower::initlist(vector<glm::vec3> pos_list) {
+	for (int i = 0; i < pos_list.size(); i++) {
+		PxVec3 e =initguntower(pos_list[i]);
+		guntower::towerpos_list.push_back(e);
+		guntower::timer_list.push_back(0);
+	}
+}
 void guntower::autoattack(PxRigidDynamic* target,PxVec3 pos) {
 	PxVec3 velocity = (target->getGlobalPose().p - pos);
 	createDynamic(PxTransform(pos), PxSphereGeometry(0.1f), velocity);
 	cout << "gunshot" << endl;
 }
 void guntower::runguntower(PxRigidDynamic* target) {
-	PxVec3 e= guntower::towerpos;
+	//clock_t timer_now = clock();
+	for (int i = 0; i < towerpos_list.size(); i++) {
+		PxVec3 e = towerpos_list[i];
+		clock_t timer_now = clock();
+		if (timer_now - timer_list[i] > 1000) {
+			autoattack(target, e);
+			timer_list[i] = timer_now;
+		}
+	}
+	
+	/*PxVec3 e= guntower::towerpos;
 	clock_t timer_now = clock();
 	if (timer_now - timer_last > 1000) {
 		autoattack(target, e);
 		timer_last = timer_now;
-	}
+	}*/
 	
 }
