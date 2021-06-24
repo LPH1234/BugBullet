@@ -23,7 +23,7 @@ void keyPress() {
 
 	//if (!camera.isHandling()) {
 		//vehicleProcessKeyboard();
-		playerProcessKeyboard();
+		//playerProcessKeyboard();
 		Plane_1->ProcessKeyPress();
 	//}
 
@@ -116,70 +116,70 @@ void mouseClick() {
 //	//	vehicle.ProcessKeyboard(Player_RIGHT, deltaTime);
 //}
 
-void playerProcessKeyboard() {
-	PxTransform px;
-	
-	if (player == nullptr) return;
-	PxVec3 forward(0.0f, 0.0f, 0.0f);
-	PxVec3 backward(0.0f, 0.0f, 0.0f);
-	PxVec3 rightward(0.0f, 0.0f, 0.0f);
-	PxVec3 leftward(0.0f, 0.0f, 0.0f);
-
-	PxVec3 mDir; glmVec3ToPxVec3(camera.getFront(), mDir);
-	PxVec3 mEye; glmVec3ToPxVec3(camera.getPosition(), mEye);
-	PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0));
-
-	if (viewY.normalize() < 1e-6f)
-		px = PxTransform(mEye);
-	else {
-		PxMat33 m(mDir.cross(viewY), viewY, -mDir);
-		px = PxTransform(mEye, PxQuat(m));
-	}
-
-	if (keyToPressState[GLFW_KEY_F]) {
-		if (autoshooting) {
-			createDynamic(px, PxSphereGeometry(0.1f), px.rotate(PxVec3(0, 0, -1)) * 20);
-		}
-		else {
-			clock_t now = clock();
-			if (now - last > 1000) {
-				createDynamic(px, PxSphereGeometry(0.1f), px.rotate(PxVec3(0, 0, -1)) * 20);
-				last = now;
-			}
-		}
-	}
-
-	if (keyToPrePressState[GLFW_KEY_T] && !keyToPressState[GLFW_KEY_T]) {
-		autoshooting = !autoshooting;
-	}
-	if (keyToPressState[GLFW_KEY_W]) {
-		glmVec3ToPxVec3(camera.getFront() * velocity, forward);
-		//PxVec3 totalvelocity = prevelocity + glmVec3ToPxVec3(camera.getFront() * velocity);
-		//player->setLinearVelocity(totalvelocity);
-	}
-	if (keyToPressState[GLFW_KEY_S]) {
-		//PxVec3 totalvelocity = prevelocity - glmVec3ToPxVec3(camera.getFront() * velocity);
-		//PxVec3 totalvelocity = PxVec3(prevelocity.x, prevelocity.y,(-1)*velocity);
-		//player->setLinearVelocity(totalvelocity);
-		glmVec3ToPxVec3(-(camera.getFront() * velocity), backward);
-	}
-	if (keyToPressState[GLFW_KEY_A]) {
-		//PxVec3 totalvelocity = prevelocity - glmVec3ToPxVec3(camera.getRight() * velocity);
-		//player->setLinearVelocity(totalvelocity);
-		glmVec3ToPxVec3(-(camera.getRight() * velocity), leftward);
-	}
-	if (keyToPressState[GLFW_KEY_D]) {
-		//PxVec3 totalvelocity = prevelocity + glmVec3ToPxVec3(camera.getRight() * velocity);;
-		//player->setLinearVelocity(totalvelocity);
-		glmVec3ToPxVec3((camera.getRight() * velocity), rightward);
-	}
-
-	if (keyToPrePressState[GLFW_KEY_SPACE] && !keyToPressState[GLFW_KEY_SPACE]) {
-		PxVec3 jumpup(0.0f, 5000, 0.0f);
-		player->addForce(jumpup);
-	}
-	if (keyToPressState['`']) {
-		player->setGlobalPose(born_pos);
-	}
-	player->setLinearVelocity(forward + backward + leftward + rightward);
-}
+//void playerProcessKeyboard() {
+//	PxTransform px;
+//	
+//	if (player == nullptr) return;
+//	PxVec3 forward(0.0f, 0.0f, 0.0f);
+//	PxVec3 backward(0.0f, 0.0f, 0.0f);
+//	PxVec3 rightward(0.0f, 0.0f, 0.0f);
+//	PxVec3 leftward(0.0f, 0.0f, 0.0f);
+//
+//	PxVec3 mDir; glmVec3ToPxVec3(camera.getFront(), mDir);
+//	PxVec3 mEye; glmVec3ToPxVec3(camera.getPosition(), mEye);
+//	PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0));
+//
+//	if (viewY.normalize() < 1e-6f)
+//		px = PxTransform(mEye);
+//	else {
+//		PxMat33 m(mDir.cross(viewY), viewY, -mDir);
+//		px = PxTransform(mEye, PxQuat(m));
+//	}
+//
+//	if (keyToPressState[GLFW_KEY_F]) {
+//		if (autoshooting) {
+//			createDynamic(px, PxSphereGeometry(0.1f), px.rotate(PxVec3(0, 0, -1)) * 20);
+//		}
+//		else {
+//			clock_t now = clock();
+//			if (now - last > 1000) {
+//				createDynamic(px, PxSphereGeometry(0.1f), px.rotate(PxVec3(0, 0, -1)) * 20);
+//				last = now;
+//			}
+//		}
+//	}
+//
+//	if (keyToPrePressState[GLFW_KEY_T] && !keyToPressState[GLFW_KEY_T]) {
+//		autoshooting = !autoshooting;
+//	}
+//	if (keyToPressState[GLFW_KEY_W]) {
+//		glmVec3ToPxVec3(camera.getFront() * velocity, forward);
+//		//PxVec3 totalvelocity = prevelocity + glmVec3ToPxVec3(camera.getFront() * velocity);
+//		//player->setLinearVelocity(totalvelocity);
+//	}
+//	if (keyToPressState[GLFW_KEY_S]) {
+//		//PxVec3 totalvelocity = prevelocity - glmVec3ToPxVec3(camera.getFront() * velocity);
+//		//PxVec3 totalvelocity = PxVec3(prevelocity.x, prevelocity.y,(-1)*velocity);
+//		//player->setLinearVelocity(totalvelocity);
+//		glmVec3ToPxVec3(-(camera.getFront() * velocity), backward);
+//	}
+//	if (keyToPressState[GLFW_KEY_A]) {
+//		//PxVec3 totalvelocity = prevelocity - glmVec3ToPxVec3(camera.getRight() * velocity);
+//		//player->setLinearVelocity(totalvelocity);
+//		glmVec3ToPxVec3(-(camera.getRight() * velocity), leftward);
+//	}
+//	if (keyToPressState[GLFW_KEY_D]) {
+//		//PxVec3 totalvelocity = prevelocity + glmVec3ToPxVec3(camera.getRight() * velocity);;
+//		//player->setLinearVelocity(totalvelocity);
+//		glmVec3ToPxVec3((camera.getRight() * velocity), rightward);
+//	}
+//
+//	if (keyToPrePressState[GLFW_KEY_SPACE] && !keyToPressState[GLFW_KEY_SPACE]) {
+//		PxVec3 jumpup(0.0f, 5000, 0.0f);
+//		player->addForce(jumpup);
+//	}
+//	if (keyToPressState['`']) {
+//		player->setGlobalPose(born_pos);
+//	}
+//	player->setLinearVelocity(forward + backward + leftward + rightward);
+//}
