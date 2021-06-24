@@ -4,7 +4,6 @@
 
 #include "Creater.h"
 #include "Actor.h"
-
 #define PI 3.1415926
 
 using namespace physx;
@@ -92,7 +91,7 @@ void initPhysics(bool interactive)
 
 	//createAirPlane();
 	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f), 
-		"model/vehicle/Fighter-jet/AnyConv.com__Fighter jet.obj", envShader, false));
+		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0,0,1),PxVec3(0,1,0),PxVec3(-1,0,0), temp);
 
 	//camera.setTarget(player);
@@ -106,7 +105,7 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
 	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
@@ -157,8 +156,8 @@ void stepPhysics(bool interactive)
 	//changeAirPlaneVelocity();
 	//Plane_1->controlAirPlane();
 	Plane_1->manualControlAirPlane();
-	changeAirPlaneVelocity();
-	GunTower.runguntower(player);
+	//changeAirPlaneVelocity();
+	GunTower.runguntower(Plane_1->body);
 	removeActorInList();
 	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	/*gScene->fetchResults(true);
