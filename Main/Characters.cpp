@@ -1,4 +1,5 @@
 #include "Characters.h"
+#include "../Render/Camera.h"
 
 AirPlane::AirPlane():BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
@@ -491,3 +492,34 @@ void AirPlane::ProcessKeyPress() {
 		emit();
 	}
 };
+
+Player::Player(physx::PxRigidDynamic* target) :BaseCharacter(target) {
+	this->rigid->setName("vehicle");
+	this->rigid->setAngularDamping(0.5f);
+	this->rigid->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
+	gScene->addActor(*(this->rigid));
+}
+void Player::ProcessKeyPress() {
+	if (this->rigid == nullptr)return;
+	physx::PxVec3 totalvelocity(0.0f, 0.0f, 0.0f);
+	physx::PxVec3 prevelocity = this->rigid->getLinearVelocity();
+
+	if (keyToPressState[GLFW_KEY_W]) {
+		totalvelocity += (headforward* velocity);
+	}
+	if (keyToPressState[GLFW_KEY_S]) {
+		totalvelocity += -(headforward* velocity);
+	}
+	if (keyToPressState[GLFW_KEY_A]) {
+		
+	}
+	if (keyToPressState[GLFW_KEY_D]) {
+		
+	}
+	this->rigid->setLinearVelocity(totalvelocity + prevelocity);
+	if (keyToPrePressState['`']) {
+		this->rigid->setGlobalPose(born_pos);
+	}
+}
+
+

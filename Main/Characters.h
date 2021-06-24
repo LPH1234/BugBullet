@@ -25,7 +25,9 @@ extern std::unordered_map<int, bool> keyToPrePressState;
 extern PxPhysics*				gPhysics;
 extern PxScene*					gScene;
 extern PxMaterial*				gMaterial;
-
+extern Camera camera;
+extern PxTransform born_pos;
+extern const float velocity;
 
 class BaseCharacter {
 protected:
@@ -82,7 +84,7 @@ private:
 	PxVec3 headforward = PxVec3(1.0f, 0.0f, 0.0f);
 	PxVec3 backforward = PxVec3(0.0f, 1.0f, 0.0f);
 public:
-	Player(physx::PxRigidDynamic* target) :BaseCharacter(target) {};
+	Player(physx::PxRigidDynamic* target) ;
 	void ProcessKeyPress();
 };
 
