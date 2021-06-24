@@ -21,7 +21,7 @@
 #include "../Render/models.h"
 #include "../Data/Consts.h"
 #include "Creater.h"
-#include "Actor.h"
+#include "Characters.h"
 
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
@@ -37,7 +37,7 @@ void mouseClick();
 
 void vehicleProcessKeyboard();
 void playerProcessKeyboard();
-void planeProcessKeyboard();
+//void planeProcessKeyboard();
 
 
 
@@ -51,12 +51,5 @@ enum PlayerMovement {
 };
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Player
-{
-public:
 
-
-private:
-
-};
 #endif

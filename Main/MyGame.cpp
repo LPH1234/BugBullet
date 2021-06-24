@@ -3,7 +3,7 @@
 #include <ctime>
 
 #include "Creater.h"
-#include "Actor.h"
+#include "Characters.h"
 #define PI 3.1415926
 
 using namespace physx;
@@ -153,11 +153,10 @@ void stepPhysics(bool interactive)
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
-	//changeAirPlaneVelocity();
-	//Plane_1->controlAirPlane();
 	Plane_1->manualControlAirPlane();
-	//changeAirPlaneVelocity();
-	GunTower.runguntower(Plane_1->body);
+
+	//GunTower.runguntower(player);
+
 	removeActorInList();
 	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	/*gScene->fetchResults(true);
