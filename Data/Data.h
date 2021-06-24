@@ -23,6 +23,13 @@ struct TowerData {
 	int id;
 	std::string name;
 	int health;
+	bool enable_attacking;
+	TowerData(int _id, std::string _name, int _hea,bool _enable) {
+		id = _id;
+		name = _name;
+		health = _hea;
+		enable_attacking = _enable;
+	}
 };
 struct BulletData {
 	int id;
