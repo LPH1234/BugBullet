@@ -17,10 +17,7 @@ PxRigidDynamic* player = nullptr;
 PlainModel *street = nullptr;
 
 PxRigidDynamic* vehicle = nullptr;
-PxRigidDynamic* guntower_1 = nullptr;
-PxRigidDynamic* guntower_2 = nullptr;
-PxRigidDynamic* guntower_3 = nullptr;
-PxRigidDynamic* guntower_4 = nullptr;
+
 
 extern Shader* envShader;
 
@@ -182,7 +179,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 		Logger::error("error:");
 	}
 	PxMaterial* me = gPhysics->createMaterial(0.8f, 0.8f, 0.0f);
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *me, 10.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *me, 0.1f);
 	//设置刚体名称
 	dynamic->setName("littleBall");
 	//设置碰撞的标签
@@ -191,6 +188,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	dynamic->setAngularDamping(0.5f);
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setLinearVelocity(velocity);
+	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	/*UserData data;
 	(data).id = 1;
 	(data).name = "littleBall";
@@ -237,32 +235,7 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 	return player;
 }
 
-PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry) {
-	if (!t.isValid()) {
-		Logger::error("error:");
-	}
-	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
-	//player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
-	vehicle = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/82-koenigsegg-agera/a.obj", envShader, false));
 
-	PxVec3 position = vehicle->getGlobalPose().p;
-	//cout << "position: " << "x: " << position.x << " y: " << position.y << " z: " << position.z << endl;
-	cout << "create vehicle" << endl;
-	//设置刚体名称
-	vehicle->setName("vehicle");
-
-	//userdata指向自己
-	//dynamic->userData = dynamic;
-	//设置碰撞的标签
-	setupFiltering(vehicle, FilterGroup::eBALL, FilterGroup::eSTACK);
-	me->release();
-
-	vehicle->setAngularDamping(0.5f);
-	vehicle->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-	//dynamic->setLinearVelocity(velocity);
-	gScene->addActor(*vehicle);
-	return vehicle;
-}
 
 
 
@@ -675,65 +648,3 @@ void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 ve
 	delete newAppParticleVelocities;
 }
 
-PxVec3 guntower::initguntower(glm::vec3 pos) {
-	//glm::vec3 pos1(5.0f, 5.0f, 0.0f);
-
-	glm::vec3 pos1(pos.x, pos.y-0.75f, pos.z);
-	
-	PxRigidStatic* guntower_5 = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.05f, 0.05f, 0.05f), "model/vehicle/tower/c.obj", envShader));
-
-	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
-	//PxTransform mDir = PxTransform(target->getGlobalPose().p-mPos);
-	//PxVec3 mDir = (target->getGlobalPose().p - mPos);
-	//autoattack(PxTransform(mPos), mDir);
-	//guntower::towerpos = mPos;
-	guntower_5->userData = new TowerData(1, "Tower", 50,true);
-	guntower_5->setName("Tower");
-	//guntower::towerpos_list.push_back(mPos);
-	//guntower::timer_list.push_back(0);
-	//guntower::tower_list.push_back(guntower_5);
-	TowerData* temp = reinterpret_cast<TowerData*>(guntower_5->userData);
-	guntower::tower_list.push_back(temp);
-	cout << temp->id << endl;
-	return mPos;
-}
-void guntower::initlist(vector<glm::vec3> pos_list) {
-	for (int i = 0; i < pos_list.size(); i++) {
-		PxVec3 e = initguntower(pos_list[i]);
-		guntower::towerpos_list.push_back(e);
-		guntower::timer_list.push_back(0);
-	}
-}
-
-void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos) {
-	PxVec3 velocity = (target->getGlobalPose().p - pos);
-	createDynamic(PxTransform(pos), PxSphereGeometry(0.1f), velocity);
-	cout << "gunshot" << endl;
-}
-
-void guntower::runguntower(PxRigidDynamic* target) {
-	//clock_t timer_now = clock();
-	for (int i = 0; i < towerpos_list.size(); i++) {
-		PxVec3 e = towerpos_list[i];
-		//cout << tower_list[i] << endl;
-		//TowerData* temp = reinterpret_cast<TowerData*>(tower_list[i]);
-		cout << tower_list[i]->enable_attacking<< endl;
-		if (tower_list[i]->enable_attacking == true) {
-		//cout << temp->enable_attacking << endl;
-			clock_t timer_now = clock();
-			if (timer_now - timer_list[i] > 1000) {
-				autoattack(target, e);
-				timer_list[i] = timer_now;
-			}
-		}
-		
-	}
-
-	/*PxVec3 e= guntower::towerpos;
-	clock_t timer_now = clock();
-	if (timer_now - timer_last > 1000) {
-		autoattack(target, e);
-		timer_last = timer_now;
-	}*/
-
-}

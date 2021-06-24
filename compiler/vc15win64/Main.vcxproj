@@ -276,6 +276,7 @@
     <ClCompile Include="..\..\Main\Creater.cpp" />
     <ClCompile Include="..\..\Main\MyGame.cpp" />
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
+    <ClCompile Include="..\..\Main\SceneObjects.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Actor.h" />

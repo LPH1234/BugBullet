@@ -4,7 +4,6 @@
 
 #include "Creater.h"
 #include "Characters.h"
-
 #define PI 3.1415926
 
 using namespace physx;
@@ -92,7 +91,7 @@ void initPhysics(bool interactive)
 
 	//createAirPlane();
 	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f), 
-		"model/vehicle/Fighter-jet/AnyConv.com__Fighter jet.obj", envShader, false));
+		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0,0,1),PxVec3(0,1,0),PxVec3(-1,0,0), temp);
 
 	//camera.setTarget(player);
@@ -155,8 +154,9 @@ void stepPhysics(bool interactive)
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
 	Plane_1->manualControlAirPlane();
-	
+
 	//GunTower.runguntower(player);
+
 	removeActorInList();
 	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	/*gScene->fetchResults(true);

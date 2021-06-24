@@ -13,3 +13,7 @@ const std::string COOKING_CONVEX_PREFIX = "c_";
 const std::string COOKING_TRIANGLE_PREFIX = "t_";
 
 const std::string ACTOR_NAME_PLAYER_BULLET = "bullet";
+
+enum ACTOR_TYPE {
+	BULLET,AIRPLANE,TANK,TOWER,MAP
+};
