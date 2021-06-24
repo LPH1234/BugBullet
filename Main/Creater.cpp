@@ -25,6 +25,7 @@ PxRigidDynamic* guntower_4 = nullptr;
 extern Shader* envShader;
 
 vector<PxActor*>		removeActorList;
+list<PxParticleSystem*> renderParticleSystemList;
 PxVec3					airPlaneVelocity(0, 0, 0);//飞机速度
 long long				angelAirPlane = 0.0;
 PxVec3					headForward(1, 0, 0);//机头朝向
@@ -135,7 +136,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				PxRigidDynamic* temp1 = reinterpret_cast<PxRigidDynamic*>((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
 				UserData* ball = reinterpret_cast<UserData*>(temp1->userData);
 				UserData* temp = reinterpret_cast<UserData*>(player->userData);
-				if (temp->health-ball->health > 0) {
+				if (temp->health - ball->health > 0) {
 					temp->health -= ball->health;
 					cout << "player - " << ball->health << endl;
 				}
@@ -196,7 +197,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	(data).health = 10;
 	cout << data.id << endl;*/
 
-	dynamic->userData = new UserData(1,"ab",10,100);
+	dynamic->userData = new UserData(1, "ab", 10, 100);
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	//cout << temp->id << endl;
 	//cout << a << endl;
@@ -226,7 +227,7 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 	setupFiltering(player, FilterGroup::eBALL, FilterGroup::eSTACK);
 	me->release();
 
-	player->userData = new UserData(1, "ab", 100,100);
+	player->userData = new UserData(1, "ab", 100, 100);
 	//UserData* temp = reinterpret_cast<UserData*>(player->userData);
 
 	player->setAngularDamping(0.5f);
@@ -288,7 +289,7 @@ void createAirPlane() {
 	PxTransform initPos(PxVec3(10, 1, -5));
 	PxRigidDynamic* body = PxCreateDynamic(*gPhysics, initPos, *shape, 8);
 	//vehicle = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/82-koenigsegg-agera/a.obj", envShader, false));
-	
+
 	body->setName("airPlane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
@@ -332,6 +333,7 @@ bool lessThan180(PxVec3 a, PxVec3 base) {
 }
 
 int currentAngel_x = 0, currentAngel_z = 0;
+int emitBulletTime = 0;
 //改变飞机姿态与速度，能够通过上下左右控制俯仰和左右转弯
 void changeAirPlaneVelocity() {
 	//直行
@@ -343,15 +345,9 @@ void changeAirPlaneVelocity() {
 		turningState[4] = false;
 	}
 	//左转
-	else if(turningState[0]){
+	else if (turningState[0]) {
 		if (rollingAngel < 45) {
 			rollingAngel += 1;
-			/*PxQuat rot1(-PxPi / 180 * rollingAngel, headForward);
-			PxQuat rot2(PxPi / 180 * (rollingAngel * 2 + currentAngel_x), PxVec3(0, 1, 0));
-			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
-			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));*/
 			PxQuat rot1(PxPi / 180 * (-1), headForward);
 			PxQuat rot2(PxPi / 180 * (1), PxVec3(0, 1, 0));
 			headForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
@@ -359,17 +355,10 @@ void changeAirPlaneVelocity() {
 			swingForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
 			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2*airPlane->getGlobalPose().q));
 			airPlane->setLinearVelocity(5 * headForward);
-			//cout << getAngel(headForward, PxVec3(1, 0, 0)) << "\n";
 		}
 		else if (rollingAngel < 90) {
 			rollingAngel += 1;
 			long long angel = 90 - rollingAngel;
-			/*PxQuat rot1(-PxPi / 180 * angel, headForward);
-			PxQuat rot2(PxPi / 180 * (90 + currentAngel_x), PxVec3(0, 1, 0));
-			headForward = (rot1*rot2).rotate(PxVec3(1, 0, 0));
-			backForward = (rot1*rot2).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot1*rot2).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot1*rot2));*/
 			PxQuat rot1(PxPi / 180 * (1), headForward);
 			PxQuat rot2(PxPi / 180 * (1), PxVec3(0, 1, 0));
 			headForward = (rot1*rot2*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
@@ -388,14 +377,10 @@ void changeAirPlaneVelocity() {
 			//currentAngel_x = 0;
 			currentAngel_x += 90;
 			currentAngel_x %= 360;
-			/*airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, PxQuat(PxPi/2*(currentAngel_x/90),PxVec3(0,1,0))));
-			headForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(1, 0, 0));
-			backForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 1, 0));
-			swingForward = (PxQuat(PxPi / 2 * (currentAngel_x / 90), PxVec3(0, 1, 0))).rotate(PxVec3(0, 0, 1));*/
 			cout << "左转结束\n";
 			//airPlane->setLinearVelocity(5 * headForward);
 		}
-		
+
 	}
 	//右转
 	else if (turningState[1]) {
@@ -444,11 +429,6 @@ void changeAirPlaneVelocity() {
 		//PxVec3 axis_z = headForward.cross(backForward).getNormalized();
 		if (pitchingAngel < 90) {
 			pitchingAngel += 1;
-			/*PxQuat rot(PxPi / 180 * (pitchingAngel + currentAngel_z), swingForward);
-			headForward = (rot).rotate(PxVec3(1, 0, 0));
-			backForward = (rot).rotate(PxVec3(0, 1, 0));
-			swingForward = (rot).rotate(PxVec3(0, 0, 1));
-			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));*/
 			PxQuat rot(PxPi / 180 * (1), swingForward);
 			headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
 			backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
@@ -474,11 +454,6 @@ void changeAirPlaneVelocity() {
 	else if (turningState[4]) {
 	if (pitchingAngel < 90) {
 		pitchingAngel += 1;
-		/*PxQuat rot(PxPi / 180 * (pitchingAngel + currentAngel_z), swingForward);
-		headForward = (rot).rotate(PxVec3(1, 0, 0));
-		backForward = (rot).rotate(PxVec3(0, 1, 0));
-		swingForward = (rot).rotate(PxVec3(0, 0, 1));
-		airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));*/
 		PxQuat rot(PxPi / 180 * (-1), swingForward);
 		headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
 		backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
@@ -509,18 +484,63 @@ void changeAirPlaneVelocity() {
 	headForward = rot.rotate(PxVec3(1, 0, 0));
 	airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot));
 	airPlane->setLinearVelocity(5 * headForward);*/
+
+	emitBulletTime++;
+	if (emitBulletTime % 60 == 0) {
+		createDynamic(airPlane->getGlobalPose().transform(PxTransform(headForward)), PxSphereGeometry(0.1), 25 * headForward);
+	}
 }
 
-PxRigidDynamic* initPlayer() {
+// fixed, breakable joint
+PxJoint* createBreakableFixed(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1)
+{
+	PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, t0, a1, t1);
+	j->setBreakForce(10, 100);
+	j->setProjectionLinearTolerance(0.1000000f);
+	j->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+	j->setConstraintFlag(PxConstraintFlag::eDRIVE_LIMITS_ARE_FORCES, true);
+	j->setConstraintFlag(PxConstraintFlag::eDISABLE_PREPROCESSING, true);
 
-	PxTransform pos(PxVec3(4, 1, 13));
-	player = PxCreateDynamic(*gPhysics, pos, PxSphereGeometry(0.5), *gMaterial, 10.0f);
-	//设置刚体名称
-	player->setName("player");
-	//设置碰撞标签
-	//player->setLinearVelocity(PxVec3(0, 0, -5));
-	gScene->addActor(*player);
-	return player;
+	return j;
+}
+void createAbleBreakWall() {
+	//PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.1, 0.1, 0.1), *gMaterial);
+	vector<vector<PxRigidDynamic*>> allDynamic(5, vector<PxRigidDynamic*>(10));
+
+	PxTransform t(PxVec3(-0.9, 0.1, 0));
+	float separation = 0.2f;
+	PxVec3 offset(separation/2, 0, 0);
+	PxVec3 offset2(0, separation / 2, 0);
+	PxTransform localTm(offset);
+	PxRigidDynamic* prev = NULL;
+
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 10; j++) {
+			PxRigidDynamic* current = PxCreateDynamic(*gPhysics, t*localTm, PxBoxGeometry(0.1, 0.1, 0.1), *gMaterial, 100);
+			allDynamic[i][j] = (current);
+			//连接左边
+			if (j == 0) {
+				prev = NULL;
+			}
+			createBreakableFixed(prev, prev ? PxTransform(offset) : t.transform(PxTransform(PxVec3(0, 0.2*i, 0))), current, PxTransform(-offset));
+			//连接下边
+			if (i-1<0) {
+				prev = NULL;
+			}
+			else {
+				prev = allDynamic[i-1][j];
+			}
+			PxJoint* jj=createBreakableFixed(prev, prev ? PxTransform(offset2) : t.transform(PxTransform(PxVec3(0.2*j, 0, 0))), current, PxTransform(-offset2));
+			if (i == 0) {
+				jj->setBreakForce(100000, 100000);
+			}
+			gScene->addActor(*current);
+			prev = current;
+			localTm.p.x += separation;
+		}
+		localTm.p.x = separation / 2;
+		localTm.p.y += separation;
+	}
 }
 
 
@@ -558,8 +578,8 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 	PxQuat q1 = t.q + PxQuat(PxPi / 180 * 90, glmVec3ToPxVec3(camera.getRight()));
 	//PxTransform t1(t.p, q1);
 	glm::vec3 bullet_init_vec3(1.f, 0.f, 0.f);
-	float cos_tmp = glm::dot(camera.getFront(), bullet_init_vec3)/getVec3Length(camera.getFront())/getVec3Length(bullet_init_vec3);
-	PxTransform t1(t.p, PxQuat(glm::acos(cos_tmp) , glmVec3ToPxVec3(-glm::normalize(glm::cross(camera.getFront(), bullet_init_vec3)))));  //不能是90度，要转到当前的前方
+	float cos_tmp = glm::dot(camera.getFront(), bullet_init_vec3) / getVec3Length(camera.getFront()) / getVec3Length(bullet_init_vec3);
+	PxTransform t1(t.p, PxQuat(glm::acos(cos_tmp), glmVec3ToPxVec3(-glm::normalize(glm::cross(camera.getFront(), bullet_init_vec3)))));  //不能是90度，要转到当前的前方
 	//std::cout << "xita:" << glm::acos(cos_tmp)  << "\n";
 	PxCapsuleGeometry e(0.005, 0.006);
 	PxMaterial* me = gPhysics->createMaterial(0.9f, 0.9f, 0.0f);
@@ -577,11 +597,91 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 
 }
 
+
+void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity, PxVec3 force) {
+
+	PxParticleSystem* ps = gPhysics->createParticleSystem(numParticles, perOffset);;
+
+	// create particle system in PhysX SDK
+	PxParticleExt::IndexPool *myindexpool = PxParticleExt::createIndexPool(1 * numParticles);
+	//Create buffers that are the size of the particles to be addded
+	PxU32 *newAppParticleIndices = new PxU32[numParticles];
+	PxVec3 *newAppParticlePositions = new PxVec3[numParticles];
+	PxVec3 *newAppParticleVelocities = new PxVec3[numParticles];
+	PxVec3 *newAppParticleforces = new PxVec3[numParticles];
+	PxParticleCreationData particleCreationData;
+	/*ps->setGridSize(1.0f);
+	ps->setMaxMotionDistance(0.3);
+	ps->setRestOffset(0.1f * 0.3f);
+	ps->setContactOffset(0.1f * 0.3f * 2);*/
+	ps->setDamping(1.f);
+	ps->setRestitution(1.f);
+	ps->setDynamicFriction(1.f);
+	ps->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
+	ps->setParticleReadDataFlag(PxParticleReadDataFlag::ePOSITION_BUFFER, true);
+
+	bool random_velocity = velocity.x == 0.f && velocity.y == 0.f && velocity.z == 0.f;
+
+	for (int i = 0; i < numParticles; i++)
+	{
+		//Only positions and velocities are given an initial value
+		//Indices zill be autogenerated by the indexpool after the loop
+
+		newAppParticlePositions[i].x = initPos.x;
+		newAppParticlePositions[i].y = initPos.y;
+		newAppParticlePositions[i].z = initPos.z;
+
+		if (random_velocity) {
+			srand(i);
+			int rand_tmp1 = rand(); rand_tmp1 = rand_tmp1 & 1 == 0 ? -rand_tmp1 : rand_tmp1;
+			int rand_tmp2 = rand(); rand_tmp2 = rand_tmp2 & 1 == 0 ? -rand_tmp2 : rand_tmp2;
+			int rand_tmp3 = rand(); rand_tmp3 = rand_tmp3 & 1 == 0 ? -rand_tmp3 : rand_tmp3;
+			newAppParticleVelocities[i].x = rand_tmp1 * 30 / 65536.f;
+			newAppParticleVelocities[i].y = rand_tmp2 * 30 / 65536.f;
+			newAppParticleVelocities[i].z = rand_tmp3 * 30 / 65536.f;
+		}
+		else {
+			newAppParticleVelocities[i].x = velocity.x;
+			newAppParticleVelocities[i].y = velocity.y;
+			newAppParticleVelocities[i].z = velocity.z;
+		}
+
+		newAppParticleforces[i].x = force.x;
+		newAppParticleforces[i].y = force.y;
+		newAppParticleforces[i].z = force.z;
+	}
+	particleCreationData.numParticles = numParticles;
+	PxU32 numalloc = myindexpool->allocateIndices(numParticles, PxStrideIterator<PxU32>(newAppParticleIndices));
+	particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(newAppParticleIndices);
+	particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(newAppParticlePositions);
+	particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(newAppParticleVelocities);
+	//ps->addForces(numParticles, particleCreationData.indexBuffer, PxStrideIterator<const PxVec3>(newAppParticleforces), PxForceMode::eFORCE);
+
+	if (particleCreationData.isValid())
+	{
+		if (ps->createParticles(particleCreationData))
+			cout << "创建粒子成功\n";
+		else
+			cout << "创建粒子失败\n";
+	}
+
+	if (ps) {
+		gScene->addActor(*ps);
+		renderParticleSystemList.push_back(ps);
+	}
+	//Cleanup
+	delete newAppParticleIndices;
+	delete newAppParticlePositions;
+	delete newAppParticleVelocities;
+}
+
 PxVec3 guntower::initguntower(glm::vec3 pos) {
 	//glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+
 	glm::vec3 pos1(pos.x, pos.y-0.75f, pos.z);
 	
 	PxRigidStatic* guntower_5 = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.05f, 0.05f, 0.05f), "model/vehicle/tower/c.obj", envShader));
+
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 	//PxTransform mDir = PxTransform(target->getGlobalPose().p-mPos);
 	//PxVec3 mDir = (target->getGlobalPose().p - mPos);
@@ -599,16 +699,18 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 }
 void guntower::initlist(vector<glm::vec3> pos_list) {
 	for (int i = 0; i < pos_list.size(); i++) {
-		PxVec3 e =initguntower(pos_list[i]);
+		PxVec3 e = initguntower(pos_list[i]);
 		guntower::towerpos_list.push_back(e);
 		guntower::timer_list.push_back(0);
 	}
 }
-void guntower::autoattack(PxRigidDynamic* target,PxVec3 pos) {
+
+void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos) {
 	PxVec3 velocity = (target->getGlobalPose().p - pos);
 	createDynamic(PxTransform(pos), PxSphereGeometry(0.1f), velocity);
 	cout << "gunshot" << endl;
 }
+
 void guntower::runguntower(PxRigidDynamic* target) {
 	//clock_t timer_now = clock();
 	for (int i = 0; i < towerpos_list.size(); i++) {
@@ -626,12 +728,12 @@ void guntower::runguntower(PxRigidDynamic* target) {
 		}
 		
 	}
-	
+
 	/*PxVec3 e= guntower::towerpos;
 	clock_t timer_now = clock();
 	if (timer_now - timer_last > 1000) {
 		autoattack(target, e);
 		timer_last = timer_now;
 	}*/
-	
+
 }

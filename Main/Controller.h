@@ -21,6 +21,7 @@
 #include "../Render/models.h"
 #include "../Data/Consts.h"
 #include "Creater.h"
+#include "Actor.h"
 
 
 extern std::unordered_map<int, bool> keyToPressState;

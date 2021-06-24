@@ -269,6 +269,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Main\Actor.cpp" />
     <ClCompile Include="..\..\Main\ClassicMain.cpp" />
     <ClCompile Include="..\..\Main\Controller.cpp" />
     <ClCompile Include="..\..\Main\Creater.cpp" />
@@ -276,8 +277,11 @@
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Main\Actor.h" />
     <ClInclude Include="..\..\Main\Controller.h" />
     <ClInclude Include="..\..\Main\Creater.h" />
+    <ClInclude Include="..\..\Main\Characters.h" />
+    <ClInclude Include="..\..\Main\SceneObjects.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

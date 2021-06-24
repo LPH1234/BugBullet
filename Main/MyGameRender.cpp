@@ -23,8 +23,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
-const unsigned int SCR_WIDTH = 1920 /2;
-const unsigned int SCR_HEIGHT = 1080 /2;
+
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
@@ -62,6 +63,7 @@ void renderCallback(Shader* shader)
 		std::vector<PxRigidActor*> actors(nbActors);
 		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
 		Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
+		Snippets::renderParticles(renderParticleSystemList, shader);
 	}
 }
 
@@ -122,7 +124,7 @@ int myRenderLoop()
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
-	
+
    //vehicle
 	//Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
@@ -158,8 +160,12 @@ int myRenderLoop()
 		// -----
 		processOtherControlEvents();
 
-		// render
-		// ------
+		// 物理模拟
+		//---------------------------
+		stepPhysics(true);
+
+		// 渲染
+		//---------------------------
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -185,7 +191,7 @@ int myRenderLoop()
 		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
 		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-		renderCallback(envShader);//场景内物体的渲染
+		renderCallback(envShader); //渲染场景内的物体和粒子
 
 		//=====================================skyBoxShader=================================
 		// 绘制包围盒
@@ -251,6 +257,8 @@ void cameraProcessInput(GLFWwindow *window) {
 		camera.setMode(VIEW_TYPE::THIRD_PERSON);
 	if (keyToPressState[GLFW_KEY_F2])
 		camera.setMode(VIEW_TYPE::FREE);
+	if (keyToPressState[GLFW_KEY_F4])
+		camera.setMode(VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION);
 }
 
 

@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="..\..\Main\Actor.cpp" />
     <ClCompile Include="..\..\Main\ClassicMain.cpp" />
     <ClCompile Include="..\..\Main\Controller.cpp" />
     <ClCompile Include="..\..\Main\Creater.cpp" />
@@ -8,7 +9,10 @@
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Main\Actor.h" />
     <ClInclude Include="..\..\Main\Controller.h" />
     <ClInclude Include="..\..\Main\Creater.h" />
+    <ClInclude Include="..\..\Main\Characters.h" />
+    <ClInclude Include="..\..\Main\SceneObjects.h" />
   </ItemGroup>
 </Project>

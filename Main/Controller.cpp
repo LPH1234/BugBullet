@@ -1,12 +1,12 @@
 #include "Controller.h"
 
 
-
 //全局变量区
 const float velocity =5.0f;
 extern Camera camera;
 
 extern vector<bool>	turningState;
+extern AirPlane* Plane_1;
 
 extern PxTransform born_pos;
 
@@ -52,6 +52,10 @@ void mouseClick() {
 		if (camera.getMode() == VIEW_TYPE::THIRD_PERSON)
 			px.p = player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 2.f);
 		createBullet(px, px.rotate(PxVec3(0, 0, -1)) * 200);
+	}
+	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT]) { //鼠标右键
+		//createParticles(50, false, player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 3.f), PxVec3(0.f,2.f,0.f), PxVec3(0.f,-1.f,0.f));
+		createParticles(50, false, player->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 4.f), PxVec3(0.f, 0.f, 0.f), PxVec3(0.f, -0.1f, 0.f));
 	}
 }
 
@@ -182,20 +186,49 @@ void playerProcessKeyboard() {
 }
 
 void planeProcessKeyboard() {
+	//半自动飞行
+	/*if (keyToPressState[GLFW_KEY_LEFT]&& Plane_1->turningState[2]) {
+		Plane_1->turningState[0] = true;
+		Plane_1->turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_RIGHT] && Plane_1->turningState[2]) {
+		Plane_1->turningState[1] = true;
+		Plane_1->turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_UP] && Plane_1->turningState[2]) {
+		Plane_1->turningState[3] = true;
+		Plane_1->turningState[2] = false;
+	}
+	if (keyToPressState[GLFW_KEY_DOWN] && Plane_1->turningState[2]) {
+		Plane_1->turningState[4] = true;
+		Plane_1->turningState[2] = false;
+	}*/
+
+	//手动飞行
+	//按下时设true
 	if (keyToPressState[GLFW_KEY_LEFT]) {
-		turningState[0] = true;
-		turningState[2] = false;
+		Plane_1->turningState[0] = true;
 	}
 	if (keyToPressState[GLFW_KEY_RIGHT]) {
-		turningState[1] = true;
-		turningState[2] = false;
+		Plane_1->turningState[1] = true;
 	}
 	if (keyToPressState[GLFW_KEY_UP]) {
-		turningState[3] = true;
-		turningState[2] = false;
+		Plane_1->turningState[3] = true;
 	}
 	if (keyToPressState[GLFW_KEY_DOWN]) {
-		turningState[4] = true;
-		turningState[2] = false;
+		Plane_1->turningState[4] = true;
+	}
+	//松开时设false
+	if (!keyToPressState[GLFW_KEY_LEFT] && keyToPrePressState[GLFW_KEY_LEFT]) {
+		Plane_1->turningState[0] = false;
+	}
+	if (!keyToPressState[GLFW_KEY_RIGHT] && keyToPrePressState[GLFW_KEY_RIGHT]) {
+		Plane_1->turningState[1] = false;
+	}
+	if (!keyToPressState[GLFW_KEY_UP] && keyToPrePressState[GLFW_KEY_UP]) {
+		Plane_1->turningState[3] = false;
+	}
+	if (!keyToPressState[GLFW_KEY_DOWN] && keyToPrePressState[GLFW_KEY_DOWN]) {
+		Plane_1->turningState[4] = false;
 	}
 }

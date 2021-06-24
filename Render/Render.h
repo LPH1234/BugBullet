@@ -25,6 +25,7 @@
 namespace Snippets
 {
 	void renderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, Shader* shader, bool shadows = false, const physx::PxVec3 & color = physx::PxVec3(0.0f, 0.75f, 0.0f));
+	void renderParticles(list<PxParticleSystem*>& particleSystemList, Shader* shader);
 }
 
 PxFilterFlags testCCDFilterShader(
