@@ -101,7 +101,7 @@ private:
 	clock_t timer_last = 0;
 	vector<PxVec3> towerpos_list;
 	vector<clock_t>timer_list;
-
+	vector<TowerData* >tower_list;
 public:
 	PxVec3 initguntower(glm::vec3 pos);
 	void autoattack(PxRigidDynamic* target, PxVec3 pos);
