@@ -1,44 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\Main\ClassicMain.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\Controller.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\Creater.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\MyGame.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Main\MyGameRender.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\Main\Actor.cpp" />
+    <ClCompile Include="..\..\Main\ClassicMain.cpp" />
+    <ClCompile Include="..\..\Main\Controller.cpp" />
+    <ClCompile Include="..\..\Main\Creater.cpp" />
+    <ClCompile Include="..\..\Main\MyGame.cpp" />
+    <ClCompile Include="..\..\Main\MyGameRender.cpp" />
+    <ClCompile Include="..\..\Main\Characters.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Actor.h" />
-      <Filter>头文件</Filter>
-    <ClInclude Include="..\..\Main\Characters.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Main\Controller.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Main\Creater.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Main\SceneObjects.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{8f813295-8bb5-4edf-b45d-4f88a30bc89f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{bf687ad5-2214-4232-a217-f306747c00f9}</UniqueIdentifier>
-    </Filter>
+    <ClInclude Include="..\..\Main\Controller.h" />
+    <ClInclude Include="..\..\Main\Creater.h" />
+    <ClInclude Include="..\..\Main\Characters.h" />
+    <ClInclude Include="..\..\Main\SceneObjects.h" />
   </ItemGroup>
 </Project>
