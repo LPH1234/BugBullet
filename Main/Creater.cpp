@@ -571,6 +571,29 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 }
 
 
+//void createshell(const PxTransform& t, const PxVec3& velocity) {
+//	if (!t.isValid()) {
+//		Logger::error("error:");
+//	}
+//	PxQuat q1 = t.q + PxQuat(PxPi / 180 * 90, glmVec3ToPxVec3(camera.getRight()));
+//	//PxTransform t1(t.p, q1);
+//	glm::vec3 bullet_init_vec3(1.f, 0.f, 0.f);
+//	float cos_tmp = glm::dot(camera.getFront(), bullet_init_vec3) / getVec3Length(camera.getFront()) / getVec3Length(bullet_init_vec3);
+//	PxTransform t1(t.p, PxQuat(glm::acos(cos_tmp), glmVec3ToPxVec3(-glm::normalize(glm::cross(camera.getFront(), bullet_init_vec3)))));  //不能是90度，要转到当前的前方
+//	//std::cout << "xita:" << glm::acos(cos_tmp)  << "\n";
+//	PxCapsuleGeometry e(0.05, 0.06);
+//	PxMaterial* me = gPhysics->createMaterial(0.9f, 0.9f, 0.0f);
+//	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t1, e, *me, 0.01f);
+//	//设置刚体名称
+//	dynamic->setName(ACTOR_NAME_PLAYER_BULLET.c_str());
+//	//设置碰撞的标签
+//	setupFiltering(dynamic, FilterGroup::ePLAYERBULLET, FilterGroup::eSTACK);
+//	me->release();
+//	dynamic->setAngularDamping(0.9f);
+//	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+//	dynamic->setLinearVelocity(velocity);
+//	gScene->addActor(*dynamic);
+//}
 void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity, PxVec3 force) {
 
 	PxParticleSystem* ps = gPhysics->createParticleSystem(numParticles, perOffset);;

@@ -22,12 +22,15 @@
 
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
+extern bool mouseButtonPressState[3];
 extern PxPhysics*				gPhysics;
 extern PxScene*					gScene;
 extern PxMaterial*				gMaterial;
 extern Camera camera;
 extern PxTransform born_pos;
 extern const float velocity;
+
+//extern void createshell(const PxTransform& t, const PxVec3& velocity);
 
 class BaseCharacter {
 protected:
@@ -81,11 +84,23 @@ public:
 
 class Player : public BaseCharacter {
 private:
-	PxVec3 headforward = PxVec3(1.0f, 0.0f, 0.0f);
+	PxVec3 headforward = PxVec3(0.0f, 0.0f, -1.0f);
 	PxVec3 backforward = PxVec3(0.0f, 1.0f, 0.0f);
+	PxVec3 currentheadforward;
+	PxVec3 currentbackforward;
+	bool autoshooting;//Éä»÷»úÖÆ
+	clock_t last = 0;
+	PxVec3 born;
+	vector<PxVec3> waypoint;
 public:
+	PxRigidDynamic*			body;//¸ÕÌå
 	Player(physx::PxRigidDynamic* target) ;
 	void ProcessKeyPress();
+	void fire(const PxTransform& t,const PxVec3& velocity);
+	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
+	int trackangle(PxVec3& start,PxVec3& destination);
+	int forward(PxVec3& dir, double velocity);
+	void automove();
 };
 
 //void vehicleProcessKeyboard() {

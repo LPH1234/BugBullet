@@ -2,12 +2,13 @@
 
 
 //全局变量区
-const float velocity =5.0f;
+const float velocity =1.0f;
 extern Camera camera;
 
 extern vector<bool>	turningState;
 extern AirPlane* Plane_1;
-
+extern PxRigidDynamic* player;
+extern Player* vehicle;
 extern PxTransform born_pos;
 
 
@@ -24,7 +25,9 @@ void keyPress() {
 	//if (!camera.isHandling()) {
 		//vehicleProcessKeyboard();
 		//playerProcessKeyboard();
+	    vehicle->ProcessKeyPress();
 		Plane_1->ProcessKeyPress();
+		//mouseClick();
 	//}
 
 }
