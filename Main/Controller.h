@@ -23,7 +23,6 @@
 #include "Creater.h"
 #include "Characters.h"
 
-
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
 extern bool mouseButtonPressState[3];
@@ -36,8 +35,8 @@ void mouseClick();
 
 
 
-void vehicleProcessKeyboard();
-void playerProcessKeyboard();
+//void vehicleProcessKeyboard();
+//void playerProcessKeyboard();
 //void planeProcessKeyboard();
 
 

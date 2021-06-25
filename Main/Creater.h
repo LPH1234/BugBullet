@@ -9,7 +9,7 @@
 #include "../Render/Render.h"
 #include "../Data/Data.h"
 #include "../Data/Consts.h"
-
+#include "SceneObjects.h"
 #include <list>
 #include <cmath>
 #include <ctime>
@@ -23,15 +23,9 @@ extern PxScene*				gScene;
 extern PxMaterial*				gMaterial;
 extern PxPvd*                  gPvd;
 
-extern physx::PxRigidDynamic* player;
-extern physx::PxRigidDynamic* vehicle;
 
 extern list<PxParticleSystem*> renderParticleSystemList; //储存粒子系统的链表
-//炮塔
-extern physx::PxRigidDynamic* guntower_1;
-extern physx::PxRigidDynamic* guntower_2;
-extern physx::PxRigidDynamic* guntower_3;
-extern physx::PxRigidDynamic* guntower_4;
+
 
 extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
@@ -72,11 +66,11 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 //删除removeActorList里面的actor
 void removeActorInList();
 
-PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0));
+PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(20));
 
 PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
 
-PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
+//PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
 
 
 
@@ -96,17 +90,3 @@ void createBullet(const PxTransform& t, const PxVec3& velocity);
 void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity = PxVec3(0.f, 0.f, 0.f), PxVec3 force = PxVec3(0.f, 0.f, 0.f));
 
 
-class guntower
-{
-private:
-	PxVec3 towerpos;
-	clock_t timer_last = 0;
-	vector<PxVec3> towerpos_list;
-	vector<clock_t>timer_list;
-	vector<TowerData* >tower_list;
-public:
-	PxVec3 initguntower(glm::vec3 pos);
-	void autoattack(PxRigidDynamic* target, PxVec3 pos);
-	void runguntower(PxRigidDynamic* target);
-	void initlist(vector<glm::vec3> pos_list);
-};

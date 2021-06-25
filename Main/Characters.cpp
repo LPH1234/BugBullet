@@ -1,4 +1,5 @@
 #include "Characters.h"
+#include "../Render/Camera.h"
 
 AirPlane::AirPlane():BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
@@ -616,3 +617,149 @@ void AirPlane::ProcessKeyPress() {
 		reset();
 	}
 };
+
+Player::Player(physx::PxRigidDynamic* target) :BaseCharacter(target) {
+	this->rigid->setName("vehicle");
+	this->rigid->setAngularDamping(0.5f);
+	this->rigid->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
+	this->born = target->getGlobalPose().p;
+	currentheadforward = headforward;
+	currentbackforward = backforward;
+	autoshooting = true;
+	gScene->addActor(*(this->rigid));
+}
+
+void Player::ProcessKeyPress() {
+	if (this->rigid == nullptr)return;
+	//physx::PxVec3 totalvelocity(0.0f, 0.0f, 0.0f);
+	//physx::PxVec3 prevelocity = this->rigid->getLinearVelocity();
+	PxQuat next = this->rigid->getGlobalPose().q;
+	float current_velocity = 0;
+	if (keyToPressState[GLFW_KEY_W]) {
+		if (current_velocity > -35.0f) {
+			current_velocity -= 2.0f;
+		 }
+	}
+	if (keyToPressState[GLFW_KEY_S]) {
+		if (current_velocity <15.0f) {
+			current_velocity += 1.6f;
+		}
+	}
+	if (keyToPressState[GLFW_KEY_A]) {
+		PxQuat rot(PxPi / 180 * (0.2), currentbackforward);
+		//PxQuat rot2(PxPi / 180 * (-0.1), currentheadforward);
+		next =  rot * next;
+	}
+	if (keyToPressState[GLFW_KEY_D]) {
+		PxQuat rot(PxPi / 180 * (-0.2), currentbackforward);
+		//PxQuat rot2(PxPi / 180 * (0.1), currentheadforward);
+		next =  rot * next;
+	}
+	this->rigid->setGlobalPose(PxTransform(this->rigid->getGlobalPose().p, next));
+	currentheadforward = (this->rigid->getGlobalPose().q).rotate(headforward);
+	currentbackforward = (this->rigid->getGlobalPose().q).rotate(backforward);
+	this->rigid->setLinearVelocity(current_velocity * currentheadforward);
+	
+	if (keyToPressState[GLFW_KEY_F]) {
+		PxTransform px;
+		cout << "F" << endl;
+		PxVec3 mDir; glmVec3ToPxVec3(camera.getFront(), mDir);
+		PxVec3 mEye; glmVec3ToPxVec3(camera.getPosition(), mEye);
+		PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0));
+
+		if (viewY.normalize() < 1e-6f)
+			px = PxTransform(mEye);
+		else {
+			PxMat33 m(mDir.cross(viewY), viewY, -mDir);
+			px = PxTransform(mEye, PxQuat(m));
+		}
+		px.p = this->rigid->getGlobalPose().p+ glmVec3ToPxVec3(camera.getFront() * 2.f) +PxVec3(0.0f,4.0f,3.0f);
+		if (autoshooting) {
+			//createshell(px, px.rotate(PxVec3(0, 0, -1)) * 200);
+			fire(px,px.rotate(PxVec3(0, 0, -1)) *200);
+		}
+		else {
+			clock_t now = clock();
+			if (now - last > 1000) {
+				//createshell(px, px.rotate(PxVec3(0, 0, -1)) * 200);
+				fire(px,px.rotate(PxVec3(0, 0, -1)) * 200);
+				last = now;
+			}
+		}
+	}
+	if (keyToPressState[GLFW_KEY_H]) {
+		trackangle(this->rigid->getGlobalPose().p, PxVec3(15.0f, 5.0f, -20.0f));
+	}
+	if (keyToPrePressState[GLFW_KEY_I] && !keyToPressState[GLFW_KEY_I]) {
+		forward(PxVec3(15.0f, 5.0f, -20.0f), 3.0f);
+	}
+	if (keyToPrePressState[GLFW_KEY_T] && !keyToPressState[GLFW_KEY_T]) {
+		autoshooting = !autoshooting;
+	}
+
+	if (keyToPrePressState['`']) {
+		this->rigid->setGlobalPose(PxTransform(born));
+	}
+}
+PxQuat Player::getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront) {
+	/*cout << "neededFront:" << needfront.x << "\t" << needfront.y << "\t" << needfront.z << "\t\t"
+		<< "bulletFront:" << bulletfront.x << "\t" << bulletfront.y << "\t" << bulletfront.z << "\n";*/
+	double cosine = needfront.getNormalized().dot(bulletfront.getNormalized());
+	float angelRadius = acos(cosine);
+	PxVec3 rotateAxis = bulletfront.cross(needfront);
+	PxQuat rot(angelRadius, rotateAxis.getNormalized());
+	return rot;
+}
+void Player::fire(const PxTransform& t,const PxVec3& velocity) {
+	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
+	/*emitTransform.q = getBulletRotate(t, PxVec3(1.0f, 0.0f, 0.0f));*/
+	//PxTransform emitTransform = PxTransform(currentbackforward * 1);
+	PxTransform emitTransform = t;
+	/*emitTransform.q = bulletRot;*/
+	emitTransform.q = getshellrotate(velocity, PxVec3(1.0f, 0.0f, 0.0f)); 
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, emitTransform, PxCapsuleGeometry(0.04, 0.15), *gMaterial, 10.0f);
+	//ÉèÖÃ¸ÕÌåÃû³Æ
+	dynamic->setName("bullet");
+	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	dynamic->setLinearVelocity(velocity);
+	/*UserData data;
+	(data).id = 1;
+	(data).name = "littleBall";
+	(data).health = 10;
+	cout << data.id << endl;*/
+
+	dynamic->userData = new UserData(1, "ab", 10, 100);
+	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
+	//cout << temp->id << endl;
+	//cout << a << endl;
+	gScene->addActor(*dynamic);
+}
+int Player::trackangle(PxVec3& start, PxVec3& destination) {
+	PxVec3 dir = destination - start;
+	cout << dir.x << " " << dir.y << " " << dir.z << endl;
+	PxQuat next = this->rigid->getGlobalPose().q;
+	double angle = acos(dir.dot(this->currentheadforward) / ((dir.normalize())*(this->currentheadforward.normalize())));
+	//cout << angle << endl;
+	if (angle < 0.1)return 1;
+	PxQuat rot(PxPi / 180 * (angle), currentbackforward);
+	next = rot * next;
+	this->rigid->setGlobalPose(PxTransform(this->rigid->getGlobalPose().p, next));
+	currentheadforward = (this->rigid->getGlobalPose().q).rotate(headforward);
+	//cout << currentheadforward.x << " " << currentheadforward.y<< " " << currentheadforward.z << endl;
+	currentbackforward = (this->rigid->getGlobalPose().q).rotate(backforward);
+	return 0;
+}
+int Player::forward(PxVec3& dir, double velocity) {
+	PxVec3 current_pos = this->rigid->getGlobalPose().p;
+	cout << currentheadforward.x << " " << currentheadforward.y << " " << currentheadforward.z << endl;
+	double distance = sqrt(pow(current_pos.x-dir.x,2)+ pow(current_pos.y - dir.y, 2)+pow(current_pos.z - dir.z, 2));
+	//cout << distance << endl;
+	this->rigid->setLinearVelocity((this->currentheadforward)*velocity);
+	return 0;
+}
+void Player::automove() {
+
+}
+
