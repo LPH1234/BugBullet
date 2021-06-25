@@ -39,6 +39,8 @@ AirPlane::AirPlane():BaseCharacter(nullptr) {
 	currentSwingForward = swingForward = PxVec3(0.0f, 0.0f, 1.0f);
 	turningState.resize(5, false);
 	turningState[2] = true;
+	turningState2.resize(7);
+	turningState2[0] = true;
 	user_data = nullptr;
 
 	emitTransform = PxTransform(-currentBackForward * 10);
@@ -59,6 +61,8 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	turningState.resize(5, false);
 	turningState[2] = true;
+	turningState2.resize(7);
+	turningState2[0] = true;
 	initTransform = PxTransform(PxVec3(0, 0, 0));
 	user_data = nullptr;
 
@@ -246,25 +250,25 @@ void AirPlane::manualControlAirPlane() {
 	}
 	//左转
 	if (turningState[0]) {
-		PxQuat rot(PxPi / 180 * (0.1), currentBackForward);
-		PxQuat rot2(PxPi / 180 * (-0.05), currentHeadForward);
+		PxQuat rot(PxPi / 180 * (0.1*turningSpeed), currentBackForward);
+		PxQuat rot2(PxPi / 180 * (-0.05*turningSpeed), currentHeadForward);
 		next = rot2 * rot * next;
 	}
 	//右转
 	if (turningState[1]) {
-		PxQuat rot(PxPi / 180 * (-0.1), currentBackForward);
-		PxQuat rot2(PxPi / 180 * (0.05), currentHeadForward);
+		PxQuat rot(PxPi / 180 * (-0.1*turningSpeed), currentBackForward);
+		PxQuat rot2(PxPi / 180 * (0.05*turningSpeed), currentHeadForward);
 		next = rot2 * rot * next;
 	}
 	//上仰
 	if (turningState[3]) {
-		PxQuat rot(PxPi / 180 * (0.1), currentSwingForward);
+		PxQuat rot(PxPi / 180 * (0.1*turningSpeed), currentSwingForward);
 		//next *= rot;
 		next = rot * next;
 	}
 	//俯冲
 	if (turningState[4]) {
-		PxQuat rot(PxPi / 180 * (-0.1), currentSwingForward);
+		PxQuat rot(PxPi / 180 * (-0.1*turningSpeed), currentSwingForward);
 		//next *= rot;
 		next = rot * next;
 	}
@@ -403,15 +407,79 @@ void AirPlane::manualControlAirPlane3() {
 	}
 }
 
+//六个按键WASDQE
+void AirPlane::manualControlAirPlane4() {
+	currentHeadForward = (body->getGlobalPose().q).rotate(headForward);
+	currentBackForward = (body->getGlobalPose().q).rotate(backForward);
+	currentSwingForward = (body->getGlobalPose().q).rotate(swingForward);
+	PxQuat next = body->getGlobalPose().q;
+	//直行
+	if (turningState2[0]) {
+		body->setLinearVelocity(veclocity * currentHeadForward);
+	}
+	//左偏航
+	if (turningState2[1]) {
+		PxQuat rot(PxPi / 180 * (0.1*turningSpeed), currentBackForward);
+		//PxQuat rot2(PxPi / 180 * (-0.05*turningSpeed), currentHeadForward);
+		next = rot * next;
+	}
+	//右偏航
+	if (turningState2[2]) {
+		PxQuat rot(PxPi / 180 * (-0.1*turningSpeed), currentBackForward);
+		//PxQuat rot2(PxPi / 180 * (0.05*turningSpeed), currentHeadForward);
+		next =  rot * next;
+	}
+	//俯冲
+	if (turningState2[3]) {
+		PxQuat rot(PxPi / 180 * (-0.1*turningSpeed), currentSwingForward);
+		//next *= rot;
+		next = rot * next;
+	}
+	//上仰
+	if (turningState2[4]) {
+		PxQuat rot(PxPi / 180 * (0.1*turningSpeed), currentSwingForward);
+		//next *= rot;
+		next = rot * next;
+	}
+	//左滚转
+	if (turningState2[5]) {
+		PxQuat rot(PxPi / 180 * (-0.05*turningSpeed), currentHeadForward);
+		next = rot * next;
+	}
+	//右滚转
+	if (turningState2[6]) {
+		PxQuat rot(PxPi / 180 * (0.05*turningSpeed), currentHeadForward);
+		next = rot * next;
+	}
+	body->setGlobalPose(PxTransform(body->getGlobalPose().p, next));
+	currentHeadForward = (body->getGlobalPose().q).rotate(headForward);
+	currentBackForward = (body->getGlobalPose().q).rotate(backForward);
+	currentSwingForward = (body->getGlobalPose().q).rotate(swingForward);
+	body->setLinearVelocity(veclocity * currentHeadForward);
+}
+
 PxQuat AirPlane::getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront) {
-	cout << "neededFront:" << neededFront.x << "\t" << neededFront.y << "\t" << neededFront.z << "\t\t"
-		<< "bulletFront:" << bulletFront.x << "\t" << bulletFront.y << "\t" << bulletFront.z << "\n";
+	/*cout << "neededFront:" << neededFront.x << "\t" << neededFront.y << "\t" << neededFront.z << "\t\t"
+		<< "bulletFront:" << bulletFront.x << "\t" << bulletFront.y << "\t" << bulletFront.z << "\n";*/
 	double cosine = neededFront.getNormalized().dot(bulletFront.getNormalized());
 	float angelRadius = acos(cosine);
 	PxVec3 rotateAxis = bulletFront.cross(neededFront);
 	PxQuat rot(angelRadius, rotateAxis.getNormalized());
 	return rot;
 }
+extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
+extern struct FilterGroup
+{
+	enum Enum
+	{
+		eBALL = (1 << 0),		//发射的小球
+		eWALL = (1 << 1),		//墙壁
+		eSTACK = (1 << 2),		//小方块
+		eBIGBALL = (1 << 3),	//大球
+		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
+		eMISILE = (1 << 5),		//飞机弹药
+	};
+};
 void AirPlane::emit() {
 	//球形弹药
 	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxSphereGeometry(0.1), *gMaterial, 10.0f);
@@ -419,8 +487,9 @@ void AirPlane::emit() {
 	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
 	//emitTransform.q = getBulletRotate(currentHeadForward, PxVec3(1.0f, 0.0f, 0.0f));
 	emitTransform.q = bulletRot;
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.15), *gMaterial, 10.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.15), *gMaterial, 10000.0f);
 	//设置刚体名称
+	setupFiltering((PxRigidActor*)(dynamic), FilterGroup::eMISILE, FilterGroup::eWALL);
 	dynamic->setName("bullet");
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
@@ -437,6 +506,17 @@ void AirPlane::emit() {
 	//cout << temp->id << endl;
 	//cout << a << endl;
 	gScene->addActor(*dynamic);
+}
+void AirPlane::reset() {
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
+	PxVec3 p = body->getGlobalPose().p;
+	p += 30 * backForward;
+	body->setGlobalPose(PxTransform(p, PxQuat(0.0f, backForward)));
+	currentHeadForward = headForward;
+	currentBackForward = backForward;
+	currentSwingForward = swingForward;
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
+	body->setLinearVelocity(veclocity * currentHeadForward);
 }
 void AirPlane::getRight(physx::PxVec3& right) { right = swingForward; };
 void AirPlane::getFront(physx::PxVec3& front) { front = headForward; };
@@ -461,35 +541,80 @@ void AirPlane::ProcessKeyPress() {
 	}*/
 
 	//手动飞行
+	//上下左右键
 	//按下时设true
-	if (keyToPressState[GLFW_KEY_LEFT]) {
-		turningState[0] = true;
+	//if (keyToPressState[GLFW_KEY_LEFT]) {
+	//	turningState[0] = true;
+	//}
+	//if (keyToPressState[GLFW_KEY_RIGHT]) {
+	//	turningState[1] = true;
+	//}
+	//if (keyToPressState[GLFW_KEY_UP]) {
+	//	turningState[3] = true;
+	//}
+	//if (keyToPressState[GLFW_KEY_DOWN]) {
+	//	turningState[4] = true;
+	//}
+	////松开时设false
+	//if (!keyToPressState[GLFW_KEY_LEFT] && keyToPrePressState[GLFW_KEY_LEFT]) {
+	//	turningState[0] = false;
+	//}
+	//if (!keyToPressState[GLFW_KEY_RIGHT] && keyToPrePressState[GLFW_KEY_RIGHT]) {
+	//	turningState[1] = false;
+	//}
+	//if (!keyToPressState[GLFW_KEY_UP] && keyToPrePressState[GLFW_KEY_UP]) {
+	//	turningState[3] = false;
+	//}
+	//if (!keyToPressState[GLFW_KEY_DOWN] && keyToPrePressState[GLFW_KEY_DOWN]) {
+	//	turningState[4] = false;
+	//}
+
+	//手动控制 W A S D Q E六个按键
+	if (keyToPressState[GLFW_KEY_A]) {
+		turningState2[1] = true;
 	}
-	if (keyToPressState[GLFW_KEY_RIGHT]) {
-		turningState[1] = true;
+	if (keyToPressState[GLFW_KEY_D]) {
+		turningState2[2] = true;
 	}
-	if (keyToPressState[GLFW_KEY_UP]) {
-		turningState[3] = true;
+	if (keyToPressState[GLFW_KEY_W]) {
+		turningState2[3] = true;
 	}
-	if (keyToPressState[GLFW_KEY_DOWN]) {
-		turningState[4] = true;
+	if (keyToPressState[GLFW_KEY_S]) {
+		turningState2[4] = true;
+	}
+	if (keyToPressState[GLFW_KEY_Q]) {
+		turningState2[5] = true;
+	}
+	if (keyToPressState[GLFW_KEY_E]) {
+		turningState2[6] = true;
 	}
 	//松开时设false
-	if (!keyToPressState[GLFW_KEY_LEFT] && keyToPrePressState[GLFW_KEY_LEFT]) {
-		turningState[0] = false;
+	if (!keyToPressState[GLFW_KEY_A] && keyToPrePressState[GLFW_KEY_A]) {
+		turningState2[1] = false;
 	}
-	if (!keyToPressState[GLFW_KEY_RIGHT] && keyToPrePressState[GLFW_KEY_RIGHT]) {
-		turningState[1] = false;
+	if (!keyToPressState[GLFW_KEY_D] && keyToPrePressState[GLFW_KEY_D]) {
+		turningState2[2] = false;
 	}
-	if (!keyToPressState[GLFW_KEY_UP] && keyToPrePressState[GLFW_KEY_UP]) {
-		turningState[3] = false;
+	if (!keyToPressState[GLFW_KEY_W] && keyToPrePressState[GLFW_KEY_W]) {
+		turningState2[3] = false;
 	}
-	if (!keyToPressState[GLFW_KEY_DOWN] && keyToPrePressState[GLFW_KEY_DOWN]) {
-		turningState[4] = false;
+	if (!keyToPressState[GLFW_KEY_S] && keyToPrePressState[GLFW_KEY_S]) {
+		turningState2[4] = false;
 	}
-	//发射
+	if (!keyToPressState[GLFW_KEY_Q] && keyToPrePressState[GLFW_KEY_Q]) {
+		turningState2[5] = false;
+	}
 	if (!keyToPressState[GLFW_KEY_E] && keyToPrePressState[GLFW_KEY_E]) {
+		turningState2[6] = false;
+	}
+
+	//发射
+	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]) {
 		emit();
+	}
+	//重置
+	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
+		reset();
 	}
 };
 

@@ -196,6 +196,7 @@ public:
 	PxVec3					backForward, currentBackForward;//初始机背朝向、当前机背朝向
 	PxVec3					swingForward, currentSwingForward;//初始机翼朝向、当前机翼朝向
 	vector<bool>			turningState;//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
+	vector<bool>			turningState2;//飞机转向的7个状态，直行、左偏航、右偏航、俯冲、上仰、左翻滚、右翻滚
 	int						rollingAngel = 0;//滚转角
 	int						pitchingAngel = 0;//俯仰角
 	int						currentAngel_x = 0;//当前姿态在水平面转过的角度
@@ -203,6 +204,7 @@ public:
 	int						emitBulletTime = 0;//发射间隔计时器
 	float					veclocity = 8.0f;//默认飞行速度
 	float					emitVeclocity = 24.0f;//默认炮弹飞行速度
+	float					turningSpeed = 1.0f;//转向速度
 	void*					user_data;//信息
 
 
@@ -213,8 +215,10 @@ public:
 	void manualControlAirPlane();
 	void manualControlAirPlane2();
 	void manualControlAirPlane3();
+	void manualControlAirPlane4();//WASDQE 6个按键
 	PxQuat getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront);
 	void emit();
+	void reset();
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);

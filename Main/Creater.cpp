@@ -77,8 +77,11 @@ PxFilterFlags testCollisionFilterShader(
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
-	if ((filterData0.word0 == filterData1.word1) || (filterData1.word0 == filterData0.word1))
+	if ((filterData0.word0 == filterData1.word1) || (filterData1.word0 == filterData0.word1)) {
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+		cout << "FilterShader!\n";
+	}
+		
 
 	return PxFilterFlag::eDEFAULT;
 
@@ -156,6 +159,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 					cout << "tower died" << endl;
 					tower->enable_attacking = false;
 				}
+			}
+			else if (actor_0->getName() == "bullet"&&actor_1->getName() == "map"
+				|| actor_1->getName() == "bullet"&&actor_0->getName() == "map") {
+				//printf("·É»úµ¯Ò©£¡\n");
+				removeActorList.push_back((actor_0->getName() == "bullet" ? actor_0 : actor_1));
+				cout << pairHeader.pairs->contactImpulses << "\n";
 			}
 			else {}
 		}
@@ -516,6 +525,39 @@ void createAbleBreakWall() {
 	}
 }
 
+void createBreakableWall() {
+	PxMaterial* wallMaterial = gPhysics->createMaterial(0.7f, 0.65f, 0.1f);
+	PxShape* shape= gPhysics->createShape(PxBoxGeometry(2, 2, 2), *wallMaterial);
+	vector<vector<PxRigidDynamic*>> Wall(10, vector<PxRigidDynamic*>(5));
+	PxReal x = 0.0, y = 2.0, z = 0.0;
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 5; j++) {
+			PxTransform pos(PxVec3(x + (j - 2) * 4, y, z));
+			PxRigidDynamic* body = gPhysics->createRigidDynamic(pos);
+			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE);
+			Wall[i][j] = body;
+			body->attachShape(*shape);
+			PxRigidBodyExt::updateMassAndInertia(*body, 0.1f);
+			gScene->addActor(*body);
+		}
+		y += 4;
+	}
+	for (int j = 0; j < 10; j++) {
+		for (int i = 1; i <= 4; i++) {
+			PxRigidDynamic* a0 = Wall[j][i - 1];
+			PxRigidDynamic* a1 = Wall[j][i];
+			PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, PxTransform(PxVec3(2, 0, 0)), a1, PxTransform(PxVec3(-2, 0, 0)));
+			j->setBreakForce(1000.f - abs((i - 2.5) * 100), 100000.f);
+		}
+	}
+	for (int i = 1; i <= 9; i++) {
+		PxRigidDynamic* a0 = Wall[i-1][2];
+		PxRigidDynamic* a1 = Wall[i][2];
+		PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, PxTransform(PxVec3(0, 2, 0)), a1, PxTransform(PxVec3(0, -2, 0)));
+		j->setBreakForce(9000.f - abs((i - 1) * 1000), 100000.f);
+	}
+	
+}
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
