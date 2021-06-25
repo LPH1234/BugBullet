@@ -58,6 +58,7 @@ struct FilterGroup
 		eSTACK = (1 << 2),		//小方块
 		eBIGBALL = (1 << 3),	//大球
 		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
+		eMISILE = (1 << 5),		//飞机弹药
 	};
 };
 
@@ -85,6 +86,7 @@ void changeAirPlaneVelocity();
 double getAngel(PxVec3 a, PxVec3 b);
 bool lessThan180(PxVec3 a, PxVec3 base);
 void createAbleBreakWall();
+void createBreakableWall();
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
