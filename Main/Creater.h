@@ -23,8 +23,6 @@ extern PxScene*				gScene;
 extern PxMaterial*				gMaterial;
 extern PxPvd*                  gPvd;
 
-extern physx::PxRigidDynamic* player;
-extern physx::PxRigidDynamic* vehicle;
 
 extern list<PxParticleSystem*> renderParticleSystemList; //储存粒子系统的链表
 
