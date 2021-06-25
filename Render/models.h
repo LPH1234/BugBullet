@@ -37,7 +37,7 @@ protected:
 	Shader* shader;
 	std::string modelPath;
 
-	Model* model;
+	Model* model = nullptr;
 	int id;
 	std::string name;
 
@@ -53,7 +53,8 @@ public:
 	}
 
 	virtual ~BaseModel() {
-		delete this->model;
+		if (this->model != nullptr)
+			delete this->model;
 	}
 
 	virtual void draw() = 0;
@@ -165,6 +166,45 @@ public:
 
 };
 
+class SmokeParticle : public PlainModel
+{
+	glm::vec3 objectColor;
+	glm::vec3 defaultColor = glm::vec3(1.f, 1.f, 1.f);
+	unsigned int VBO, VAO;
+
+public:
+
+	SmokeParticle(glm::vec3 pos, glm::vec3 scale, glm::vec3 c, Shader* shader) :PlainModel(pos, scale, "", shader) {
+		this->objectColor = c;
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		float vertices[] = { 0.f,0.f,0.f };
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBindVertexArray(VAO);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(0);
+	}
+
+	~SmokeParticle() {}
+
+	void draw() {
+		/*glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDepthMask(GL_FALSE);*/
+
+		shader->setVec3("objectColor", this->objectColor);
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_POINTS, 0, 1);
+		shader->setVec3("objectColor", this->defaultColor);
+
+		/*	glDisable(GL_BLEND);
+			glDepthMask(GL_TRUE);*/
+	}
+
+
+};
+
 
 class Cube : public PlainModel
 {
@@ -267,6 +307,8 @@ public:
 	unsigned int diffuseMap;
 
 };
+
+
 
 class Sphere : public PlainModel
 {

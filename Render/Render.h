@@ -39,4 +39,27 @@ PxFilterFlags testCCDFilterShader(
 
 #define MAX_NUM_ACTOR_SHAPES 128
 
+class ParticleSystemData {
+public:
+	short id;
+	bool hasForce;
+	int numParticles;
+	int createTime; //创建这个粒子系统时的unix时间戳
+	int deleteDelaySec; //当到达这个秒数时，粒子系统应该被移除
+	int fadeDelaySec;//到达这个秒数时，渲染模型开始渐隐(fadeDelaySec < fadeSec)
+	BaseModel* renderModel = nullptr;
+	PxVec3 *newAppParticleforces = nullptr;
+	PxU32 *newAppParticleIndices = nullptr;
+
+	~ParticleSystemData() {
+		if (this->renderModel != nullptr)
+			delete this->renderModel;
+		if (this->newAppParticleforces != nullptr)
+			delete this->newAppParticleforces;
+		if (this->newAppParticleIndices != nullptr)
+			delete this->newAppParticleIndices;
+	}
+};
+
+
 #endif //PHYSX_SNIPPET_RENDER_H
