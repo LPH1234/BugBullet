@@ -94,11 +94,11 @@ private:
 	vector<PxVec3> waypoint;
 public:
 	PxRigidDynamic*			body;//∏’ÃÂ
-	Player(physx::PxRigidDynamic* target) ;
+	Player(physx::PxRigidDynamic* target);
 	void ProcessKeyPress();
-	void fire(const PxTransform& t,const PxVec3& velocity);
+	void fire(const PxTransform& t, const PxVec3& velocity);
 	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
-	int trackangle(PxVec3& start,PxVec3& destination);
+	int trackangle(PxVec3& start, PxVec3& destination);
 	int forward(PxVec3& dir, double velocity);
 	void automove();
 };

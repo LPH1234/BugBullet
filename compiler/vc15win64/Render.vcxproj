@@ -28,6 +28,7 @@
     <ClInclude Include="..\..\Render\Shader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Render\Camera.cpp" />
     <ClCompile Include="..\..\Render\glad.c" />
     <ClCompile Include="..\..\Render\Model.cpp" />
     <ClCompile Include="..\..\Render\models.cpp" />

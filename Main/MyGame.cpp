@@ -98,8 +98,8 @@ void initPhysics(bool interactive)
 	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
 
 	//camera.setTarget(player);
-	//camera.setTarget(Plane_1->body);
-	camera.setTarget(vehicle->getRigid());
+	camera.setTarget(Plane_1);
+	//camera.setTarget(vehicle);
 
 	PxRigidActor* Map = nullptr;
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);

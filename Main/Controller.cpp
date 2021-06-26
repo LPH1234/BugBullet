@@ -41,6 +41,7 @@ void mouseMove() {
 
 void mouseClick() {
 	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_LEFT]) {
+		return;
 		PxTransform px;
 
 		PxVec3 mDir; glmVec3ToPxVec3(camera.getFront(), mDir);
