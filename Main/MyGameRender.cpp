@@ -140,7 +140,7 @@ int myRenderLoop()
 	// build and compile shaders
 	// -------------------------
 
-	skybox = new SkyBox(camera.getPosition(), glm::vec3(7000.0f, 7000.0f, 7000.0f), "", skyBoxShader);
+	skybox = new SkyBox(camera.getPosition(), glm::vec3(1000.0f, 1000.0f, 1000.0f), "", skyBoxShader);
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -215,7 +215,8 @@ int myRenderLoop()
 		skyBoxShader->setMat4("view", view);
 
 
-		skybox->setPosition(camera.getPosition());
+		//skybox->setPosition(camera.getPosition());
+		skybox->setPosition(glm::vec3(0.f, 0.f, 0.f));
 		skyBoxShader->setMat4("model", skybox->getModel());
 		skybox->draw();
 
