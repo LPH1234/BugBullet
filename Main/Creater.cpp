@@ -1,4 +1,10 @@
 #include"Creater.h"
+
+#include <trng/yarn2.hpp>
+#include <trng/uniform_dist.hpp>
+#include <trng/normal_dist.hpp>
+
+
 #define TURN_LEFT 0;
 #define TURN_RIGHT 1;
 #define STRAIGHT 2;
@@ -77,8 +83,11 @@ PxFilterFlags testCollisionFilterShader(
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
-	if ((filterData0.word0 == filterData1.word1) || (filterData1.word0 == filterData0.word1))
+	if ((filterData0.word0 == filterData1.word1) || (filterData1.word0 == filterData0.word1)) {
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+		cout << "FilterShader!\n";
+	}
+
 
 	return PxFilterFlag::eDEFAULT;
 
@@ -157,8 +166,17 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 					tower->enable_attacking = false;
 				}
 			}
+			else if (actor_0->getName() == "bullet"&&actor_1->getName() == "map"
+				|| actor_1->getName() == "bullet"&&actor_0->getName() == "map") {
+				//printf("飞机弹药！\n");
+				removeActorList.push_back((actor_0->getName() == "bullet" ? actor_0 : actor_1));
+				cout << pairHeader.pairs->contactImpulses << "\n";
+			}
 			else {}
+
+
 		}
+
 	}
 
 }
@@ -425,27 +443,27 @@ void changeAirPlaneVelocity() {
 	}
 	//俯冲
 	else if (turningState[4]) {
-	if (pitchingAngel < 90) {
-		pitchingAngel += 1;
-		PxQuat rot(PxPi / 180 * (-1), swingForward);
-		headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
-		backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
-		swingForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
-		airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot*airPlane->getGlobalPose().q));
-		airPlane->setLinearVelocity(5 * headForward);
-	}
-	else {
-		turningState[0] = false;
-		turningState[1] = false;
-		turningState[2] = true;
-		turningState[3] = false;
-		turningState[4] = false;
-		pitchingAngel = 0;
-		currentAngel_z -= 90;
-		currentAngel_z %= 360;
-		cout << "俯冲结束\n";
-		//airPlane->setLinearVelocity(5 * headForward);
-	}
+		if (pitchingAngel < 90) {
+			pitchingAngel += 1;
+			PxQuat rot(PxPi / 180 * (-1), swingForward);
+			headForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(1, 0, 0));
+			backForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 1, 0));
+			swingForward = (rot*airPlane->getGlobalPose().q).rotate(PxVec3(0, 0, 1));
+			airPlane->setGlobalPose(PxTransform(airPlane->getGlobalPose().p, rot*airPlane->getGlobalPose().q));
+			airPlane->setLinearVelocity(5 * headForward);
+		}
+		else {
+			turningState[0] = false;
+			turningState[1] = false;
+			turningState[2] = true;
+			turningState[3] = false;
+			turningState[4] = false;
+			pitchingAngel = 0;
+			currentAngel_z -= 90;
+			currentAngel_z %= 360;
+			cout << "俯冲结束\n";
+			//airPlane->setLinearVelocity(5 * headForward);
+		}
 
 	}
 	else {
@@ -482,7 +500,7 @@ void createAbleBreakWall() {
 
 	PxTransform t(PxVec3(-0.9, 0.1, 0));
 	float separation = 0.2f;
-	PxVec3 offset(separation/2, 0, 0);
+	PxVec3 offset(separation / 2, 0, 0);
 	PxVec3 offset2(0, separation / 2, 0);
 	PxTransform localTm(offset);
 	PxRigidDynamic* prev = NULL;
@@ -497,13 +515,13 @@ void createAbleBreakWall() {
 			}
 			createBreakableFixed(prev, prev ? PxTransform(offset) : t.transform(PxTransform(PxVec3(0, 0.2*i, 0))), current, PxTransform(-offset));
 			//连接下边
-			if (i-1<0) {
+			if (i - 1 < 0) {
 				prev = NULL;
 			}
 			else {
-				prev = allDynamic[i-1][j];
+				prev = allDynamic[i - 1][j];
 			}
-			PxJoint* jj=createBreakableFixed(prev, prev ? PxTransform(offset2) : t.transform(PxTransform(PxVec3(0.2*j, 0, 0))), current, PxTransform(-offset2));
+			PxJoint* jj = createBreakableFixed(prev, prev ? PxTransform(offset2) : t.transform(PxTransform(PxVec3(0.2*j, 0, 0))), current, PxTransform(-offset2));
 			if (i == 0) {
 				jj->setBreakForce(100000, 100000);
 			}
@@ -516,6 +534,39 @@ void createAbleBreakWall() {
 	}
 }
 
+void createBreakableWall() {
+	PxMaterial* wallMaterial = gPhysics->createMaterial(0.7f, 0.65f, 0.1f);
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(2, 2, 2), *wallMaterial);
+	vector<vector<PxRigidDynamic*>> Wall(10, vector<PxRigidDynamic*>(5));
+	PxReal x = 0.0, y = 2.0, z = 0.0;
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 5; j++) {
+			PxTransform pos(PxVec3(x + (j - 2) * 4, y, z));
+			PxRigidDynamic* body = gPhysics->createRigidDynamic(pos);
+			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE);
+			Wall[i][j] = body;
+			body->attachShape(*shape);
+			PxRigidBodyExt::updateMassAndInertia(*body, 0.1f);
+			gScene->addActor(*body);
+		}
+		y += 4;
+	}
+	for (int j = 0; j < 10; j++) {
+		for (int i = 1; i <= 4; i++) {
+			PxRigidDynamic* a0 = Wall[j][i - 1];
+			PxRigidDynamic* a1 = Wall[j][i];
+			PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, PxTransform(PxVec3(2, 0, 0)), a1, PxTransform(PxVec3(-2, 0, 0)));
+			j->setBreakForce(1000.f - abs((i - 2.5) * 100), 100000.f);
+		}
+	}
+	for (int i = 1; i <= 9; i++) {
+		PxRigidDynamic* a0 = Wall[i - 1][2];
+		PxRigidDynamic* a1 = Wall[i][2];
+		PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, PxTransform(PxVec3(0, 2, 0)), a1, PxTransform(PxVec3(0, -2, 0)));
+		j->setBreakForce(9000.f - abs((i - 1) * 1000), 100000.f);
+	}
+
+}
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent) {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
@@ -594,7 +645,7 @@ void createBullet(const PxTransform& t, const PxVec3& velocity) {
 //	dynamic->setLinearVelocity(velocity);
 //	gScene->addActor(*dynamic);
 //}
-void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 velocity, PxVec3 force) {
+void createParticles(int numParticles, bool perOffset, BaseModel* renderModel, PxVec3 initPos, bool ifDisperse, double maxDisperseRadius, bool ifRandomV, double maxRandomV, int deleteDelaySec, int fadeDelaySec, PxVec3 velocity, PxVec3 force) {
 
 	PxParticleSystem* ps = gPhysics->createParticleSystem(numParticles, perOffset);;
 
@@ -606,37 +657,38 @@ void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 ve
 	PxVec3 *newAppParticleVelocities = new PxVec3[numParticles];
 	PxVec3 *newAppParticleforces = new PxVec3[numParticles];
 	PxParticleCreationData particleCreationData;
-	/*ps->setGridSize(1.0f);
-	ps->setMaxMotionDistance(0.3);
-	ps->setRestOffset(0.1f * 0.3f);
-	ps->setContactOffset(0.1f * 0.3f * 2);*/
 	ps->setDamping(1.f);
 	ps->setRestitution(1.f);
 	ps->setDynamicFriction(1.f);
 	ps->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
 	ps->setParticleReadDataFlag(PxParticleReadDataFlag::ePOSITION_BUFFER, true);
 
-	bool random_velocity = velocity.x == 0.f && velocity.y == 0.f && velocity.z == 0.f;
+	trng::yarn2 R;
+	trng::uniform_dist<> random_v(-maxRandomV, maxRandomV);
+	trng::normal_dist<> random_p(0, maxDisperseRadius);
 
 	for (int i = 0; i < numParticles; i++)
 	{
 		//Only positions and velocities are given an initial value
 		//Indices zill be autogenerated by the indexpool after the loop
-
-		newAppParticlePositions[i].x = initPos.x;
-		newAppParticlePositions[i].y = initPos.y;
-		newAppParticlePositions[i].z = initPos.z;
-
-		if (random_velocity) {
-			srand(i);
-			int rand_tmp1 = rand(); rand_tmp1 = rand_tmp1 & 1 == 0 ? -rand_tmp1 : rand_tmp1;
-			int rand_tmp2 = rand(); rand_tmp2 = rand_tmp2 & 1 == 0 ? -rand_tmp2 : rand_tmp2;
-			int rand_tmp3 = rand(); rand_tmp3 = rand_tmp3 & 1 == 0 ? -rand_tmp3 : rand_tmp3;
-			newAppParticleVelocities[i].x = rand_tmp1 * 30 / 65536.f;
-			newAppParticleVelocities[i].y = rand_tmp2 * 30 / 65536.f;
-			newAppParticleVelocities[i].z = rand_tmp3 * 30 / 65536.f;
+		if (ifDisperse) {
+			newAppParticlePositions[i].x = initPos.x + random_p(R); // 使初始化粒子散开
+			newAppParticlePositions[i].y = initPos.y + random_p(R);
+			newAppParticlePositions[i].z = initPos.z + random_p(R);
 		}
 		else {
+			newAppParticlePositions[i].x = initPos.x; // 初始化粒子在一个点上
+			newAppParticlePositions[i].y = initPos.y;
+			newAppParticlePositions[i].z = initPos.z;
+		}
+
+
+		if (ifRandomV) { // 初始化粒子具有随机速度
+			newAppParticleVelocities[i].x = random_v(R);
+			newAppParticleVelocities[i].y = random_v(R);
+			newAppParticleVelocities[i].z = random_v(R);
+		}
+		else { // 初始化粒子具有指定速度
 			newAppParticleVelocities[i].x = velocity.x;
 			newAppParticleVelocities[i].y = velocity.y;
 			newAppParticleVelocities[i].z = velocity.z;
@@ -651,14 +703,28 @@ void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 ve
 	particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(newAppParticleIndices);
 	particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(newAppParticlePositions);
 	particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(newAppParticleVelocities);
-	//ps->addForces(numParticles, particleCreationData.indexBuffer, PxStrideIterator<const PxVec3>(newAppParticleforces), PxForceMode::eFORCE);
-
 	if (particleCreationData.isValid())
 	{
-		if (ps->createParticles(particleCreationData))
+		if (ps->createParticles(particleCreationData)) {
+			ParticleSystemData* data = new ParticleSystemData;
+			data->hasForce = force.x != 0.f || force.y != 0.f || force.z != 0.f;
+			data->numParticles = numParticles;
+			data->deleteDelaySec = deleteDelaySec;
+			data->createTime = std::time(0);
+			data->fadeDelaySec = fadeDelaySec;
+			data->renderModel = renderModel;
+			data->newAppParticleforces = newAppParticleforces;
+			data->newAppParticleIndices = newAppParticleIndices;
+			for (int i = 0; i < numParticles; i++, particleCreationData.indexBuffer++)
+				newAppParticleIndices[i] = *particleCreationData.indexBuffer;
+			ps->userData = (void*)data;
 			cout << "创建粒子成功\n";
-		else
+		}
+		else {
+			ps->release();
+			ps = nullptr;
 			cout << "创建粒子失败\n";
+		}
 	}
 
 	if (ps) {
@@ -666,8 +732,19 @@ void createParticles(int numParticles, bool perOffset, PxVec3 initPos, PxVec3 ve
 		renderParticleSystemList.push_back(ps);
 	}
 	//Cleanup
-	delete newAppParticleIndices;
 	delete newAppParticlePositions;
 	delete newAppParticleVelocities;
 }
 
+void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList) {
+
+	list<PxParticleSystem*>::iterator it; //声明一个迭代器
+
+	for (it = particleSystemList.begin(); it != particleSystemList.end(); it++) {
+		PxParticleSystem* ps = *it;
+		ParticleSystemData* data = reinterpret_cast<ParticleSystemData*>(ps->userData);
+
+		ps->addForces(data->numParticles, PxStrideIterator<const PxU32>(data->newAppParticleIndices), PxStrideIterator<const PxVec3>(data->newAppParticleforces), PxForceMode::eACCELERATION);
+	}
+
+}

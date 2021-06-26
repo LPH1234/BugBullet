@@ -10,12 +10,20 @@
 #include<vector>
 
 #include "foundation/PxSimpleTypes.h"
+#include "foundation/PxVec3.h"
+#include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class Logger
 {
 public:
-	static void notice(std::string);
 	static void debug(std::string);
+	static void debug(physx::PxVec3& v);
+	static void debug(glm::vec3& v);
+	static void debug(std::string, physx::PxVec3& v);
+	static void debug(std::string, glm::vec3& v);
+	static void notice(std::string);
 	static void info(std::string);
 	static void warn(std::string);
 	static void error(std::string);

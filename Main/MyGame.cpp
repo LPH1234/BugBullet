@@ -69,12 +69,13 @@ void initPhysics(bool interactive)
 		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	//createBigBall();
 	//createAbleBreakWall();
+	//createBreakableWall();
 
 
-	init3rdplayer(born_pos, PxSphereGeometry(0.5f));
+	//init3rdplayer(born_pos, PxSphereGeometry(0.5f));
 	//initvehicle(born_pos, PxSphereGeometry(0.5f));
 	//createBigBall();
-   
+
 
 	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
 	GunTower.initguntower(pos1);*/
@@ -86,34 +87,36 @@ void initPhysics(bool interactive)
 		pos1.x += i * 1.0f;
 		pos1.y += i * 1.0f;
 	}
-	GunTower.initlist(pos_list);
-	
+	//GunTower.initlist(pos_list);
+
 	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 7.0f, -25.0f), glm::vec3(0.75f, 0.75f, 0.75f),
 		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
 	vehicle = new Player(input_tank);
 	//createAirPlane();
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f), 
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	Plane_1 = new AirPlane(PxVec3(0,0,1),PxVec3(0,1,0),PxVec3(-1,0,0), temp);
+	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
 
 	//camera.setTarget(player);
-	//camera.setTarget(Plane_1->body);
-	camera.setTarget(vehicle->getRigid());
+	camera.setTarget(Plane_1);
+	//camera.setTarget(vehicle);
 
+	PxRigidActor* Map = nullptr;
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	//Map = createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
+	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
-	createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+	//Map = createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
 	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
 	//model\vehicle\suv\Models Transport Shuttle_obj.obj
 	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
-		
+	//Map->setName("map");
 
 
 
@@ -123,21 +126,16 @@ void initPhysics(bool interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
 
-
-
-bool createSpecialStaticModel(BaseModel* model, bool preLoad, bool ifStatic) {
-	ObjLoader loader(model, MESH_TYPE::TRIANGLE);
-	if (ifStatic)
-		loader.createStaticActorAndAddToScene(); //静态刚体
-	else
-		loader.createDynamicActorAndAddToScene();
-	return true;
+void beforeStepPhysics() {
+	addForceToPartivleSystem(renderParticleSystemList);
 }
-
 
 void stepPhysics(bool interactive)
 {
 	PX_UNUSED(interactive);
+
+	beforeStepPhysics();
+
 	//锁帧
 	lockFrame_current = clock();//当前时钟
 	/*if ((lockFrame_current - lockFrame_last) < 16) {
@@ -151,12 +149,11 @@ void stepPhysics(bool interactive)
 		changeAirPlaneVelocity();
 		GunTower.runguntower(player);
 		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
-	
+
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
-	Plane_1->manualControlAirPlane();
-
+	Plane_1->manualControlAirPlane4();
 	//GunTower.runguntower(player);
 
 	removeActorInList();

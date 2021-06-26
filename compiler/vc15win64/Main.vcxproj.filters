@@ -1,23 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\Main\Actor.cpp" />
-    <ClCompile Include="..\..\Main\ClassicMain.cpp" />
-    <ClCompile Include="..\..\Main\Controller.cpp" />
-    <ClCompile Include="..\..\Main\Creater.cpp" />
-    <ClCompile Include="..\..\Main\MyGame.cpp" />
-    <ClCompile Include="..\..\Main\MyGameRender.cpp" />
-<<<<<<< HEAD
-    <ClCompile Include="..\..\Main\SceneObjects.cpp" />
-=======
-    <ClCompile Include="..\..\Main\Characters.cpp" />
->>>>>>> main
+    <ClCompile Include="..\..\Main\Characters.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Main\ClassicMain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Main\Controller.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Main\Creater.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Main\MyGame.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Main\MyGameRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Main\SceneObjects.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Main\Actor.h" />
-    <ClInclude Include="..\..\Main\Controller.h" />
-    <ClInclude Include="..\..\Main\Creater.h" />
-    <ClInclude Include="..\..\Main\Characters.h" />
-    <ClInclude Include="..\..\Main\SceneObjects.h" />
+    <ClInclude Include="..\..\Main\Characters.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Main\Controller.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Main\Creater.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Main\SceneObjects.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4a7a6e9b-211f-428b-b1c4-1b09da745274}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{5199c47a-87ce-4e43-a94a-8e1b59b9bfe8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

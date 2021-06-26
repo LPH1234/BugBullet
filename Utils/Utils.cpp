@@ -61,6 +61,27 @@ void Logger::debug(std::string str) {
 	std::cout << "[DEBUG]\t" << str << "\n";
 	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
+void Logger::debug(physx::PxVec3& v) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN); //green
+	std::cout << "[DEBUG]\tx:" << v.x << "\ty:" << v.y << "\tz:" << v.z << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+void Logger::debug(glm::vec3& v) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN); //green
+	std::cout << "[DEBUG]\tx:" << v.x << "\ty:" << v.y << "\tz:" << v.z << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+
+void  Logger::debug(std::string str, physx::PxVec3& v) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN); //green
+	std::cout << "[DEBUG]\t" << str << "\tx:" << v.x << "\ty:" << v.y << "\tz:" << v.z << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+void  Logger::debug(std::string str, glm::vec3& v) {
+	SetConsoleColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN); //green
+	std::cout << "[DEBUG]\t" << str << "\tx:" << v.x << "\ty:" << v.y << "\tz:" << v.z << "\n";
+	SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
 void Logger::info(std::string str) {
 	std::cout << "[INFO]\t" << str << "\n";
 }
