@@ -188,13 +188,6 @@ void Camera::updateCameraVectors()
 	}
 	if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
 
-		PxVec3 v1; this->target->getFront(v1);
-		PxVec3 v2; this->target->getRight(v2);
-		PxVec3 v3; this->target->getUp(v3);
-		Logger::debug("front:", v1);
-		Logger::debug("right:", v2);
-		Logger::debug("up:", v3);
-
 		front.x = target_position.x - Position.x;
 		front.y = target_position.y - Position.y;
 		front.z = target_position.z - Position.z;
