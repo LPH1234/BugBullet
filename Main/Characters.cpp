@@ -455,7 +455,7 @@ void AirPlane::manualControlAirPlane4() {
 	currentHeadForward = (body->getGlobalPose().q).rotate(headForward);
 	currentBackForward = (body->getGlobalPose().q).rotate(backForward);
 	currentSwingForward = (body->getGlobalPose().q).rotate(swingForward);
-	body->setLinearVelocity(veclocity * currentHeadForward);
+	//body->setLinearVelocity(veclocity * currentHeadForward);
 }
 
 PxQuat AirPlane::getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront) {
@@ -615,6 +615,25 @@ void AirPlane::ProcessKeyPress() {
 	//重置
 	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
 		reset();
+	}
+	//静止/启动
+	if (!keyToPressState[GLFW_KEY_C] && keyToPrePressState[GLFW_KEY_C]) {
+		if (turningState2[0]) {
+			turningState2[0] = !turningState2[0];
+			body->setLinearVelocity(PxVec3(0, 0, 0));
+		}
+		else {
+			turningState2[0] = !turningState2[0];
+		}
+	}
+	//加减转向速度
+	if (!keyToPressState[GLFW_KEY_Z] && keyToPrePressState[GLFW_KEY_Z]) {
+		//-
+		turningSpeed = max(turningSpeed - 1, 1);
+	}
+	if (!keyToPressState[GLFW_KEY_X] && keyToPrePressState[GLFW_KEY_X]) {
+		//-
+		turningSpeed = min(turningSpeed + 1, 5);
 	}
 };
 

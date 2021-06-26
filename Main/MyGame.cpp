@@ -69,7 +69,7 @@ void initPhysics(bool interactive)
 		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
 	//createBigBall();
 	//createAbleBreakWall();
-	//createBreakableWall();
+	createBreakableWall();
 
 
 	//init3rdplayer(born_pos, PxSphereGeometry(0.5f));
@@ -92,14 +92,13 @@ void initPhysics(bool interactive)
 	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 7.0f, -25.0f), glm::vec3(0.75f, 0.75f, 0.75f),
 		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
 	vehicle = new Player(input_tank);
-	//createAirPlane();
 	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f), 
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0,0,1),PxVec3(0,1,0),PxVec3(-1,0,0), temp);
 
 	//camera.setTarget(player);
-	//camera.setTarget(Plane_1->body);
-	camera.setTarget(vehicle->getRigid());
+	camera.setTarget(Plane_1->body);
+	//camera.setTarget(vehicle->getRigid());
 
 	PxRigidActor* Map = nullptr;
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);

@@ -204,7 +204,7 @@ public:
 	int						emitBulletTime = 0;//发射间隔计时器
 	float					veclocity = 8.0f;//默认飞行速度
 	float					emitVeclocity = 24.0f;//默认炮弹飞行速度
-	float					turningSpeed = 1.0f;//转向速度
+	float					turningSpeed = 5.0f;//转向速度
 	void*					user_data;//信息
 
 
