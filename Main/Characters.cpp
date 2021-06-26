@@ -1,7 +1,7 @@
 #include "Characters.h"
 #include "../Render/Camera.h"
 
-AirPlane::AirPlane():BaseCharacter(nullptr) {
+AirPlane::AirPlane() :BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
 
 	//机身
@@ -51,7 +51,7 @@ AirPlane::~AirPlane() {
 	body = nullptr;
 	user_data = nullptr;
 }
-AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body):BaseCharacter(_body) {
+AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body) :BaseCharacter(_body) {
 	currentHeadForward = headForward = head;
 	currentBackForward = backForward = back;
 	currentSwingForward = swingForward = swing;
@@ -427,7 +427,7 @@ void AirPlane::manualControlAirPlane4() {
 	if (turningState2[2]) {
 		PxQuat rot(PxPi / 180 * (-0.1*turningSpeed), currentBackForward);
 		//PxQuat rot2(PxPi / 180 * (0.05*turningSpeed), currentHeadForward);
-		next =  rot * next;
+		next = rot * next;
 	}
 	//俯冲
 	if (turningState2[3]) {
@@ -518,9 +518,9 @@ void AirPlane::reset() {
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
 	body->setLinearVelocity(veclocity * currentHeadForward);
 }
-void AirPlane::getRight(physx::PxVec3& right) { right = swingForward; };
-void AirPlane::getFront(physx::PxVec3& front) { front = headForward; };
-void AirPlane::getUp(physx::PxVec3& up) { up = backForward; };
+void AirPlane::getRight(physx::PxVec3& right) { right = currentSwingForward; };
+void AirPlane::getFront(physx::PxVec3& front) { front = currentHeadForward; };
+void AirPlane::getUp(physx::PxVec3& up) { up = currentBackForward; };
 void AirPlane::ProcessKeyPress() {
 	//半自动飞行
 	/*if (keyToPressState[GLFW_KEY_LEFT]&& turningState[2]) {
@@ -657,28 +657,28 @@ void Player::ProcessKeyPress() {
 	if (keyToPressState[GLFW_KEY_W]) {
 		if (current_velocity > -35.0f) {
 			current_velocity -= 2.0f;
-		 }
+		}
 	}
 	if (keyToPressState[GLFW_KEY_S]) {
-		if (current_velocity <15.0f) {
+		if (current_velocity < 15.0f) {
 			current_velocity += 1.6f;
 		}
 	}
 	if (keyToPressState[GLFW_KEY_A]) {
 		PxQuat rot(PxPi / 180 * (0.2), currentbackforward);
 		//PxQuat rot2(PxPi / 180 * (-0.1), currentheadforward);
-		next =  rot * next;
+		next = rot * next;
 	}
 	if (keyToPressState[GLFW_KEY_D]) {
 		PxQuat rot(PxPi / 180 * (-0.2), currentbackforward);
 		//PxQuat rot2(PxPi / 180 * (0.1), currentheadforward);
-		next =  rot * next;
+		next = rot * next;
 	}
 	this->rigid->setGlobalPose(PxTransform(this->rigid->getGlobalPose().p, next));
 	currentheadforward = (this->rigid->getGlobalPose().q).rotate(headforward);
 	currentbackforward = (this->rigid->getGlobalPose().q).rotate(backforward);
 	this->rigid->setLinearVelocity(current_velocity * currentheadforward);
-	
+
 	if (keyToPressState[GLFW_KEY_F]) {
 		PxTransform px;
 		cout << "F" << endl;
@@ -692,16 +692,16 @@ void Player::ProcessKeyPress() {
 			PxMat33 m(mDir.cross(viewY), viewY, -mDir);
 			px = PxTransform(mEye, PxQuat(m));
 		}
-		px.p = this->rigid->getGlobalPose().p+ glmVec3ToPxVec3(camera.getFront() * 2.f) +PxVec3(0.0f,4.0f,3.0f);
+		px.p = this->rigid->getGlobalPose().p + glmVec3ToPxVec3(camera.getFront() * 2.f) + PxVec3(0.0f, 4.0f, 3.0f);
 		if (autoshooting) {
 			//createshell(px, px.rotate(PxVec3(0, 0, -1)) * 200);
-			fire(px,px.rotate(PxVec3(0, 0, -1)) *200);
+			fire(px, px.rotate(PxVec3(0, 0, -1)) * 200);
 		}
 		else {
 			clock_t now = clock();
 			if (now - last > 1000) {
 				//createshell(px, px.rotate(PxVec3(0, 0, -1)) * 200);
-				fire(px,px.rotate(PxVec3(0, 0, -1)) * 200);
+				fire(px, px.rotate(PxVec3(0, 0, -1)) * 200);
 				last = now;
 			}
 		}
@@ -729,13 +729,13 @@ PxQuat Player::getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront
 	PxQuat rot(angelRadius, rotateAxis.getNormalized());
 	return rot;
 }
-void Player::fire(const PxTransform& t,const PxVec3& velocity) {
+void Player::fire(const PxTransform& t, const PxVec3& velocity) {
 	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
 	/*emitTransform.q = getBulletRotate(t, PxVec3(1.0f, 0.0f, 0.0f));*/
 	//PxTransform emitTransform = PxTransform(currentbackforward * 1);
 	PxTransform emitTransform = t;
 	/*emitTransform.q = bulletRot;*/
-	emitTransform.q = getshellrotate(velocity, PxVec3(1.0f, 0.0f, 0.0f)); 
+	emitTransform.q = getshellrotate(velocity, PxVec3(1.0f, 0.0f, 0.0f));
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, emitTransform, PxCapsuleGeometry(0.04, 0.15), *gMaterial, 10.0f);
 	//设置刚体名称
 	dynamic->setName("bullet");
@@ -773,7 +773,7 @@ int Player::trackangle(PxVec3& start, PxVec3& destination) {
 int Player::forward(PxVec3& dir, double velocity) {
 	PxVec3 current_pos = this->rigid->getGlobalPose().p;
 	cout << currentheadforward.x << " " << currentheadforward.y << " " << currentheadforward.z << endl;
-	double distance = sqrt(pow(current_pos.x-dir.x,2)+ pow(current_pos.y - dir.y, 2)+pow(current_pos.z - dir.z, 2));
+	double distance = sqrt(pow(current_pos.x - dir.x, 2) + pow(current_pos.y - dir.y, 2) + pow(current_pos.z - dir.z, 2));
 	//cout << distance << endl;
 	this->rigid->setLinearVelocity((this->currentheadforward)*velocity);
 	return 0;

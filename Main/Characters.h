@@ -94,11 +94,11 @@ private:
 	vector<PxVec3> waypoint;
 public:
 	PxRigidDynamic*			body;//刚体
-	Player(physx::PxRigidDynamic* target) ;
+	Player(physx::PxRigidDynamic* target);
 	void ProcessKeyPress();
-	void fire(const PxTransform& t,const PxVec3& velocity);
+	void fire(const PxTransform& t, const PxVec3& velocity);
 	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
-	int trackangle(PxVec3& start,PxVec3& destination);
+	int trackangle(PxVec3& start, PxVec3& destination);
 	int forward(PxVec3& dir, double velocity);
 	void automove();
 };
@@ -204,7 +204,7 @@ public:
 	int						emitBulletTime = 0;//发射间隔计时器
 	float					veclocity = 8.0f;//默认飞行速度
 	float					emitVeclocity = 24.0f;//默认炮弹飞行速度
-	float					turningSpeed = 5.0f;//转向速度
+	float					turningSpeed = 3.0f;//转向速度
 	void*					user_data;//信息
 
 

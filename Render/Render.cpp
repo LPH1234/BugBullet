@@ -3,6 +3,7 @@
 #include "../Utils/Utils.h"
 
 #include "models.h"
+#include<ctime>
 
 using namespace physx;
 
@@ -14,7 +15,6 @@ extern PxScene* gScene;
 Cube* cube = nullptr;
 Sphere* sphere = nullptr;
 PlainModel* bullet = nullptr;
-PlainModel* particle = nullptr;
 
 void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shader)
 {
@@ -147,9 +147,7 @@ namespace Snippets
 	}
 
 	void renderParticles(list<PxParticleSystem*>& particleSystemList, Shader* shader) {
-		if (particle == nullptr)
-			particle = new PlainModel(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.03f, 0.03f, 0.03f), "model/particle/particle.obj", shader);
-		vector<PxParticleSystem*> remove_list;
+		vector<PxParticleSystem*> remove_list; //要移除的粒子系统列表
 		list<PxParticleSystem*>::iterator it; //声明一个迭代器
 		for (it = particleSystemList.begin(); it != particleSystemList.end(); it++) {
 			PxParticleSystem* ps = *it;
@@ -158,6 +156,18 @@ namespace Snippets
 			char str[12];
 			sprintf(str, "%d", ps);
 			bool stop_flag = true;
+			ParticleSystemData* data = reinterpret_cast<ParticleSystemData*>(ps->userData);
+
+			float alpha = 1.f;
+			if (data->deleteDelaySec != -1) { // 根据时间改变alpha值
+				if (std::time(0) - data->createTime > data->fadeDelaySec)
+					alpha = 1.f - (std::time(0) - data->createTime - data->fadeDelaySec) * 1.0f / (data->deleteDelaySec - data->fadeDelaySec);
+				else
+					alpha = 1.f;
+			}
+			//std::cout << "alpha:" << alpha << "\n";
+			shader->setFloat("alpha", alpha);
+
 			// access particle data from PxParticleReadData
 			if (rd)
 			{
@@ -171,30 +181,34 @@ namespace Snippets
 						// access particle position
 						const PxVec3& position = *positionIt;
 						const PxVec3& velocity = *vIt;
-						std::cout << str << "th\t" << i << "\t号粒子位置：" << position.x << "\t" << position.y << "\t" << position.z;
+						/*std::cout << str << "th\t" << i << "\t号粒子位置：" << position.x << "\t" << position.y << "\t" << position.z;
 						std::cout << "\tv:" << velocity.x << "\t" << velocity.y << "\t" << velocity.z;
-						cout << "\n";
+						cout << "\n";*/
 						if (velocity.x != 0.f || velocity.y != 0.f || velocity.z != 0.f)
 							stop_flag = false; //如果速度不为0
-						particle->setPosition(glm::vec3(position.x, position.y, position.z));
-						particle->updateShaderModel();
-						particle->draw();
+						data->renderModel->setPosition(glm::vec3(position.x, position.y, position.z));
+						data->renderModel->updateShaderModel();
+						data->renderModel->draw();
 					}
 				}
 				// return ownership of the buffers back to the SDK
 				rd->unlock();
-				if (stop_flag) {//如果这个粒子系统中所有的粒子都停止运动了，就移除它
-					remove_list.push_back(ps);
-				}
+			}
+
+			if (stop_flag || std::time(0) - data->createTime >= data->deleteDelaySec) {//如果这个粒子系统中所有的粒子都停止运动了或粒子系统达到了删除时间，就移除它
+				remove_list.push_back(ps);
 			}
 
 		}
+		shader->setFloat("alpha", 1.f);
 		for (size_t i = 0; i < remove_list.size(); i++)
 		{
 			PxParticleSystem* ps = remove_list[i];
 			particleSystemList.remove(ps);
-			ps->releaseParticles();
+			ParticleSystemData* data = reinterpret_cast<ParticleSystemData*>(ps->userData);
+			delete data;
 			gScene->removeActor(*ps);
+			ps->releaseParticles();
 			ps->release();
 		}
 

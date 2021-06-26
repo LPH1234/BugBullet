@@ -73,7 +73,7 @@
       <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /Zi /d2Zi+</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Common/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PHYSX_PROFILE_SDK;RENDER_SNIPPET;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -86,9 +86,9 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/LIBPATH:../../../Lib/vc15win64 PhysX3CommonDEBUG_x64.lib PhysX3DEBUG_x64.lib PhysX3CookingDEBUG_x64.lib PhysX3CharacterKinematicDEBUG_x64.lib PhysX3ExtensionsDEBUG.lib PhysX3VehicleDEBUG.lib PxTaskDEBUG_x64.lib PxFoundationDEBUG_x64.lib PsFastXmlDEBUG_x64.lib PxPvdSDKDEBUG_x64.lib /LIBPATH:../../lib/vc15win64 UtilsDEBUG.lib /DEBUG /verbose:lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;trng4d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)DEBUG.exe</OutputFile>
-      <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
@@ -224,7 +224,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/GR- /GF /MP /Wall /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4435 /wd4577 /wd4464 /wd4623 /wd4626 /wd5027 /wd4987 /wd5038 /wd5045 /wd4548 /wd4350 /wd4668 /wd4365 /wd4548 /wd4625 /wd5026 /d2Zi+</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Graphics/include;./../../../Include;./../../../../PxShared/include;./../../../../PxShared/src/foundation/include;./../../../../PxShared/src/fastxml/include;./../../Common/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PHYSX_PROFILE_SDK;RENDER_SNIPPET;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <WarningLevel>Level4</WarningLevel>
@@ -237,9 +237,9 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/INCREMENTAL:NO /LIBPATH:../../../Lib/vc15win64 PhysX3Common_x64.lib PhysX3_x64.lib PhysX3Cooking_x64.lib PhysX3CharacterKinematic_x64.lib PhysX3Extensions.lib PhysX3Vehicle.lib PxTask_x64.lib PxFoundation_x64.lib PsFastXml_x64.lib PxPvdSDK_x64.lib /LIBPATH:../../lib/vc15win64 Utils.lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;Render.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;Render.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;trng4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
@@ -269,7 +269,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Main\Actor.cpp" />
     <ClCompile Include="..\..\Main\Characters.cpp" />
     <ClCompile Include="..\..\Main\ClassicMain.cpp" />
     <ClCompile Include="..\..\Main\Controller.cpp" />
@@ -279,7 +278,6 @@
     <ClCompile Include="..\..\Main\SceneObjects.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Main\Actor.h" />
     <ClInclude Include="..\..\Main\Controller.h" />
     <ClInclude Include="..\..\Main\Creater.h" />
     <ClInclude Include="..\..\Main\Characters.h" />

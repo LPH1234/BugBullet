@@ -44,9 +44,10 @@ glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
 
 
 SkyBox* skybox;
+
 Shader* skyBoxShader;
 Shader* envShader;
-
+Shader* smokeParticleShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
@@ -121,12 +122,10 @@ int myRenderLoop()
 
 	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
 	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
+	smokeParticleShader = new Shader("shaders/smokeParticleShader/smokeParticle.VertexShader", "shaders/smokeParticleShader/smokeParticle.FragmentShader");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
-
-   //vehicle
-	//Player vehicle(player_ctl->getGlobalPose().p.x, player_ctl->getGlobalPose().p.y, player_ctl->getGlobalPose().p.z);
 
 	// var init
 	// -----------------------------
@@ -169,11 +168,11 @@ int myRenderLoop()
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// PhysX物理模拟，确定所有物体的下一状态
+		// PhysX Simulation
 		// -------------------------------------------------------------------------------
 		stepPhysics(true);
 
-		// 开始渲染工作
+		// GL Render Process
 		// -------------------------------------------------------------------------------
 		envShader->use();
 		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
@@ -191,7 +190,21 @@ int myRenderLoop()
 		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
 		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-		renderCallback(envShader); //渲染场景内的物体和粒子
+		PxScene* scene;
+		PxGetPhysics().getScenes(&scene, 1);
+		PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+		if (nbActors)
+		{
+			std::vector<PxRigidActor*> actors(nbActors);
+			scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
+			Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), envShader, true);
+		}
+
+		// render particles  -- smokeParticleShader
+		smokeParticleShader->use();
+		smokeParticleShader->setMat4("projection", projection);
+		smokeParticleShader->setMat4("view", view);
+		Snippets::renderParticles(renderParticleSystemList, smokeParticleShader);
 
 		//=====================================skyBoxShader=================================
 		// 绘制包围盒
