@@ -27,7 +27,7 @@ void keyPress() {
 	//if (!camera.isHandling()) {
 		//vehicleProcessKeyboard();
 		//playerProcessKeyboard();
-	vehicle->ProcessKeyPress();
+	//vehicle->ProcessKeyPress();
 	Plane_1->ProcessKeyPress();
 	//mouseClick();
 //}
