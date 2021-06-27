@@ -25,7 +25,7 @@
 namespace Snippets
 {
 	void renderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, Shader* shader, bool shadows = false, const physx::PxVec3 & color = physx::PxVec3(0.0f, 0.75f, 0.0f));
-	void renderParticles(list<PxParticleSystem*>& particleSystemList, Shader* shader);
+	void renderParticles(list<PxParticleSystem*>& particleSystemList, glm::mat4 view, glm::mat4 projection);
 }
 
 PxFilterFlags testCCDFilterShader(
@@ -44,13 +44,14 @@ public:
 	short id;
 	bool hasForce;
 	int numParticles;
-	int createTime; //创建这个粒子系统时的unix时间戳
+	int createTime; //创建这个粒子系统时的clock()时间戳
 	int deleteDelaySec; //当到达这个秒数时，粒子系统应该被移除
 	int fadeDelaySec;//到达这个秒数时，渲染模型开始渐隐(fadeDelaySec < fadeSec)
-	BaseModel* renderModel = nullptr;
+	BaseParticle* renderModel = nullptr;
 	PxVec3 *newAppParticleforces = nullptr;
 	PxU32 *newAppParticleIndices = nullptr;
-
+	PxParticleExt::IndexPool* indexPool = nullptr;
+	PxVec4* axisAndAngle = nullptr;
 	~ParticleSystemData() {
 		if (this->renderModel != nullptr)
 			delete this->renderModel;
@@ -58,6 +59,13 @@ public:
 			delete this->newAppParticleforces;
 		if (this->newAppParticleIndices != nullptr)
 			delete this->newAppParticleIndices;
+		if (this->axisAndAngle != nullptr)
+			delete this->axisAndAngle;
+		if (this->indexPool != nullptr) {
+			indexPool->freeIndices();
+			indexPool->release();
+		}
+
 	}
 };
 

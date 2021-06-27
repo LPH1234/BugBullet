@@ -24,6 +24,7 @@
     <ClInclude Include="..\..\Render\Model.h" />
     <ClInclude Include="..\..\Render\models.h" />
     <ClInclude Include="..\..\Render\objLoader.h" />
+    <ClInclude Include="..\..\Render\Particles.h" />
     <ClInclude Include="..\..\Render\Render.h" />
     <ClInclude Include="..\..\Render\Shader.h" />
   </ItemGroup>
@@ -33,13 +34,18 @@
     <ClCompile Include="..\..\Render\Model.cpp" />
     <ClCompile Include="..\..\Render\models.cpp" />
     <ClCompile Include="..\..\Render\objLoader.cpp" />
+    <ClCompile Include="..\..\Render\Particles.cpp" />
     <ClCompile Include="..\..\Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\envShader\env.FragmentShader" />
     <None Include="shaders\envShader\env.VertexShader" />
+    <None Include="shaders\pointParticleShader\pointParticle.FragmentShader" />
+    <None Include="shaders\pointParticleShader\pointParticle.VertexShader" />
     <None Include="shaders\skyboxShader\skybox.FragmentShader" />
     <None Include="shaders\skyboxShader\skybox.VertexShader" />
+    <None Include="shaders\smokeParticleShader\smokeParticle.FragmentShader" />
+    <None Include="shaders\smokeParticleShader\smokeParticle.VertexShader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\icon\icon.png" />

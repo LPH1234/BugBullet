@@ -22,6 +22,9 @@
     <ClInclude Include="..\..\Render\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Render\Particles.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="源文件">
@@ -48,6 +51,12 @@
     <Filter Include="头文件">
       <UniqueIdentifier>{dabfa763-d14d-491a-bd37-f85739b43925}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shader\smokeShader">
+      <UniqueIdentifier>{cd566769-0113-4b79-8c3c-7cc337f3e1cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shader\pointShader">
+      <UniqueIdentifier>{bb7ad06d-4fa2-49f3-a188-002c2f536c2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Render\Render.cpp">
@@ -68,6 +77,9 @@
     <ClCompile Include="..\..\Render\Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Render\Particles.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\envShader\env.FragmentShader">
@@ -81,6 +93,18 @@
     </None>
     <None Include="shaders\skyboxShader\skybox.VertexShader">
       <Filter>资源文件\shader\skyBoxShader</Filter>
+    </None>
+    <None Include="shaders\pointParticleShader\pointParticle.FragmentShader">
+      <Filter>资源文件\shader\pointShader</Filter>
+    </None>
+    <None Include="shaders\pointParticleShader\pointParticle.VertexShader">
+      <Filter>资源文件\shader\pointShader</Filter>
+    </None>
+    <None Include="shaders\smokeParticleShader\smokeParticle.FragmentShader">
+      <Filter>资源文件\shader\smokeShader</Filter>
+    </None>
+    <None Include="shaders\smokeParticleShader\smokeParticle.VertexShader">
+      <Filter>资源文件\shader\smokeShader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@ extern Player* vehicle;
 extern PxTransform born_pos;
 
 extern Shader* envShader;
+extern Shader* pointParticleShader;
 extern Shader* smokeParticleShader;
 
 bool autoshooting = true;//射击机制
@@ -61,9 +62,9 @@ void mouseClick() {
 
 	}
 	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT]) { //鼠标右键
-		createParticles(
+		createPointParticles(
 			1000, false,
-			new SmokeParticle(glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f), glm::vec3(1.f, 1.f, 0.f), smokeParticleShader),
+			new PointParticle(glm::vec3(1.f, 1.f, 1.f), glm::vec3(1.f, 1.f, 0.f), pointParticleShader),
 			glmVec3ToPxVec3(camera.getPosition()) + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 0.5f),
 			false, 2.0, // true是散开
 			true, 20.0, // true是随机速度
@@ -72,17 +73,34 @@ void mouseClick() {
 			PxVec3(0.f, 0.f, 0.f)  //力场
 		);
 
-		//createParticles(
-		//	100, false,
-		//	//new SmokeParticle(glm::vec3(0.f, 0.f, 0.f), glm::vec3(50.f, 50.f, 50.f), glm::vec3(1.f, 1.f, 0.f), smokeParticleShader),
-		//	new Cube(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.01f, 0.01f, 0.01f), "", envShader, "images/textures/smoke.png"),
-		//	glmVec3ToPxVec3(camera.getPosition()) + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 0.5f),
-		//	true, 0.5,
-		//	false, 20.0,
-		//	20, 5,
-		//	PxVec3(0.f, 0.f, 0.f),
-		//	PxVec3(0.f, 10.f, 0.f)
-		//);
+		//std::vector<std::string> ts;
+		//ts.push_back("images/textures/smoke/smoke-white-1.png");
+		//ts.push_back("images/textures/smoke/smoke-gray.png");
+		/*for (size_t i = 1; i <= 4; i++)
+			ts.push_back("images/textures/smoke/smoke-" + std::to_string(i) + ".png");*/
+			//createSmokeParticles(
+			//	50, false,
+			//	new SmokeParticle(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.f, 1.f, 0.f), smokeParticleShader, ts),
+			//	glmVec3ToPxVec3(camera.getPosition()) + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 0.5f), // init pos
+			//	true, 0.05, // true是散开, 后面的是散开半径
+			//	false, 20.0, // true是随机速度，后面的是最大随机速度
+			//	20, 5, // 20s 后粒子系统销毁， 从 5s 开始渐隐
+			//	PxVec3(0.f, 0.f, 0.f), //初始速度
+			//	PxVec3(0.f, 10.f, 0.f)  //力场
+			//);
+
+
+			//createPointParticles(
+			//	100, false,
+			//	//new PointParticle(glm::vec3(0.f, 0.f, 0.f), glm::vec3(50.f, 50.f, 50.f), glm::vec3(1.f, 1.f, 0.f), pointParticleShader),
+			//	new Cube(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.01f, 0.01f, 0.01f), "", envShader, "images/textures/smoke.png"),
+			//	glmVec3ToPxVec3(camera.getPosition()) + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 0.5f),
+			//	true, 0.5,
+			//	false, 20.0,
+			//	20, 5,
+			//	PxVec3(0.f, 0.f, 0.f),
+			//	PxVec3(0.f, 10.f, 0.f)
+			//);
 
 	}
 }
