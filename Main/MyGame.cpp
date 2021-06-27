@@ -47,7 +47,8 @@ void initPhysics(bool interactive)
 	gDispatcher = PxDefaultCpuDispatcherCreate(2);
 	sceneDesc.cpuDispatcher = gDispatcher;
 	//sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	sceneDesc.filterShader = testCCDFilterShader;
+	//sceneDesc.filterShader = testCCDFilterShader;
+	sceneDesc.filterShader = testCCDFilterShader2;
 	//sceneDesc.filterShader = testCollisionFilterShader;
 	//注册onContact
 	sceneDesc.simulationEventCallback = &moduleCallBack;
@@ -89,16 +90,16 @@ void initPhysics(bool interactive)
 	}
 	//GunTower.initlist(pos_list);
 
-	/*PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 7.0f, -25.0f), glm::vec3(0.75f, 0.75f, 0.75f),
-		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
-	vehicle = new Player(input_tank);*/
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f), 
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
+	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
+		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
+	setupFiltering(input_tank, FilterGroup::eTANK, FilterGroup::eTESTBOX1| FilterGroup::eTESTBOX2| FilterGroup::eTESTBOX3);
+	//testFilter();
+	vehicle = new Player(input_tank, Plane_1);
 
 	//camera.setTarget(player);
-	//camera.setTarget(Plane_1->body);
-	//camera.setTarget(vehicle->getRigid());
 	camera.setTarget(Plane_1);
 	//camera.setTarget(vehicle);
 
@@ -153,6 +154,7 @@ void stepPhysics(bool interactive)
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
+	vehicle->automove();
 	Plane_1->manualControlAirPlane4();
 	//GunTower.runguntower(player);
 
