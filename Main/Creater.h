@@ -13,6 +13,7 @@
 #include <list>
 #include <cmath>
 #include <ctime>
+#include "Characters.h"
 
 
 extern PxFoundation*			gFoundation;
