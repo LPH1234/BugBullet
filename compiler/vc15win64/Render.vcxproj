@@ -24,7 +24,6 @@
     <ClInclude Include="..\..\Render\Model.h" />
     <ClInclude Include="..\..\Render\models.h" />
     <ClInclude Include="..\..\Render\objLoader.h" />
-    <ClInclude Include="..\..\Render\Particles.h" />
     <ClInclude Include="..\..\Render\Render.h" />
     <ClInclude Include="..\..\Render\Shader.h" />
   </ItemGroup>
@@ -34,7 +33,6 @@
     <ClCompile Include="..\..\Render\Model.cpp" />
     <ClCompile Include="..\..\Render\models.cpp" />
     <ClCompile Include="..\..\Render\objLoader.cpp" />
-    <ClCompile Include="..\..\Render\Particles.cpp" />
     <ClCompile Include="..\..\Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>

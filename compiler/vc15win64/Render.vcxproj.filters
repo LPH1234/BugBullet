@@ -22,9 +22,6 @@
     <ClInclude Include="..\..\Render\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Render\Particles.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="源文件">
@@ -75,9 +72,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Render\Camera.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Render\Particles.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
