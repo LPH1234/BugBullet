@@ -53,6 +53,10 @@ struct FilterGroup
 		eBIGBALL = (1 << 3),	//大球
 		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
 		eMISILE = (1 << 5),		//飞机弹药
+		eTESTBOX1=(1<<6),//测试盒1
+		eTESTBOX2 = (1 << 7),//测试盒2
+		eTESTBOX3 = (1 << 8),//测试盒3
+		eTANK=(1<<9),//测试坦克
 	};
 };
 
@@ -60,6 +64,10 @@ struct FilterGroup
 //自定义FilterShader，大球或小球跟方块发生碰撞时为pairFlags添加eCONTACT_DEFAULT
 PxFilterFlags testCollisionFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1,
 	PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize);
+//测试将Render.cpp中的FilterShader复制过来
+PxFilterFlags testCCDFilterShader2(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1,
+	PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize);
+void testFilter();
 
 //设置碰撞过滤
 void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);

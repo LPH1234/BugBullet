@@ -7,12 +7,6 @@
 using namespace std;
 
 
-#define TURN_LEFT 0;
-#define TURN_RIGHT 1;
-#define STRAIGHT 2;
-#define GO_UP 3;
-#define GO_dOWN 4;
-
 PxFoundation*			gFoundation = nullptr;
 PxPhysics*				gPhysics = nullptr;
 PxCooking*				gCooking = nullptr;
@@ -78,10 +72,7 @@ PxFilterFlags testCollisionFilterShader(
 		return PxFilterFlag::eDEFAULT;
 	}
 	// generate contacts for all that were not filtered above
-	pairFlags = PxPairFlag::eSOLVE_CONTACT | PxPairFlag::eDETECT_DISCRETE_CONTACT
-		| PxPairFlag::eNOTIFY_TOUCH_FOUND
-		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
-		| PxPairFlag::eNOTIFY_CONTACT_POINTS;
+	pairFlags = PxPairFlag::eSOLVE_CONTACT | PxPairFlag::eDETECT_DISCRETE_CONTACT | PxPairFlag::eDETECT_CCD_CONTACT;
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
@@ -90,6 +81,42 @@ PxFilterFlags testCollisionFilterShader(
 		cout << "FilterShader!\n";
 	}
 
+
+	return PxFilterFlag::eDEFAULT;
+
+}
+//测试将Render.cpp中的FilterShader复制过来
+PxFilterFlags testCCDFilterShader2(
+	PxFilterObjectAttributes attributes0,
+	PxFilterData filterData0,
+	PxFilterObjectAttributes attributes1,
+	PxFilterData filterData1,
+	PxPairFlags& pairFlags,
+	const void* constantBlock,
+	PxU32 constantBlockSize)
+{
+	// let triggers through
+	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
+	{
+		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+		return PxFilterFlag::eDEFAULT;
+	}
+
+	pairFlags = PxPairFlag::eSOLVE_CONTACT;
+	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+	/*| PxPairFlag::eNOTIFY_TOUCH_FOUND
+	| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+	| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
+	// generate contacts for all that were not filtered above
+	//pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+	// trigger the contact callback for pairs (A,B) where 
+	// the filtermask of A contains the ID of B and vice versa.
+	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1
+		<< "\tand:" << (filterData0.word0 & filterData1.word1) << "\n";
+	if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
+		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
 	return PxFilterFlag::eDEFAULT;
 
@@ -114,7 +141,7 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 //碰撞回调函数
 void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
 	//PX_UNUSED((pairHeader));
-	//printf("Enter onContact!\n");
+	printf("调用onContact!\n");
 	std::vector<PxContactPairPoint> contactPoints;//存储每一个触碰点信息
 	for (PxU32 i = 0; i < nbPairs; i++)
 	{
@@ -256,7 +283,20 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 }
 
 
+void testFilter() {
+	//131.f, 7.0f, 22.0f
+	PxRigidDynamic* body1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(128.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
+	PxRigidDynamic* body2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(131.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
+	PxRigidDynamic* body3 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(134.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
 
+	setupFiltering(body1, FilterGroup::eTESTBOX1, FilterGroup::eTANK);
+	setupFiltering(body2, FilterGroup::eTESTBOX2, FilterGroup::eMISILE);
+	setupFiltering(body3, FilterGroup::eTESTBOX3, FilterGroup::eTANK|FilterGroup::eMISILE);
+
+	gScene->addActor(*body1);
+	gScene->addActor(*body2);
+	gScene->addActor(*body3);
+}
 
 
 
@@ -545,7 +585,7 @@ void createBreakableWall() {
 		for (int j = 0; j < 5; j++) {
 			PxTransform pos(PxVec3(x + (j - 2) * 4, y, z));
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(pos);
-			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE);
+			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE|FilterGroup::eWALL);
 			Wall[i][j] = body;
 			body->attachShape(*shape);
 			PxRigidBodyExt::updateMassAndInertia(*body, 0.1f);

@@ -215,25 +215,27 @@ PxFilterFlags testCCDFilterShader(
 	const void* constantBlock,
 	PxU32 constantBlockSize)
 {
-	pairFlags = PxPairFlag::eSOLVE_CONTACT;
-	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT
-		| PxPairFlag::eNOTIFY_TOUCH_FOUND
-		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
-		| PxPairFlag::eNOTIFY_CONTACT_POINTS;
-
 	// let triggers through
 	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
 	{
 		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
 		return PxFilterFlag::eDEFAULT;
 	}
+
+	pairFlags = PxPairFlag::eSOLVE_CONTACT;
+	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+		/*| PxPairFlag::eNOTIFY_TOUCH_FOUND
+		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+		| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
 	// generate contacts for all that were not filtered above
-	pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
+	//pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
-	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
+	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1 
+		<< "\tand:" << (filterData0.word0 & filterData1.word1) << "\n";
+	if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
 	return PxFilterFlags();

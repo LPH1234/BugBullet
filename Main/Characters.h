@@ -81,10 +81,11 @@ public:
 	}
 };
 
+class AirPlane;
 
 class Player : public BaseCharacter {
 private:
-	PxVec3 headforward = PxVec3(0.0f, 0.0f, -1.0f);
+	PxVec3 headforward = PxVec3(0.0f, 0.0f, 1.0f);
 	PxVec3 backforward = PxVec3(0.0f, 1.0f, 0.0f);
 	PxVec3 currentheadforward;
 	PxVec3 currentbackforward;
@@ -94,13 +95,20 @@ private:
 	vector<PxVec3> waypoint;
 public:
 	PxRigidDynamic*			body;//刚体
-	Player(physx::PxRigidDynamic* target);
+	AirPlane*				airPlane;//飞机类
+	float					bulletVelocity = 40.f;//默认子弹速度
+	vector<bool>			turnningState;//转向状态，分别是直行中、转向中
+	int						currentAngle = 0;//当前已经转过的角度
+	float					velocity = 2.0f;//默认速度
+	int						fireTime = 0;//发射间隔计时器
+	Player(physx::PxRigidDynamic* target, AirPlane*	airplane);
 	void ProcessKeyPress();
 	void fire(const PxTransform& t, const PxVec3& velocity);
 	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
 	int trackangle(PxVec3& start, PxVec3& destination);
 	int forward(PxVec3& dir, double velocity);
 	void automove();
+	void autoEmit();
 };
 
 //void vehicleProcessKeyboard() {
@@ -204,7 +212,7 @@ public:
 	int						emitBulletTime = 0;//发射间隔计时器
 	float					veclocity = 8.0f;//默认飞行速度
 	float					emitVeclocity = 24.0f;//默认炮弹飞行速度
-	float					turningSpeed = 1.0f;//转向速度
+	float					turningSpeed = 3.0f;//转向速度
 	void*					user_data;//信息
 
 
