@@ -44,6 +44,8 @@
     <None Include="shaders\skyboxShader\skybox.VertexShader" />
     <None Include="shaders\smokeParticleShader\smokeParticle.FragmentShader" />
     <None Include="shaders\smokeParticleShader\smokeParticle.VertexShader" />
+    <None Include="shaders\spriteShader\sprite.FragmentShader" />
+    <None Include="shaders\spriteShader\sprite.VertexShader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\icon\icon.png" />

@@ -49,6 +49,7 @@ Shader* skyBoxShader;
 Shader* envShader;
 Shader* pointParticleShader;
 Shader* smokeParticleShader;
+Shader* spriteShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
@@ -119,11 +120,13 @@ int myRenderLoop()
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
 	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
 	pointParticleShader = new Shader("shaders/pointParticleShader/pointParticle.VertexShader", "shaders/pointParticleShader/pointParticle.FragmentShader");
 	smokeParticleShader = new Shader("shaders/smokeParticleShader/smokeParticle.VertexShader", "shaders/smokeParticleShader/smokeParticle.FragmentShader");
+	spriteShader = new Shader("shaders/spriteShader/sprite.VertexShader", "shaders/spriteShader/sprite.FragmentShader");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -150,6 +153,8 @@ int myRenderLoop()
 	const float skybox_scale = 1000.f;
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
+
+	SpriteParticle* sprite = new SpriteParticle(glm::vec3(1.f), 100, 30,"images/textures/smoke/smoke0.png",spriteShader);
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -215,6 +220,10 @@ int myRenderLoop()
 
 		Snippets::renderParticles(renderParticleSystemList, view, projection);
 
+		spriteShader->use();
+		spriteShader->setMat4("projection", projection);
+		spriteShader->setMat4("view", view);
+		sprite->draw();
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
