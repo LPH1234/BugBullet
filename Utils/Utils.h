@@ -15,6 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+
 class Logger
 {
 public:
@@ -64,6 +65,7 @@ public:
 	 */
 	static std::string getModelPath(std::string dir);
 };
+
 
 namespace physx
 {

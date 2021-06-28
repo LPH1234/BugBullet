@@ -14,6 +14,8 @@
 
 
 void loadTexture(char const* path, unsigned int* textureID);
+void loadTextureRGBA(char const* path, unsigned int* textureID);
+
 GLuint loadCubeMapTexture(std::vector<const char*> picFilePathVec,
 	GLint internalFormat = GL_RGB,
 	GLenum picFormat = GL_RGB,
@@ -167,68 +169,21 @@ public:
 };
 
 class SpriteParticle : public PlainModel {
-
 	GLuint textureId;
 	GLuint VAO;
 	GLuint VBO;
 	bool hasTexture;
 	int pointNum;
 	float pointSize;
+	float radis;
+	float dy = 0.f;
+	float VY = 0.01f;
+	float maxY;
+	const float MAX_Y = 5.f;
 public:
-
-	SpriteParticle(glm::vec3 pos, int pointNum, float pointSize, std::string texturePath, Shader* shader) :PlainModel(pos, glm::vec3(1.f), "", shader) {
-		 this->hasTexture = texturePath != "";
-		 this->pointNum = pointNum;
-		 this->pointSize = pointSize;
-		 //∂•µ„ Ù–‘
-		 float* vertices = new float[pointNum * 7]; // x y z r g b a
-		 srand(clock());
-		 for (int i = 0; i < pointNum; i++)
-		 {
-			 vertices[7 * i] = rand() / 65535.f;
-			 vertices[7 * i + 1] = 0.5f;
-			 vertices[7 * i + 2] = rand() / 65535.f;
-			 float g = (rand() % 255) / 255.f;
-			 vertices[7 * i + 3] = g;
-			 vertices[7 * i + 4] = g;
-			 vertices[7 * i + 5] = g;
-			 vertices[7 * i + 6] = 1.f;
-
-		 }
-		 glGenVertexArrays(1, &VAO);
-		 glGenBuffers(1, &VBO);
-
-		 glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		 glBufferData(GL_ARRAY_BUFFER, sizeof(float) * pointNum * 7, vertices, GL_STATIC_DRAW);
-
-		 glBindVertexArray(VAO);
-		 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
-		 glEnableVertexAttribArray(0);
-		 glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
-		 glEnableVertexAttribArray(1);
-		 if(hasTexture)
-			 loadTexture(texturePath.c_str(), &textureId);
-	}
-
-	~SpriteParticle() {}
-
-	void draw() {
-		shader->setFloat("dy", 0.1f);
-		shader->setFloat("pointSize", pointSize);
-		this->updateShaderModel();
-		if (hasTexture) {
-			//glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textureId);
-		}
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_POINTS, 0, pointNum);
-
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	}
-
+	SpriteParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
+	~SpriteParticle();
+	void draw();
 
 };
 
@@ -594,7 +549,6 @@ private:
 
 	glm::mat4 getModel();
 	void init();
-	void loadTexture(char const* path, unsigned int* textureID);
 	void initTextures();
 	unsigned int getRandomTextureId(unsigned int index);
 };

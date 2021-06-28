@@ -116,7 +116,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glfw3d.lib;libglew32d.lib;assimp-vc140-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3d.lib;libglew32d.lib;assimp-vc140-mtd.lib;trng4d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)DEBUG.lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -238,7 +238,7 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/INCREMENTAL:NO</AdditionalOptions>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;libglew32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;libglew32.lib;assimp-vc140-mt.lib;trng4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>

@@ -11,7 +11,8 @@ out vec4 fragColor;
 void main(void)
 {
     //表示当前所在点图元的二维坐标点
-    vec4 tempColor = texture2D(texture1, gl_PointCoord) * sColor;
+   // vec4 tempColor = texture2D(texture1, gl_PointCoord) * sColor;
+    vec4 tempColor = texture2D(texture1, gl_PointCoord);
 	 if(tempColor.a < 0.1)
         discard;
 	fragColor = tempColor;

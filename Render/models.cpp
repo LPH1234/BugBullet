@@ -168,7 +168,7 @@ void SmokeParticle::init() {
 void SmokeParticle::initTextures() {
 	for (int i = 0; i < this->textures.size(); i++)
 	{
-		this->loadTexture(this->textures[i].c_str(), &texturePtr[i]);
+		loadTextureRGBA(this->textures[i].c_str(), &texturePtr[i]);
 		if (texturePtr[i] != 0) {
 			this->textureIds.push_back(texturePtr[i]);
 		}
@@ -179,13 +179,96 @@ unsigned int SmokeParticle::getRandomTextureId(unsigned int index) {
 	return this->textureIds[index % this->textureIds.size()];
 }
 
-void SmokeParticle::loadTexture(char const* path, unsigned int* textureID)
+
+
+
+SpriteParticle::SpriteParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader) :PlainModel(pos, glm::vec3(1.f), "", shader) {
+	this->hasTexture = texturePath != "";
+	this->pointNum = pointNum;
+	this->pointSize = pointSize;
+	this->radis = radis;
+	this->VY = vy;
+	this->maxY = maxY;
+	//∂•µ„ Ù–‘
+	float* vertices = new float[pointNum * 7]; // x y z r g b a
+	srand(clock());
+	for (int i = 0; i < pointNum; i++)
+	{
+		int rand1 = rand();
+		int rand2 = rand();
+		vertices[7 * i] = (rand1 & 1 ? -1 : 1)* rand1 * radis / 65535.f + pos.x;
+		vertices[7 * i + 1] = pos.y;
+		vertices[7 * i + 2] = (rand2 & 1 ? -1 : 1)* rand2 * radis / 65535.f + pos.z;
+		/*vertices[7 * i] = pos.x + rd.getNormalRandom();
+		vertices[7 * i + 1] = pos.y;
+		vertices[7 * i + 2] = pos.z + rd.getNormalRandom();*/
+		float g = (rand() % 255) / 255.f;
+		vertices[7 * i + 3] = g;
+		vertices[7 * i + 4] = g;
+		vertices[7 * i + 5] = g;
+		vertices[7 * i + 6] = 1.f;
+
+	}
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * pointNum * 7, vertices, GL_STATIC_DRAW);
+
+	glBindVertexArray(VAO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	if (hasTexture)
+		loadTextureRGBA(texturePath.c_str(), &textureId);
+}
+
+SpriteParticle::~SpriteParticle() {}
+
+void SpriteParticle::draw() {
+	dy += VY;
+	//if (dy >= MAX_Y + this->Position.y) dy = this->Position.y;
+	shader->setFloat("dy", dy);
+	shader->setFloat("pointSize", pointSize);
+	shader->setVec3("initPos", Position);
+	shader->setFloat("radis", radis);
+	shader->setFloat("maxY", maxY);
+	this->updateShaderModel();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (hasTexture) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+	}
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_POINTS, 0, pointNum);
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void loadTextureRGBA(char const* path, unsigned int* textureID)
 {
 	glGenTextures(1, textureID);
 	int width, height;
 	unsigned char* data = SOIL_load_image(path, &width, &height, 0, SOIL_LOAD_RGBA);
 	if (data)
 	{
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, *textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -201,24 +284,8 @@ void SmokeParticle::loadTexture(char const* path, unsigned int* textureID)
 		SOIL_free_image_data(data);
 		*textureID = 0;
 	}
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -258,6 +325,8 @@ void loadTexture(char const* path, unsigned int* textureID)
 		SOIL_free_image_data(data);
 		*textureID = 0;
 	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 

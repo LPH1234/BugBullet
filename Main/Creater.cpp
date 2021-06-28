@@ -58,7 +58,6 @@ PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath,
 
 
 
-
 //自定义FilterShader，大球或小球跟方块发生碰撞时为pairFlags添加eCONTACT_DEFAULT
 PxFilterFlags testCollisionFilterShader(
 	PxFilterObjectAttributes attributes0, PxFilterData filterData0,
@@ -291,7 +290,7 @@ void testFilter() {
 
 	setupFiltering(body1, FilterGroup::eTESTBOX1, FilterGroup::eTANK);
 	setupFiltering(body2, FilterGroup::eTESTBOX2, FilterGroup::eMISILE);
-	setupFiltering(body3, FilterGroup::eTESTBOX3, FilterGroup::eTANK|FilterGroup::eMISILE);
+	setupFiltering(body3, FilterGroup::eTESTBOX3, FilterGroup::eTANK | FilterGroup::eMISILE);
 
 	gScene->addActor(*body1);
 	gScene->addActor(*body2);
@@ -585,7 +584,7 @@ void createBreakableWall() {
 		for (int j = 0; j < 5; j++) {
 			PxTransform pos(PxVec3(x + (j - 2) * 4, y, z));
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(pos);
-			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE|FilterGroup::eWALL);
+			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE | FilterGroup::eWALL);
 			Wall[i][j] = body;
 			body->attachShape(*shape);
 			PxRigidBodyExt::updateMassAndInertia(*body, 0.1f);

@@ -154,7 +154,16 @@ int myRenderLoop()
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
 
-	SpriteParticle* sprite = new SpriteParticle(glm::vec3(1.f), 100, 30,"images/textures/smoke/smoke0.png",spriteShader);
+	list<SpriteParticle*> fires;
+	for (size_t i = 0; i < 1; i++)
+	{
+		fires.push_back(new SpriteParticle(glm::vec3(0.1f), 600, 20, 3.f, 0.1f, 5.1f, "images/textures/flame/flame0.png", spriteShader));
+		fires.push_back(new SpriteParticle(glm::vec3(0.1f), 600, 20, 3.f, 0.12f, 5.f, "images/textures/flame/flame1.png", spriteShader));
+		fires.push_back(new SpriteParticle(glm::vec3(0.15f), 600, 20, 3.f, 0.08f, 5.05f, "images/textures/flame/flame2.png", spriteShader));
+		fires.push_back(new SpriteParticle(glm::vec3(0.18f), 600, 20, 3.f, 0.11f, 5.02f, "images/textures/flame/flame3.png", spriteShader));
+		fires.push_back(new SpriteParticle(glm::vec3(0.14f), 600, 20, 3.f, 0.09f, 5.02f, "images/textures/flame/flame4.png", spriteShader));
+	}
+
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -223,7 +232,10 @@ int myRenderLoop()
 		spriteShader->use();
 		spriteShader->setMat4("projection", projection);
 		spriteShader->setMat4("view", view);
-		sprite->draw();
+		list<SpriteParticle*>::iterator it; //声明一个迭代器
+		for (it = fires.begin(); it != fires.end(); it++) {
+			(*it)->draw();
+		}
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
