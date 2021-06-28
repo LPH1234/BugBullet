@@ -54,6 +54,10 @@ struct FilterGroup
 		eBIGBALL = (1 << 3),	//大球
 		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
 		eMISILE = (1 << 5),		//飞机弹药
+		eTESTBOX1=(1<<6),//测试盒1
+		eTESTBOX2 = (1 << 7),//测试盒2
+		eTESTBOX3 = (1 << 8),//测试盒3
+		eTANK=(1<<9),//测试坦克
 	};
 };
 
@@ -61,6 +65,10 @@ struct FilterGroup
 //自定义FilterShader，大球或小球跟方块发生碰撞时为pairFlags添加eCONTACT_DEFAULT
 PxFilterFlags testCollisionFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1,
 	PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize);
+//测试将Render.cpp中的FilterShader复制过来
+PxFilterFlags testCCDFilterShader2(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1,
+	PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize);
+void testFilter();
 
 //设置碰撞过滤
 void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
@@ -88,10 +96,10 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
 
 void createBullet(const PxTransform& t, const PxVec3& velocity);
 
-void createParticles( //创建普通粒子系统
+void createPointParticles( //创建普通粒子系统
 	int numParticles, //粒子数量
 	bool perOffset,  //创建粒子系统的参数，一般是false
-	BaseModel* renderModel, //粒子的渲染模型
+	BaseParticle* renderModel, //粒子的渲染模型
 	PxVec3 initPos, //粒子初始位置
 	bool ifDisperse,//粒子初始化是否散开
 	double maxDisperseRadius,//粒子散开的最大半径
@@ -102,6 +110,22 @@ void createParticles( //创建普通粒子系统
 	PxVec3 velocity = PxVec3(0.f, 0.f, 0.f),//粒子的初始速度（hasInitV为true时生效）
 	PxVec3 force = PxVec3(0.f, 0.f, 0.f)//粒子系统受到的力
 );
+
+void createSmokeParticles( //创建普通粒子系统
+	int numParticles, //粒子数量
+	bool perOffset,  //创建粒子系统的参数，一般是false
+	BaseParticle* renderModel, //粒子的渲染模型
+	PxVec3 initPos, //粒子初始位置
+	bool ifDisperse,//粒子初始化是否散开
+	double maxDisperseRadius,//粒子散开的最大半径
+	bool ifRandomV, //粒子是否需要随机速度
+	double maxRandomV, //粒子最大随机速度（ifRandomV为true时生效）
+	int deleteDelaySec = -1, //粒子从产生到被删除的时间（秒）
+	int fadeDelaySec = 0, //粒子从产生到开始渐隐的时间（秒）(当deleteDelaySec != -1时生效)
+	PxVec3 velocity = PxVec3(0.f, 0.f, 0.f),//粒子的初始速度（hasInitV为true时生效）
+	PxVec3 force = PxVec3(0.f, 0.f, 0.f)//粒子系统受到的力
+);
+
 void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList);
 
 

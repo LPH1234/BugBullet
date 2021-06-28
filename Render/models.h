@@ -9,6 +9,7 @@
 #include "../Utils/Convert.h"
 #include "../Utils/Utils.h"
 #include "foundation/PxQuat.h"
+#include "particles/PxParticleSystem.h"
 
 
 void loadTexture(char const* path, unsigned int* textureID);
@@ -17,7 +18,7 @@ GLuint loadCubeMapTexture(std::vector<const char*> picFilePathVec,
 	GLenum picFormat = GL_RGB,
 	GLenum picDataType = GL_UNSIGNED_BYTE,
 	int loadChannels = SOIL_LOAD_RGB);
-
+class ParticleSystemData;
 
 enum MOUSE_EVENT_TYPE {
 	LCLICK,
@@ -161,47 +162,6 @@ public:
 	void ProcessMouse(MOUSE_EVENT_TYPE event) {
 
 	}
-
-
-
-};
-
-class SmokeParticle : public PlainModel
-{
-	glm::vec3 objectColor;
-	glm::vec3 defaultColor = glm::vec3(1.f, 1.f, 1.f);
-	unsigned int VBO, VAO;
-
-public:
-
-	SmokeParticle(glm::vec3 pos, glm::vec3 scale, glm::vec3 c, Shader* shader) :PlainModel(pos, scale, "", shader) {
-		this->objectColor = c;
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-		float vertices[] = { 0.f,0.f,0.f };
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		glBindVertexArray(VAO);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(0);
-	}
-
-	~SmokeParticle() {}
-
-	void draw() {
-		/*glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDepthMask(GL_FALSE);*/
-
-		shader->setVec3("objectColor", this->objectColor);
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_POINTS, 0, 1);
-		shader->setVec3("objectColor", this->defaultColor);
-
-		/*	glDisable(GL_BLEND);
-			glDepthMask(GL_TRUE);*/
-	}
-
 
 };
 
@@ -413,7 +373,7 @@ class SkyBox : public PlainModel
 {
 public:
 
-	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) :PlainModel(pos, scale, modelPath, shader) {
+	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, std::vector<const char*> faces) :PlainModel(pos, scale, modelPath, shader) {
 		this->shader = shader;
 		this->Position = pos;
 		this->scale_value = scale;
@@ -480,13 +440,6 @@ public:
 		glEnableVertexAttribArray(0);
 		glBindVertexArray(0);
 
-		std::vector<const char*> faces;
-		faces.push_back("pic/skyboxes/sky/right.jpg");
-		faces.push_back("pic/skyboxes/sky/left.jpg");
-		faces.push_back("pic/skyboxes/sky/bottom.jpg");
-		faces.push_back("pic/skyboxes/sky/top.jpg");
-		faces.push_back("pic/skyboxes/sky/front.jpg");
-		faces.push_back("pic/skyboxes/sky/back.jpg");
 
 		skyBoxTextId = loadCubeMapTexture(faces);
 
@@ -526,9 +479,58 @@ public:
 };
 
 
+class BaseParticle : public PlainModel
+{
+protected:
+	PxParticleSystem* ps = nullptr;
+public:
+	BaseParticle(glm::vec3 scale, Shader* shader);
+	~BaseParticle();
+
+	virtual void update(const PxVec3& position, const PxVec3& velocity);
+	virtual void draw(unsigned int index, glm::mat4 view, glm::mat4 projection) = 0;
+	void setParticleSystem(PxParticleSystem* ps);
+};
 
 
+class PointParticle : public BaseParticle
+{
+	glm::vec3 objectColor;
+	glm::vec3 defaultColor = glm::vec3(1.f, 1.f, 1.f);
+	unsigned int VBO, VAO;
+public:
+	PointParticle(glm::vec3 scale, glm::vec3 c, Shader* shader);
+	~PointParticle();
+	void update(const PxVec3& position, const PxVec3& velocity);
+	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
+};
 
+class SmokeParticle : public BaseParticle
+{
+public:
+	SmokeParticle(glm::vec3 scale, glm::vec3 c, Shader* shader, std::vector<std::string>& textures);
+	~SmokeParticle();
+
+	void update(const PxVec3& position, const PxVec3& velocity);
+	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
+private:
+	unsigned int VBO, VAO;
+	unsigned int* texturePtr;
+	float life;
+	int currIndex;
+	physx::PxVec4 axisAndAngle;
+	float angle;
+	glm::vec3 Velocity;
+	std::vector<glm::vec3> windows;
+	std::vector<std::string> textures;
+	std::vector<unsigned int> textureIds;
+
+	glm::mat4 getModel();
+	void init();
+	void loadTexture(char const* path, unsigned int* textureID);
+	void initTextures();
+	unsigned int getRandomTextureId(unsigned int index);
+};
 
 
 

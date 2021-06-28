@@ -47,12 +47,12 @@ SkyBox* skybox;
 
 Shader* skyBoxShader;
 Shader* envShader;
+Shader* pointParticleShader;
 Shader* smokeParticleShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
 bool mouseButtonPressState[3];
-
 
 void renderCallback(Shader* shader)
 {
@@ -64,7 +64,6 @@ void renderCallback(Shader* shader)
 		std::vector<PxRigidActor*> actors(nbActors);
 		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
 		Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
-		Snippets::renderParticles(renderParticleSystemList, shader);
 	}
 }
 
@@ -119,9 +118,11 @@ int myRenderLoop()
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 
 	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
 	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
+	pointParticleShader = new Shader("shaders/pointParticleShader/pointParticle.VertexShader", "shaders/pointParticleShader/pointParticle.FragmentShader");
 	smokeParticleShader = new Shader("shaders/smokeParticleShader/smokeParticle.VertexShader", "shaders/smokeParticleShader/smokeParticle.FragmentShader");
 
 	atexit(exitCallback); //6
@@ -139,8 +140,16 @@ int myRenderLoop()
 
 	// build and compile shaders
 	// -------------------------
-
-	skybox = new SkyBox(camera.getPosition(), glm::vec3(1000.0f, 1000.0f, 1000.0f), "", skyBoxShader);
+	std::vector<const char*> faces;
+	faces.push_back("images/skyboxes/sky/right.jpg");
+	faces.push_back("images/skyboxes/sky/left.jpg");
+	faces.push_back("images/skyboxes/sky/bottom.jpg");
+	faces.push_back("images/skyboxes/sky/top.jpg");
+	faces.push_back("images/skyboxes/sky/front.jpg");
+	faces.push_back("images/skyboxes/sky/back.jpg");
+	const float skybox_scale = 1000.f;
+	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
+	faces.clear();
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -159,8 +168,8 @@ int myRenderLoop()
 		// -----
 		processOtherControlEvents();
 
-		// 物理模拟
-		//---------------------------
+		// PhysX Simulation
+		// -------------------------------------------------------------------------------
 		stepPhysics(true);
 
 		// 渲染
@@ -168,17 +177,28 @@ int myRenderLoop()
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// PhysX Simulation
-		// -------------------------------------------------------------------------------
-		stepPhysics(true);
-
 		// GL Render Process
 		// -------------------------------------------------------------------------------
-		envShader->use();
-		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
 		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 12500.f);
 		camera.trackDynamicPosition();
 		glm::mat4 view = camera.GetViewMatrix();
+
+		//=====================================skyBoxShader=================================
+		// 绘制包围盒
+		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
+		skyBoxShader->use();
+		skyBoxShader->setMat4("projection", projection);
+		skyBoxShader->setMat4("view", view);
+		//skybox->setPosition(camera.getPosition());
+		skybox->setPosition(glm::vec3(0.f, 0.f, 0.f));
+		skyBoxShader->setMat4("model", skybox->getModel());
+		skybox->draw();
+
+
+
+
+		envShader->use();
+		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
 		envShader->setMat4("projection", projection);
 		envShader->setMat4("view", view);
 		envShader->setVec3("viewPos", camera.getPosition());
@@ -190,35 +210,11 @@ int myRenderLoop()
 		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
 		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-		PxScene* scene;
-		PxGetPhysics().getScenes(&scene, 1);
-		PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
-		if (nbActors)
-		{
-			std::vector<PxRigidActor*> actors(nbActors);
-			scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
-			Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), envShader, true);
-		}
 
-		// render particles  -- smokeParticleShader
-		smokeParticleShader->use();
-		smokeParticleShader->setMat4("projection", projection);
-		smokeParticleShader->setMat4("view", view);
-		Snippets::renderParticles(renderParticleSystemList, smokeParticleShader);
+		renderCallback(envShader);
 
-		//=====================================skyBoxShader=================================
-		// 绘制包围盒
-		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
+		Snippets::renderParticles(renderParticleSystemList, view, projection);
 
-		skyBoxShader->use();
-		skyBoxShader->setMat4("projection", projection);
-		skyBoxShader->setMat4("view", view);
-
-
-		//skybox->setPosition(camera.getPosition());
-		skybox->setPosition(glm::vec3(0.f, 0.f, 0.f));
-		skyBoxShader->setMat4("model", skybox->getModel());
-		skybox->draw();
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------

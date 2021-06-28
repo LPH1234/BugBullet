@@ -146,7 +146,7 @@ namespace Snippets
 		}
 	}
 
-	void renderParticles(list<PxParticleSystem*>& particleSystemList, Shader* shader) {
+	void renderParticles(list<PxParticleSystem*>& particleSystemList, glm::mat4 view, glm::mat4 projection) {
 		vector<PxParticleSystem*> remove_list; //要移除的粒子系统列表
 		list<PxParticleSystem*>::iterator it; //声明一个迭代器
 		for (it = particleSystemList.begin(); it != particleSystemList.end(); it++) {
@@ -157,16 +157,6 @@ namespace Snippets
 			sprintf(str, "%d", ps);
 			bool stop_flag = true;
 			ParticleSystemData* data = reinterpret_cast<ParticleSystemData*>(ps->userData);
-
-			float alpha = 1.f;
-			if (data->deleteDelaySec != -1) { // 根据时间改变alpha值
-				if (std::time(0) - data->createTime > data->fadeDelaySec)
-					alpha = 1.f - (std::time(0) - data->createTime - data->fadeDelaySec) * 1.0f / (data->deleteDelaySec - data->fadeDelaySec);
-				else
-					alpha = 1.f;
-			}
-			//std::cout << "alpha:" << alpha << "\n";
-			shader->setFloat("alpha", alpha);
 
 			// access particle data from PxParticleReadData
 			if (rd)
@@ -186,21 +176,20 @@ namespace Snippets
 						cout << "\n";*/
 						if (velocity.x != 0.f || velocity.y != 0.f || velocity.z != 0.f)
 							stop_flag = false; //如果速度不为0
-						data->renderModel->setPosition(glm::vec3(position.x, position.y, position.z));
-						data->renderModel->updateShaderModel();
-						data->renderModel->draw();
+
+						data->renderModel->update(position, velocity);
+						data->renderModel->draw(i, view, projection);
 					}
 				}
 				// return ownership of the buffers back to the SDK
 				rd->unlock();
 			}
 
-			if (stop_flag || std::time(0) - data->createTime >= data->deleteDelaySec) {//如果这个粒子系统中所有的粒子都停止运动了或粒子系统达到了删除时间，就移除它
+			if (stop_flag || clock() - data->createTime >= data->deleteDelaySec * 1000) {//如果这个粒子系统中所有的粒子都停止运动了或粒子系统达到了删除时间，就移除它
 				remove_list.push_back(ps);
 			}
 
 		}
-		shader->setFloat("alpha", 1.f);
 		for (size_t i = 0; i < remove_list.size(); i++)
 		{
 			PxParticleSystem* ps = remove_list[i];
@@ -226,25 +215,27 @@ PxFilterFlags testCCDFilterShader(
 	const void* constantBlock,
 	PxU32 constantBlockSize)
 {
-	pairFlags = PxPairFlag::eSOLVE_CONTACT;
-	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT
-		| PxPairFlag::eNOTIFY_TOUCH_FOUND
-		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
-		| PxPairFlag::eNOTIFY_CONTACT_POINTS;
-
 	// let triggers through
 	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
 	{
 		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
 		return PxFilterFlag::eDEFAULT;
 	}
+
+	pairFlags = PxPairFlag::eSOLVE_CONTACT;
+	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+		/*| PxPairFlag::eNOTIFY_TOUCH_FOUND
+		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+		| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
 	// generate contacts for all that were not filtered above
-	pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
+	//pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
-	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
+	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1 
+		<< "\tand:" << (filterData0.word0 & filterData1.word1) << "\n";
+	if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
 	return PxFilterFlags();
