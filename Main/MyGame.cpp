@@ -79,15 +79,27 @@ void initPhysics(bool interactive)
 
 	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
 	GunTower.initguntower(pos1);*/
+	vector<glm::vec3>east_island_pos_list = {glm::vec3(247.0f, 5.6f, 29.3f),glm::vec3(245.7f, 5.6f, 83.0f),glm::vec3(253.0f, 5.6f, -141.0f),glm::vec3(361.0f, 5.6f, -138.0f),glm::vec3(361.0f, 5.6f, -55.0f),
+		                                     glm::vec3(313.0f, 5.6f, 29.0f),glm::vec3(356.0f, 5.6f, -243.0f),glm::vec3(427.0f, 5.6f, -136.0f) };
+	vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
+		                                    glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
+	
 	vector<glm::vec3>pos_list;
-	glm::vec3 pos1(5.0f, 5.0f, 0.0f);
+
+	glm::vec3 pos1(5.0f, 5.0f, 0.0f); 
 	int nb_tower = 5;
-	for (int i = 0; i < nb_tower; i++) {
+	/*for (int i = 0; i < nb_tower; i++) {
 		pos_list.push_back(pos1);
 		pos1.x += i * 1.0f;
 		pos1.y += i * 1.0f;
+	}*/
+	for (int i = 0; i < east_island_pos_list.size(); i++) {
+		pos_list.push_back(east_island_pos_list[i]);
 	}
-	//GunTower.initlist(pos_list);
+	for (int i = 0; i < south_island_pos_list.size(); i++) {
+		pos_list.push_back(south_island_pos_list[i]);
+	}
+	GunTower.initlist(pos_list);
 
 	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(10.0f, 7.0f, -25.0f), glm::vec3(0.75f, 0.75f, 0.75f),
 		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
@@ -154,8 +166,8 @@ void stepPhysics(bool interactive)
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
 	Plane_1->manualControlAirPlane4();
-	//GunTower.runguntower(player);
-
+	GunTower.runguntower(Plane_1->body);
+	//GunTower.runguntower(vehicle->getRigid());
 	removeActorInList();
 	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	/*gScene->fetchResults(true);

@@ -23,7 +23,7 @@ PxRigidDynamic* player = nullptr;
 PlainModel *street = nullptr;
 
 PxRigidDynamic* vehicle = nullptr;
-
+extern AirPlane		*Plane_1;
 
 extern Shader* envShader;
 
@@ -136,12 +136,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "map") {
 				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
 			}
-			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "3rdplayer"
-				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "3rdplayer") {
+			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "airPlane"
+				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "") {
 				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
 				PxRigidDynamic* temp1 = reinterpret_cast<PxRigidDynamic*>((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
 				UserData* ball = reinterpret_cast<UserData*>(temp1->userData);
-				UserData* temp = reinterpret_cast<UserData*>(player->userData);
+				UserData* temp = reinterpret_cast<UserData*>(Plane_1->body->userData);
 				if (temp->health - ball->health > 0) {
 					temp->health -= ball->health;
 					cout << "player - " << ball->health << endl;
@@ -150,10 +150,10 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 					cout << "player died" << endl;
 				}
 			}
-			else if (actor_0->getName() == "littleBall"&&actor_1->getName() == "Tower"
-				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "Tower") {
-				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
-				PxRigidDynamic* temp1 = reinterpret_cast<PxRigidDynamic*>((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
+			else if (actor_0->getName() == "bullet"&&actor_1->getName() == "Tower"
+				|| actor_1->getName() == "bullet"&&actor_0->getName() == "Tower") {
+				removeActorList.push_back((actor_0->getName() == "bullet" ? actor_0 : actor_1));
+				PxRigidDynamic* temp1 = reinterpret_cast<PxRigidDynamic*>((actor_0->getName() == "bullet" ? actor_0 : actor_1));
 				PxRigidStatic* temp2 = reinterpret_cast<PxRigidStatic*>((actor_0->getName() == "Tower" ? actor_0 : actor_1));
 				UserData* ball = reinterpret_cast<UserData*>(temp1->userData);
 				TowerData* tower = reinterpret_cast<TowerData*>(temp2->userData);
