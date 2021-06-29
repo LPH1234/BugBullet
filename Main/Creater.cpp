@@ -18,7 +18,7 @@ PxRigidDynamic*	airPlane = nullptr;
 PxRigidDynamic* player = nullptr;
 PlainModel *street = nullptr;
 
-PxRigidDynamic* vehicle = nullptr;
+extern Player  *vehicle;
 extern AirPlane		*Plane_1;
 
 extern Shader* envShader;
@@ -109,8 +109,9 @@ PxFilterFlags testCCDFilterShader2(
 	| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
 	| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
 	// generate contacts for all that were not filtered above
-	//pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
-
+	pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND|
+		PxPairFlag::eNOTIFY_CONTACT_POINTS;
+	
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
 	/*cout << "Data0.word0:" << filterData0.word0 << " Data1.word1:" << filterData1.word1
@@ -222,46 +223,50 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 		}*/
 		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]);
 		PxRigidActor* actor_1 = (PxRigidActor*)(pairHeader.actors[1]);
-		if (actor_0 != NULL && actor_1 != NULL) {
-			if (actor_0->getName() == "littleBall"&&actor_1->getName() == "airPlane"
-				|| actor_1->getName() == "littleBall"&&actor_0->getName() == "") {
-				removeActorList.push_back((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
-				PxRigidDynamic* temp1 = reinterpret_cast<PxRigidDynamic*>((actor_0->getName() == "littleBall" ? actor_0 : actor_1));
-				UserData* ball = reinterpret_cast<UserData*>(temp1->userData);
-				UserData* temp = reinterpret_cast<UserData*>(Plane_1->body->userData);
-				if (temp->health - ball->health > 0) {
-					temp->health -= ball->health;
-					cout << "player - " << ball->health << endl;
-				}
-				else {
-					cout << "player died" << endl;
-				}
+		UserData* actor_data_0 = reinterpret_cast<UserData*>(actor_0->userData);
+		UserData* actor_data_1 = reinterpret_cast<UserData*>(actor_1->userData);
+		if (actor_data_0 != NULL && actor_data_1 != NULL) {
+			if (actor_data_0->type== DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+				printf("飞机弹药！\n");
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
+				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
 			}
-			else if (actor_0->getName() == "bullet"&&actor_1->getName() == "Tower"
-				|| actor_1->getName() == "bullet"&&actor_0->getName() == "Tower") {
-				removeActorList.push_back((actor_0->getName() == "bullet" ? actor_0 : actor_1));
-				PxRigidDynamic* temp1 = reinterpret_cast<PxRigidDynamic*>((actor_0->getName() == "bullet" ? actor_0 : actor_1));
-				PxRigidStatic* temp2 = reinterpret_cast<PxRigidStatic*>((actor_0->getName() == "Tower" ? actor_0 : actor_1));
-				UserData* ball = reinterpret_cast<UserData*>(temp1->userData);
-				TowerData* tower = reinterpret_cast<TowerData*>(temp2->userData);
-				if (tower->health - ball->health > 0) {
-					tower->health -= ball->health;
-					cout << "tower - " << ball->health << endl;
-				}
-				else {
-					cout << "tower died" << endl;
-					tower->enable_attacking = false;
-				}
+			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
+				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TANK_BULLET);
 			}
-			else if (actor_0->getName() == "bullet"&&actor_1->getName() == "map"
-				|| actor_1->getName() == "bullet"&&actor_0->getName() == "map") {
-				//printf("飞机弹药！\n");
-				removeActorList.push_back((actor_0->getName() == "bullet" ? actor_0 : actor_1));
-				cout << pairHeader.pairs->contactImpulses << "\n";
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
+				/*UserData* temp = reinterpret_cast<UserData*>(Plane_1->getRigid()->userData);*/
+				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TOWER_BULLET);
+			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER ? actor_data_0 : actor_data_1);
+				temp1->basesce->oncontact(temp1->id,DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+				PxU32 num = pairs[i].contactCount;
+				cout << "num: " << num << endl;
+				if (num > 0) {
+					contactPoints.resize(num);
+					pairs[i].extractContacts(&contactPoints[0], num);
+					cout << contactPoints[0].position.x << endl;
+				}
+				
 			}
 			else {}
-
-
 		}
 
 	}
@@ -300,44 +305,12 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	(data).health = 10;
 	cout << data.id << endl;*/
 
-	dynamic->userData = new UserData(1, "ab", 10, 100);
+	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::PLANE_BULLET);
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	//cout << temp->id << endl;
 	//cout << a << endl;
 	gScene->addActor(*dynamic);
 	return dynamic;
-}
-
-PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) {
-	if (!t.isValid()) {
-		Logger::error("error:");
-	}
-	PxMaterial* me = gPhysics->createMaterial(0.0f, 0.8f, 0.0f);
-	//player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
-	//vehicle =createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
-	//player = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(5.0f, 0.0f, 4.0f), glm::vec3(0.05f, 0.05f, 0.05f), "model/vehicle/Alien Animal Updated in Blender-2.81a/animal1.obj", envShader,false));
-	player = PxCreateDynamic(*gPhysics, t, geometry, *me, 1.0f);
-	//player->userData = data;
-	PxVec3 position = player->getGlobalPose().p;
-	cout << "position: " << "x: " << position.x << " y: " << position.y << " z: " << position.z << endl;
-
-	//设置刚体名称
-	player->setName("3rdplayer");
-
-	//userdata指向自己
-	//dynamic->userData = dynamic;
-	//设置碰撞的标签
-	setupFiltering(player, FilterGroup::eBALL, FilterGroup::eSTACK);
-	me->release();
-
-	player->userData = new UserData(1, "ab", 100, 100);
-	//UserData* temp = reinterpret_cast<UserData*>(player->userData);
-
-	player->setAngularDamping(0.5f);
-	player->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-	//dynamic->setLinearVelocity(velocity);
-	gScene->addActor(*player);
-	return player;
 }
 
 
