@@ -1,6 +1,9 @@
 #include "Characters.h"
 #include "../Render/Camera.h"
 
+extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
+
+
 AirPlane::AirPlane() :BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
 
@@ -56,6 +59,7 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	currentBackForward = backForward = back;
 	currentSwingForward = swingForward = swing;
 	this->body = _body;
+	setupFiltering(this->body, FilterGroup::eAIRPLANE, FilterGroup::eMAP | FilterGroup::ePLAYERBULLET);
 	body->setName("airPlane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
@@ -70,6 +74,7 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 
 	emitTransform = PxTransform(-currentBackForward * 1);
 }
+
 void AirPlane::controlAirPlane() {
 	//直行
 	if (turningState[2]) {
@@ -445,12 +450,12 @@ void AirPlane::manualControlAirPlane4() {
 	}
 	//左滚转
 	if (turningState2[5]) {
-		PxQuat rot(PxPi / 180 * (-0.05*turningSpeed), currentHeadForward);
+		PxQuat rot(PxPi / 180 * (-0.2*turningSpeed), currentHeadForward);
 		next = rot * next;
 	}
 	//右滚转
 	if (turningState2[6]) {
-		PxQuat rot(PxPi / 180 * (0.05*turningSpeed), currentHeadForward);
+		PxQuat rot(PxPi / 180 * (0.2*turningSpeed), currentHeadForward);
 		next = rot * next;
 	}
 	body->setGlobalPose(PxTransform(body->getGlobalPose().p, next));
@@ -469,7 +474,9 @@ PxQuat AirPlane::getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront) {
 	PxQuat rot(angelRadius, rotateAxis.getNormalized());
 	return rot;
 }
-extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
+
+
+
 
 void AirPlane::emit() {
 	//球形弹药
@@ -480,7 +487,7 @@ void AirPlane::emit() {
 	emitTransform.q = bulletRot;
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
 	//设置刚体名称
-	setupFiltering((PxRigidActor*)(dynamic), FilterGroup::eMISILE, FilterGroup::eWALL);
+	setupFiltering((PxRigidActor*)(dynamic), FilterGroup::eMISILE, FilterGroup::eMAP|FilterGroup::eTANK);
 	dynamic->setName("bullet");
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
@@ -498,6 +505,7 @@ void AirPlane::emit() {
 	//cout << a << endl;
 	gScene->addActor(*dynamic);
 }
+
 void AirPlane::reset() {
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
 	PxVec3 p = body->getGlobalPose().p;
@@ -509,9 +517,13 @@ void AirPlane::reset() {
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
 	body->setLinearVelocity(veclocity * currentHeadForward);
 }
+
 void AirPlane::getRight(physx::PxVec3& right) { right = currentSwingForward; };
+
 void AirPlane::getFront(physx::PxVec3& front) { front = currentHeadForward; };
+
 void AirPlane::getUp(physx::PxVec3& up) { up = currentBackForward; };
+
 void AirPlane::ProcessKeyPress() {
 	//半自动飞行
 	/*if (keyToPressState[GLFW_KEY_LEFT]&& turningState[2]) {
@@ -626,6 +638,11 @@ void AirPlane::ProcessKeyPress() {
 		//-
 		turningSpeed = min(turningSpeed + 1, 5);
 	}
+	//打印飞机globalPosition
+	if (!keyToPressState[GLFW_KEY_P] && keyToPrePressState[GLFW_KEY_P]) {
+		cout << "位置：" << this->body->getGlobalPose().p.x << "\t" 
+			<< this->body->getGlobalPose().p.y << "\t" << this->body->getGlobalPose().p.z << "\n";
+	}
 };
 void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	int damage = int(_type) * 2;
@@ -637,6 +654,9 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		cout << "Plane died" << endl;
 	}
 }
+
+
+
 
 
 
@@ -796,8 +816,8 @@ int Player::forward(PxVec3& dir, double velocity) {
 }
 void Player::automove() {
 	fireTime++;
-	if (fireTime % 100 == 0) {
-		//autoEmit();
+	if (fireTime % 200 == 0) {
+		autoEmit();
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);
@@ -831,8 +851,29 @@ void Player::autoEmit() {
 	//空间中向量
 	PxVec3 airPlaneVelocity = this->airPlane->getRigid()->getLinearVelocity();
 	PxVec3 airPlanePos = this->airPlane->getGlobalPose();
-	PxVec3 tankPos = this->rigid->getGlobalPose().p;	tankPos.y += 2;//炮口往上偏
+	PxVec3 tankPos = this->rigid->getGlobalPose().p;	tankPos.y += 5;//炮口往上偏
 	PxVec3 tankToPlane = airPlanePos - tankPos;
+
+	//飞机不动则直接发射弹药
+	if (airPlaneVelocity.magnitude() <= 1e-5) {
+		PxVec3 rotAxis2 = (PxVec3(1, 0, 0).cross(tankToPlane)).getNormalized();
+		float rotCos = PxVec3(1, 0, 0).dot(tankToPlane.getNormalized());
+		float rotAngle2 = acos(rotCos);
+		PxQuat rot2(PxPi / 2, PxVec3(0, 0, 1));
+		PxQuat rot3(rotAngle2, rotAxis2);
+
+		PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(tankPos, rot3), PxCapsuleGeometry(0.04, 0.15), *gMaterial, 0.1f);
+		//设置刚体名称
+		dynamic->setName("bullet");
+		setupFiltering(dynamic, FilterGroup::ePLAYERBULLET, FilterGroup::eAIRPLANE);
+		gScene->addActor(*dynamic);
+		dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+		dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+		dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+		dynamic->setLinearVelocity(bulletVelocity*tankToPlane.getNormalized());
+		return;
+	}
+
 	//部分向量的大小
 	double distance = (tankToPlane).magnitude();
 	double air_plane_v = airPlaneVelocity.magnitude();
@@ -861,7 +902,7 @@ void Player::autoEmit() {
 	double cos_xita = (aa*aa + bb * bb - cc * cc) / (2 * aa*bb);
 	//获得需旋转的弧度值
 	double rotateAngle = acos(cos_xita);
-	PxVec3 rotateAxis = (tankToPlane).cross(airPlaneVelocity).getNormalized();
+	PxVec3 rotateAxis = ((tankToPlane).cross(airPlaneVelocity)).getNormalized();
 	PxQuat rot(rotateAngle, rotateAxis);
 	//坦克子弹最终出射方向
 	PxVec3 emitDirection = (rot.rotate(tankToPlane)).getNormalized();
@@ -872,9 +913,10 @@ void Player::autoEmit() {
 	PxQuat rot2(PxPi/2, PxVec3(0, 0, 1));
 	PxQuat rot3(rotAngle2, rotAxis2);
 	
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(tankPos, rot3), PxCapsuleGeometry(0.04, 0.15), *gMaterial, 100.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(tankPos, rot3), PxCapsuleGeometry(0.04, 0.15), *gMaterial, 0.1f);
 	//设置刚体名称
 	dynamic->setName("bullet");
+	setupFiltering(dynamic, FilterGroup::ePLAYERBULLET, FilterGroup::eAIRPLANE);
 	gScene->addActor(*dynamic);
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);

@@ -64,6 +64,10 @@ void initPhysics(bool interactive)
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	PxShape* treasureShape;
+	groundPlane->getShapes(&treasureShape, 1);
+	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
 	gScene->addActor(*groundPlane);
 
 	//for (PxU32 i = 0; i < 3; i++)
@@ -107,9 +111,28 @@ void initPhysics(bool interactive)
 	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
 	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
 		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
-	setupFiltering(input_tank, FilterGroup::eTANK, FilterGroup::eTESTBOX1| FilterGroup::eTESTBOX2| FilterGroup::eTESTBOX3);
+	//setupFiltering(input_tank, FilterGroup::eTANK, FilterGroup::eMISILE);
 	//testFilter();
+	testTriggerWall();
 	vehicle = new Player(input_tank, Plane_1);
+
+	{
+		//PxRigidStatic* staticTank = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(-10.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
+		//	"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader));
+		//setupFiltering(staticTank, FilterGroup::eMAP, FilterGroup::eMISILE);
+
+		///*PxRigidStatic* staticBox = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(0.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
+		//	"model/test/cube.obj", envShader));
+		//setupFiltering(staticBox, FilterGroup::eMAP, FilterGroup::eMISILE);*/
+
+		//PxRigidActor* dynamicTank = createModel(glm::vec3(10.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
+		//	"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader,false);
+		//setupFiltering(dynamicTank, FilterGroup::eMAP, FilterGroup::eMISILE);
+		//
+		///*PxRigidDynamic* dynamicBox = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(20.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
+		//	"model/test/cube.obj", envShader,false));
+		//setupFiltering(dynamicBox, FilterGroup::eMAP, FilterGroup::eMISILE);*/
+	}
 
 	//camera.setTarget(player);
 	camera.setTarget(Plane_1);
@@ -125,13 +148,15 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
-	Map = createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
+	Map = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 
+		"model/env/cityislands/City Islands/City Islands.obj", envShader));
+	//setupFiltering(Map, FilterGroup::eMAP, FilterGroup::eMISILE);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
 	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
 	//model\vehicle\suv\Models Transport Shuttle_obj.obj
 	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
-	//Map->setName("map");
+	Map->setName("map");
 
 	Map->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
 
