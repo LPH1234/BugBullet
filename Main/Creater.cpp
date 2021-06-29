@@ -31,7 +31,7 @@ PxVec3					swingForward(0, 0, 1);//机翼朝向
 vector<bool>			turningState(5, false);//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
 long long				rollingAngel = 0, pitchingAngel = 0;//滚转角、俯仰角
 extern Camera camera;
-
+extern AirPlane* Plane_1;
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	PxRigidActor* rigid;
@@ -111,10 +111,14 @@ PxFilterFlags testCCDFilterShader2(
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
-	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1
-		<< "\tand:" << (filterData0.word0 & filterData1.word1) << "\n";
-	if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
-		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+	/*cout << "Data0.word0:" << filterData0.word0 << " Data1.word1:" << filterData1.word1
+		<< "\tand:" << (filterData0.word0 & filterData1.word1) << "\t\t"
+		<< "Data1.word0:" << filterData1.word0 << " Data0.word1:" << filterData0.word1
+		<< "\tand:" << (filterData1.word0 & filterData0.word1) << "\n";*/
+	if ((filterData0.word0 & filterData1.word1) != 0 || (filterData1.word0 & filterData0.word1) != 0)
+	{
+		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND | PxPairFlag::eNOTIFY_CONTACT_POINTS;;
+	}
 
 	return PxFilterFlag::eDEFAULT;
 
@@ -136,6 +140,53 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 	}
 	free(shapes);
 }
+void testTriggerWall() {
+	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 400), *gMaterial);
+	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 850), *gMaterial);
+	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 850), *gMaterial);
+	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 850), *gMaterial);
+	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 850), *gMaterial);
+	PxShape *triggerShape1, *triggerShape2, *triggerShape3, *triggerShape4, *triggerShape5;
+	borderPlaneSky->getShapes(&triggerShape1, 1);
+	borderPlaneNorth->getShapes(&triggerShape2, 1);
+	borderPlaneSouth->getShapes(&triggerShape3, 1);
+	borderPlaneWest->getShapes(&triggerShape4, 1);
+	borderPlaneEast->getShapes(&triggerShape5, 1);
+
+	triggerShape1->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	triggerShape1->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	triggerShape2->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	triggerShape2->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	triggerShape3->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	triggerShape3->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	triggerShape4->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	triggerShape4->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	triggerShape5->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	triggerShape5->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+
+	gScene->addActor(*borderPlaneSky);
+	gScene->addActor(*borderPlaneNorth);
+	gScene->addActor(*borderPlaneSouth);
+	gScene->addActor(*borderPlaneWest);
+	gScene->addActor(*borderPlaneEast);
+}
+void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
+	//PX_UNUSED(pairs);
+	//PX_UNUSED(count);
+	for (PxU32 i = 0; i < count; i++)
+	{
+		// ignore pairs when shapes have been deleted
+		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
+			continue;
+
+		if (pairs[i].otherActor != Plane_1->getRigid())
+		{
+			//printf("onTrigger!\n");
+			removeActorList.push_back(pairs[i].otherActor);
+		}
+	}
+}
+
 //碰撞回调函数
 void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
 	//PX_UNUSED((pairHeader));
@@ -143,6 +194,16 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 	std::vector<PxContactPairPoint> contactPoints;//存储每一个触碰点信息
 	for (PxU32 i = 0; i < nbPairs; i++)
 	{
+		/*PxU32 contactCount = pairs[i].contactCount;
+		cout << "contactCount:" << contactCount << "\n";
+		if (contactCount) {
+			contactPoints.resize(contactCount);
+			pairs[i].extractContacts(&contactPoints[0], contactCount);
+		}
+		for (int j = 0; j < contactCount; j++) {
+			cout << "碰撞点：" << contactPoints[j].position.x << "\t" << contactPoints[j].position.y << "\t" << contactPoints[j].position.z << "\n";
+			cout << "碰撞力：" << contactPoints[j].impulse.x << "\t" << contactPoints[j].impulse.y << "\t" << contactPoints[j].impulse.z << "\n";
+		}*/
 		PxRigidActor* actor_0 = (PxRigidActor*)(pairHeader.actors[0]);
 		PxRigidActor* actor_1 = (PxRigidActor*)(pairHeader.actors[1]);
 		if (actor_0 != NULL && actor_1 != NULL) {
@@ -283,17 +344,25 @@ PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry) 
 
 void testFilter() {
 	//131.f, 7.0f, 22.0f
-	PxRigidDynamic* body1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(128.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
-	PxRigidDynamic* body2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(131.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
-	PxRigidDynamic* body3 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(134.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
+	PxRigidDynamic* body1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(-2.f, 2.0f, 0.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
+	cout << "创造body1\n";
+	//PxRigidDynamic* body2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(131.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(1, 1, 1), *gMaterial,true);
+	cout << "创造shape\n";
+	PxRigidStatic* body3 = PxCreateStatic(*gPhysics, PxTransform(PxVec3(2.f, 2.0f, 0.0f)),*shape);
+	cout << "创造body3\n";
 
-	setupFiltering(body1, FilterGroup::eTESTBOX1, FilterGroup::eTANK);
-	setupFiltering(body2, FilterGroup::eTESTBOX2, FilterGroup::eMISILE);
-	setupFiltering(body3, FilterGroup::eTESTBOX3, FilterGroup::eTANK|FilterGroup::eMISILE);
+	setupFiltering(body1, FilterGroup::eTANK, FilterGroup::eMISILE);
+	cout << "设置body1\n";
+	//setupFiltering(body2, FilterGroup::eTESTBOX2, FilterGroup::eMISILE);
+	setupFiltering(body3, FilterGroup::eTANK, FilterGroup::eMISILE);
+	cout << "设置body3\n";
 
 	gScene->addActor(*body1);
-	gScene->addActor(*body2);
+	cout << "添加body1\n";
+	//gScene->addActor(*body2);
 	gScene->addActor(*body3);
+	cout << "添加body3\n";
 }
 
 

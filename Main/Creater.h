@@ -13,6 +13,7 @@
 #include <list>
 #include <cmath>
 #include <ctime>
+#include "../Main/Characters.h"
 
 
 extern PxFoundation*			gFoundation;
@@ -53,10 +54,9 @@ struct FilterGroup
 		eBIGBALL = (1 << 3),	//´óÇò
 		ePLAYERBULLET = (1 << 4),	//Íæ¼Ò·¢ÉäµÄ×Óµ¯
 		eMISILE = (1 << 5),		//·É»úµ¯Ò©
-		eTESTBOX1=(1<<6),//²âÊÔºÐ1
-		eTESTBOX2 = (1 << 7),//²âÊÔºÐ2
-		eTESTBOX3 = (1 << 8),//²âÊÔºÐ3
-		eTANK=(1<<9),//²âÊÔÌ¹¿Ë
+		eMAP = (1 << 6),		//µØÍ¼
+		eAIRPLANE = (1 << 7),	//·É»ú
+		eTANK = (1 << 8),		//Ì¹¿Ë
 	};
 };
 
@@ -89,6 +89,7 @@ double getAngel(PxVec3 a, PxVec3 b);
 bool lessThan180(PxVec3 a, PxVec3 base);
 void createAbleBreakWall();
 void createBreakableWall();
+void testTriggerWall();
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);

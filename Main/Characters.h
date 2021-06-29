@@ -1,3 +1,4 @@
+#pragma once
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,6 +19,7 @@
 #include "../Data/Data.h"
 #include <cmath>
 #include "../Data/Consts.h"
+#include "Creater.h"
 
 
 extern std::unordered_map<int, bool> keyToPressState;
