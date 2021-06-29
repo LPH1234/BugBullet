@@ -64,6 +64,7 @@ void initPhysics(bool interactive)
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	groundPlane->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
 	PxShape* treasureShape;
 	groundPlane->getShapes(&treasureShape, 1);
 	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
@@ -106,14 +107,15 @@ void initPhysics(bool interactive)
 	}*/
 	GunTower.initlist(pos_list);
 
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f),
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
-	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
+	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
 		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
 	//setupFiltering(input_tank, FilterGroup::eTANK, FilterGroup::eMISILE);
 	//testFilter();
 	testTriggerWall();
+	testTriggerCollection();
 	vehicle = new Player(input_tank, Plane_1);
 
 	{
