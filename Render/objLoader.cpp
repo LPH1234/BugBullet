@@ -8,7 +8,6 @@
 
 #include "ObjLoader.h"
 
-
 using namespace std;
 
 std::unordered_map<PxBase*, BaseModel*> ObjLoader::meshToRenderModel;
@@ -127,9 +126,13 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 	PxTriangleMeshGeometry geom(this->triangle_mesh);
 	// 创建TriangleMesh网格
 	PxRigidStatic* TriangleMesh = gPhysics->createRigidStatic(PxTransform(initPos));
+	/*PxRigidDynamic* TriangleMesh = gPhysics->createRigidDynamic(PxTransform(initPos));
+	TriangleMesh->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);*/
+	
 
 	// 创建三角网格形状 *gMaterial
 	PxShape* shape = gPhysics->createShape(geom, *gMaterial);
+	//shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
 
 	{
 		// 设置厚度， 相当于多了一层 0.03厚的皮肤，也就是为了提前预判
