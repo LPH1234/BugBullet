@@ -48,9 +48,9 @@ SkyBox* skybox;
 Shader* skyBoxShader;
 Shader* envShader;
 Shader* pointParticleShader;
-Shader* smokeParticleShader;
+Shader* cloudShader;
 Shader* spriteShader;
-Shader* cloudParticleShader;
+Shader* smokeShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
@@ -126,9 +126,9 @@ int myRenderLoop()
 	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
 	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
 	pointParticleShader = new Shader("shaders/pointParticleShader/pointParticle.VertexShader", "shaders/pointParticleShader/pointParticle.FragmentShader");
-	smokeParticleShader = new Shader("shaders/smokeParticleShader/smokeParticle.VertexShader", "shaders/smokeParticleShader/smokeParticle.FragmentShader");
+	smokeShader = new Shader("shaders/smokeShader/smoke.VertexShader", "shaders/smokeShader/smoke.FragmentShader");
 	spriteShader = new Shader("shaders/spriteShader/sprite.VertexShader", "shaders/spriteShader/sprite.FragmentShader");
-	cloudParticleShader = new Shader("shaders/cloudShader/cloud.VertexShader", "shaders/cloudShader/cloud.FragmentShader");
+	cloudShader = new Shader("shaders/cloudShader/cloud.VertexShader", "shaders/cloudShader/cloud.FragmentShader");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -156,7 +156,7 @@ int myRenderLoop()
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
 
-	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, glm::vec3(0.1f), std::vector<unsigned int>(), spriteShader);
+	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), spriteShader);
 	renderParticleClusterList.push_back(flame_cluster);
 
 	// render loop
@@ -223,7 +223,7 @@ int myRenderLoop()
 
 		Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
 
-		
+
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------

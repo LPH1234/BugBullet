@@ -46,8 +46,8 @@
     <None Include="shaders\pointParticleShader\pointParticle.VertexShader" />
     <None Include="shaders\skyboxShader\skybox.FragmentShader" />
     <None Include="shaders\skyboxShader\skybox.VertexShader" />
-    <None Include="shaders\smokeParticleShader\smokeParticle.FragmentShader" />
-    <None Include="shaders\smokeParticleShader\smokeParticle.VertexShader" />
+    <None Include="shaders\smokeShader\smoke.FragmentShader" />
+    <None Include="shaders\smokeShader\smoke.VertexShader" />
     <None Include="shaders\spriteShader\sprite.FragmentShader" />
     <None Include="shaders\spriteShader\sprite.VertexShader" />
   </ItemGroup>

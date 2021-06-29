@@ -97,8 +97,11 @@ void Logger::error(std::string str) {
 }
 
 
-
-
+int PointerUtils::getPtrIntValue(void* ptr) {
+	char str[13];
+	sprintf_s(str, 13, "%d", ptr);
+	return fabs(atoi(str));
+}
 //计算文件夹的个数
 int FileUtils::getFilesCount(std::string path)
 {

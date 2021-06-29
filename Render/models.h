@@ -205,6 +205,30 @@ public:
 
 };
 
+class CloudParticle : public BaseSpriteParticle
+{
+public:
+	CloudParticle(glm::vec3 pos, glm::vec3 scale_value, int cloudDensity, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
+	~CloudParticle();
+	glm::mat4 getModel();
+
+	void draw();
+private:
+	unsigned int VBO, VAO;
+	int index;
+	int cloudIndex;
+	glm::vec3* axis;
+	float* angles; //储存旋转角度的数组
+	glm::vec3* trans;
+	std::string texturePath;
+	unsigned int textureId;
+	int cloudDensity;
+	float dy = 0.f;
+	float vy; //烟雾上升速度
+	float maxY;
+
+};
+
 
 class Cube : public PlainModel
 {
@@ -545,30 +569,7 @@ public:
 	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
 };
 
-//class SmokeParticle : public BaseParticle
-//{
-//public:
-//	SmokeParticle(glm::vec3 scale, glm::vec3 c, Shader* shader, std::vector<std::string>& textures);
-//	~SmokeParticle();
-//
-//	void update(const PxVec3& position, const PxVec3& velocity);
-//	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
-//private:
-//	unsigned int VBO, VAO;
-//	unsigned int* texturePtr;
-//	float life;
-//	int currIndex;
-//	physx::PxVec4 axisAndAngle;
-//	float angle;
-//	glm::vec3 Velocity;
-//	std::vector<std::string> textures;
-//	std::vector<unsigned int> textureIds;
-//
-//	glm::mat4 getModel();
-//	void init();
-//	void initTextures();
-//	unsigned int getRandomTextureId(unsigned int index);
-//};
+
 
 
 

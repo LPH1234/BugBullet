@@ -915,11 +915,8 @@ float* createUniformRandomFloatArray(int num, float bottom, float up) {
 	return rt;
 }
 
-float* createNormalRandomFloatArray(int num, float arg1, float arg2, float* rt) {
-	std::cout << "allocate:" <<num  << " \n";
-	//float* rt = new float[num];
-	std::cout << "allocate over\n";
-
+float* createNormalRandomFloatArray(int num, float arg1, float arg2) {
+	float* rt = new float[num];
 	trng::yarn2 R(clock());
 	trng::normal_dist<> random_n(arg1, arg2); // 均值、标准差
 	for (int i = 0; i < num; i++)

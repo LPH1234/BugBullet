@@ -31,7 +31,10 @@ public:
 
 };
 
-
+class PointerUtils {
+public:
+	static int getPtrIntValue(void* ptr);
+};
 
 class FileUtils
 {

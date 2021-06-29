@@ -122,17 +122,16 @@ namespace Render
 	}
 
 	void renderParticles(list<PxParticleSystem*>& particleSystemList, list<BaseParticleCluster*>& renderParticleClusterList, glm::mat4 view, glm::mat4 projection) {
-		
+
 		//1、物理粒子的渲染
 		//-----------------------------------------------------------------------
 		vector<PxParticleSystem*> remove_list; //要移除的粒子系统列表
 		list<PxParticleSystem*>::iterator pIt; //声明一个迭代器
-		for (pIt = particleSystemList.begin(); pIt != particleSystemList.end(); pIt++) { 
+		for (pIt = particleSystemList.begin(); pIt != particleSystemList.end(); pIt++) {
 			PxParticleSystem* ps = *pIt;
 			// lock SDK buffers of *PxParticleSystem* ps for reading
 			PxParticleReadData* rd = ps->lockParticleReadData();
-			char str[12];
-			sprintf(str, "%d", ps);
+
 			bool stop_flag = true;
 			ParticleSystemData* data = reinterpret_cast<ParticleSystemData*>(ps->userData);
 
@@ -183,7 +182,7 @@ namespace Render
 		//2、点精灵、纯渲染粒子的渲染
 		//-----------------------------------------------------------------------
 		vector<BaseParticleCluster*> remove_list_c; //要移除的粒子cluster列表
-		list<BaseParticleCluster*>::iterator rIt; 
+		list<BaseParticleCluster*>::iterator rIt;
 		for (rIt = renderParticleClusterList.begin(); rIt != renderParticleClusterList.end(); rIt++) {
 			(*rIt)->update();
 			(*rIt)->draw(view, projection);
@@ -222,15 +221,15 @@ PxFilterFlags testCCDFilterShader(
 	pairFlags = PxPairFlag::eSOLVE_CONTACT;
 	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
 	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-		/*| PxPairFlag::eNOTIFY_TOUCH_FOUND
-		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
-		| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
+	/*| PxPairFlag::eNOTIFY_TOUCH_FOUND
+	| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+	| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
 	// generate contacts for all that were not filtered above
 	//pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
-	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1 
+	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1
 		<< "\tand:" << (filterData0.word0 & filterData1.word1) << "\n";
 	if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;

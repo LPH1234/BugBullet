@@ -106,12 +106,6 @@
     <None Include="shaders\pointParticleShader\pointParticle.VertexShader">
       <Filter>资源文件\shader\pointShader</Filter>
     </None>
-    <None Include="shaders\smokeParticleShader\smokeParticle.FragmentShader">
-      <Filter>资源文件\shader\smokeShader</Filter>
-    </None>
-    <None Include="shaders\smokeParticleShader\smokeParticle.VertexShader">
-      <Filter>资源文件\shader\smokeShader</Filter>
-    </None>
     <None Include="shaders\spriteShader\sprite.FragmentShader">
       <Filter>资源文件\shader\spriteShader</Filter>
     </None>
@@ -123,6 +117,12 @@
     </None>
     <None Include="shaders\cloudShader\cloud.VertexShader">
       <Filter>资源文件\shader\cloudShader</Filter>
+    </None>
+    <None Include="shaders\smokeShader\smoke.FragmentShader">
+      <Filter>资源文件\shader\smokeShader</Filter>
+    </None>
+    <None Include="shaders\smokeShader\smoke.VertexShader">
+      <Filter>资源文件\shader\smokeShader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

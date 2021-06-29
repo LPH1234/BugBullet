@@ -129,4 +129,4 @@ void createSmokeParticles( //创建普通粒子系统
 void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList);
 
 float* createUniformRandomFloatArray(int num, float bottom, float up); //得到长度为num的符合随机分布的随机数数组
-float* createNormalRandomFloatArray(int num, float arg1, float arg2, float*);  //得到长度为num的符合正态分布的随机数数组
+float* createNormalRandomFloatArray(int num, float arg1, float arg2);  //得到长度为num的符合正态分布的随机数数组

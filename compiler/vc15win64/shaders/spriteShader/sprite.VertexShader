@@ -22,10 +22,15 @@ void main(void)
 	alpha = 1.0;
 
 	float dist = sqrt((position.x - initPos.x)*(position.x - initPos.x) + (position.z - initPos.z)*(position.z - initPos.z));
+
 	if(dist < radis/10) dist = radis/10;
 	float dyFactor = (1 - dist/(1.5*radis));
+	if(dyFactor <= 0)
+		dyFactor = 0.1;
 	float new_dy = dy * dyFactor;
 	float yFactor = (1 - dist/(1.1*radis));
+	if(yFactor <= 0)
+		yFactor = 0.1;
 	float new_maxY = maxY * yFactor;
     while(new_dy > new_maxY){
 		new_dy -= new_maxY;

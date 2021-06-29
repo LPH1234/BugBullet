@@ -22,16 +22,22 @@ public:
 std::vector<mc*> arr;
 
 
-
 using namespace std;
 int main() {
-	arr.push_back(&mc(1));
-	arr.push_back(&mc(2));
-	arr.push_back(&mc(3));
-	arr.push_back(&mc(4));
-	arr.erase(arr.begin() + 2);
-	for (size_t i = 0; i < arr.size(); i++)
+	mc * ptr = new mc(1);
+	char* str = new char[12];
+	sprintf_s(str, 12, "%d", ptr);
+	std::cout << str << "  int value:---" << atoi(str) << "---\n";
+
+	srand(12312);
+	for (size_t i = 0; i < 5; i++)
 	{
-		std::cout << arr[i]->id << "\n";
+		cout << rand() << " ";
+	}
+	cout << "\n";
+	srand(12312);
+	for (size_t i = 0; i < 5; i++)
+	{
+		cout << rand() << " ";
 	}
 }
