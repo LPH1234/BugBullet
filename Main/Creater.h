@@ -58,6 +58,9 @@ struct FilterGroup
 		eTESTBOX2 = (1 << 7),//²âÊÔºÐ2
 		eTESTBOX3 = (1 << 8),//²âÊÔºÐ3
 		eTANK=(1<<9),//²âÊÔÌ¹¿Ë
+		eTower=(1<<10),
+		ePlayer=(1<<11),
+		eTowerBullet = (1<<12)
 	};
 };
 

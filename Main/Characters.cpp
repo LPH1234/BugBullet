@@ -59,7 +59,8 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	body->setName("airPlane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	body->userData = new UserData(1, "plane", 100, 10);
+	body->userData = new UserData(this ,1, "plane", DATATYPE::ACTOR_TYPE::PLANE);
+	setupFiltering(body, FilterGroup::ePlayer, FilterGroup::eMISILE);
 	turningState.resize(5, false);
 	turningState[2] = true;
 	turningState2.resize(7);
@@ -469,18 +470,7 @@ PxQuat AirPlane::getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront) {
 	return rot;
 }
 extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
-extern struct FilterGroup
-{
-	enum Enum
-	{
-		eBALL = (1 << 0),		//发射的小球
-		eWALL = (1 << 1),		//墙壁
-		eSTACK = (1 << 2),		//小方块
-		eBIGBALL = (1 << 3),	//大球
-		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
-		eMISILE = (1 << 5),		//飞机弹药
-	};
-};
+
 void AirPlane::emit() {
 	//球形弹药
 	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxSphereGeometry(0.1), *gMaterial, 10.0f);
@@ -488,7 +478,7 @@ void AirPlane::emit() {
 	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
 	//emitTransform.q = getBulletRotate(currentHeadForward, PxVec3(1.0f, 0.0f, 0.0f));
 	emitTransform.q = bulletRot;
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.15), *gMaterial, 10000.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
 	//设置刚体名称
 	setupFiltering((PxRigidActor*)(dynamic), FilterGroup::eMISILE, FilterGroup::eWALL);
 	dynamic->setName("bullet");
@@ -502,7 +492,7 @@ void AirPlane::emit() {
 	(data).health = 10;
 	cout << data.id << endl;*/
 
-	dynamic->userData = new UserData(1, "ab", 10, 100);
+	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::PLANE_BULLET);
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	//cout << temp->id << endl;
 	//cout << a << endl;
@@ -637,6 +627,22 @@ void AirPlane::ProcessKeyPress() {
 		turningSpeed = min(turningSpeed + 1, 5);
 	}
 };
+void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
+	int damage = int(_type) * 2;
+	if (this->health - damage > 0) {
+		this->health -= damage;
+		cout << "Plane - " << damage << endl;
+	}
+	else {
+		cout << "Plane died" << endl;
+	}
+}
+
+
+
+
+
+
 
 Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(target) {
 	this->airPlane = airplane;
@@ -646,6 +652,7 @@ Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(
 	this->rigid->setAngularDamping(0.5f);
 	this->rigid->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
 	this->born = target->getGlobalPose().p;
+	this->rigid->userData = new UserData(this, 1, "tank", DATATYPE::ACTOR_TYPE::TANK);
 	currentheadforward = headforward;
 	currentbackforward = backforward;
 	autoshooting = true;
@@ -755,7 +762,7 @@ void Player::fire(const PxTransform& t, const PxVec3& velocity) {
 	(data).health = 10;
 	cout << data.id << endl;*/
 
-	dynamic->userData = new UserData(1, "ab", 10, 100);
+	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::TANK_BULLET);
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	//cout << temp->id << endl;
 	//cout << a << endl;
@@ -790,7 +797,7 @@ int Player::forward(PxVec3& dir, double velocity) {
 void Player::automove() {
 	fireTime++;
 	if (fireTime % 100 == 0) {
-		autoEmit();
+		//autoEmit();
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);
@@ -873,4 +880,16 @@ void Player::autoEmit() {
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	dynamic->setLinearVelocity(bulletVelocity*emitDirection);
+	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::TANK_BULLET);
+	setupFiltering(dynamic, FilterGroup::eTowerBullet, FilterGroup::ePlayer);
+}
+void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
+	int damage = int(_type) * 2;
+	if (this->health - damage > 0) {
+		this->health -= damage;
+		cout << "Tank - " << damage << endl;
+	}
+	else {
+		cout << "Tank died" << endl;
+	}
 }
