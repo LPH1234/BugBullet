@@ -817,7 +817,7 @@ int Player::forward(PxVec3& dir, double velocity) {
 void Player::automove() {
 	fireTime++;
 	if (fireTime % 200 == 0) {
-		autoEmit();
+		//autoEmit();
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);

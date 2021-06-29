@@ -149,6 +149,13 @@ void testTriggerWall() {
 	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 850), *gMaterial);
 	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 850), *gMaterial);
 	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 850), *gMaterial);
+
+	borderPlaneSky->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneNorth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneSouth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneWest->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneEast->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+
 	PxShape *triggerShape1, *triggerShape2, *triggerShape3, *triggerShape4, *triggerShape5;
 	borderPlaneSky->getShapes(&triggerShape1, 1);
 	borderPlaneNorth->getShapes(&triggerShape2, 1);
@@ -175,8 +182,24 @@ void testTriggerWall() {
 }
 void testTriggerCollection() {
 	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
-	PxTransform pos(PxVec3(130.f, 15.f, 20.f));
+	PxShape* collectionContactShape = gPhysics->createShape(PxBoxGeometry(1.f, 1.f, 1.f), *gMaterial);
+	PxTransform pos(PxVec3(130.f, 20.f, 20.f));
 	PxRigidDynamic* collection = gPhysics->createRigidDynamic(pos);
+	collection->userData = new UserData(1, "collection", DATATYPE::TRIGGER_TYPE::COLLECTION);
+	collection->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	collectionShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	collectionShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	collection->attachShape(*collectionShape);
+	collection->attachShape(*collectionContactShape);
+	gScene->addActor(*collection);
+	collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
+	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
+
+}
+PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type) {
+	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
+	PxRigidDynamic* collection = gPhysics->createRigidDynamic(tran);
+	collection->userData = new UserData(1, "collection", _type);
 	collection->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	collectionShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 	collectionShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
@@ -184,7 +207,7 @@ void testTriggerCollection() {
 	gScene->addActor(*collection);
 	collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
 	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
-
+	return collection;
 }
 
 void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
@@ -195,12 +218,35 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 		// ignore pairs when shapes have been deleted
 		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 			continue;
-
-		if (pairs[i].otherActor != Plane_1->getRigid())
-		{
-			//printf("onTrigger!\n");
-			removeActorList.push_back(pairs[i].otherActor);
+		PxRigidActor *actor_0 = (PxRigidActor*)pairs[i].otherActor, *actor_1 = (PxRigidActor*)pairs[i].triggerActor;
+		UserData* actor_data_0 = reinterpret_cast<UserData*>(actor_0->userData);
+		UserData* actor_data_1 = reinterpret_cast<UserData*>(actor_1->userData);
+		/*cout << "onTrigger!\t";
+		cout << "actor_data_0->name:" << actor_data_0->name << "\tactor_data_1->name:" << actor_data_1->name << "\n";*/
+		/*if (actor_data_0->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
+			&&actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER
+			|| actor_data_0->type2 == DATATYPE::TRIGGER_TYPE::BORDER
+			&&actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
+			PxRigidActor* temp = (actor_data_0->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
+				? actor_0 : actor_1);
+			removeActorList.push_back(temp);
+			continue;
+		}*/
+		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
+			removeActorList.push_back(actor_0);
+			continue;
 		}
+		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION&&actor_data_0->name == "plane") {
+			//飞机拾取道具的回调
+			cout << "获得道具!\n";
+			removeActorList.push_back(actor_1);
+		}
+		//if (pairs[i].otherActor != Plane_1->getRigid())
+		//{
+		//	//printf("onTrigger!\n");
+		//	removeActorList.push_back(pairs[i].otherActor);
+		//}
+		
 	}
 }
 
