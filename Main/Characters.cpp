@@ -63,6 +63,7 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	body->setName("airPlane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	body->userData = new UserData(1, "plane", 100, 10);
 	turningState.resize(5, false);
 	turningState[2] = true;
 	turningState2.resize(7);
