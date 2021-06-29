@@ -168,7 +168,8 @@ public:
 
 };
 
-class SpriteParticle : public PlainModel {
+class BaseSpriteParticle : public PlainModel {
+protected:
 	GLuint textureId;
 	GLuint VAO;
 	GLuint VBO;
@@ -176,13 +177,30 @@ class SpriteParticle : public PlainModel {
 	int pointNum;
 	float pointSize;
 	float radis;
-	float dy = 0.f;
-	float VY = 0.01f;
-	float maxY;
-	const float MAX_Y = 5.f;
+	bool readyToLeave = false;
 public:
-	SpriteParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
-	~SpriteParticle();
+	BaseSpriteParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, std::string texturePath, Shader* shader);
+	virtual void draw() = 0;
+	bool isRemoveable();
+};
+
+class FlameParticle : public BaseSpriteParticle {
+	float dy = 0.f;
+	float VY; //中心火焰在y方向的最大速度
+	float maxY;
+public:
+	FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
+	void draw();
+
+};
+
+
+class SmokeParticle : public BaseSpriteParticle {
+	float dy = 0.f;
+	float VY; //烟雾上升速度
+	float maxY;
+public:
+	SmokeParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
 	void draw();
 
 };
@@ -527,31 +545,30 @@ public:
 	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
 };
 
-class SmokeParticle : public BaseParticle
-{
-public:
-	SmokeParticle(glm::vec3 scale, glm::vec3 c, Shader* shader, std::vector<std::string>& textures);
-	~SmokeParticle();
-
-	void update(const PxVec3& position, const PxVec3& velocity);
-	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
-private:
-	unsigned int VBO, VAO;
-	unsigned int* texturePtr;
-	float life;
-	int currIndex;
-	physx::PxVec4 axisAndAngle;
-	float angle;
-	glm::vec3 Velocity;
-	std::vector<glm::vec3> windows;
-	std::vector<std::string> textures;
-	std::vector<unsigned int> textureIds;
-
-	glm::mat4 getModel();
-	void init();
-	void initTextures();
-	unsigned int getRandomTextureId(unsigned int index);
-};
+//class SmokeParticle : public BaseParticle
+//{
+//public:
+//	SmokeParticle(glm::vec3 scale, glm::vec3 c, Shader* shader, std::vector<std::string>& textures);
+//	~SmokeParticle();
+//
+//	void update(const PxVec3& position, const PxVec3& velocity);
+//	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
+//private:
+//	unsigned int VBO, VAO;
+//	unsigned int* texturePtr;
+//	float life;
+//	int currIndex;
+//	physx::PxVec4 axisAndAngle;
+//	float angle;
+//	glm::vec3 Velocity;
+//	std::vector<std::string> textures;
+//	std::vector<unsigned int> textureIds;
+//
+//	glm::mat4 getModel();
+//	void init();
+//	void initTextures();
+//	unsigned int getRandomTextureId(unsigned int index);
+//};
 
 
 

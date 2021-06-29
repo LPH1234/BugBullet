@@ -50,12 +50,13 @@ Shader* envShader;
 Shader* pointParticleShader;
 Shader* smokeParticleShader;
 Shader* spriteShader;
+Shader* cloudParticleShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
 bool mouseButtonPressState[3];
 
-void renderCallback(Shader* shader)
+void renderActors(Shader* shader)
 {
 	PxScene* scene;
 	PxGetPhysics().getScenes(&scene, 1);
@@ -64,7 +65,7 @@ void renderCallback(Shader* shader)
 	{
 		std::vector<PxRigidActor*> actors(nbActors);
 		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
-		Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
+		Render::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
 	}
 }
 
@@ -127,6 +128,7 @@ int myRenderLoop()
 	pointParticleShader = new Shader("shaders/pointParticleShader/pointParticle.VertexShader", "shaders/pointParticleShader/pointParticle.FragmentShader");
 	smokeParticleShader = new Shader("shaders/smokeParticleShader/smokeParticle.VertexShader", "shaders/smokeParticleShader/smokeParticle.FragmentShader");
 	spriteShader = new Shader("shaders/spriteShader/sprite.VertexShader", "shaders/spriteShader/sprite.FragmentShader");
+	cloudParticleShader = new Shader("shaders/cloudShader/cloud.VertexShader", "shaders/cloudShader/cloud.FragmentShader");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -154,15 +156,8 @@ int myRenderLoop()
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
 
-	list<SpriteParticle*> fires;
-	for (size_t i = 0; i < 1; i++)
-	{
-		fires.push_back(new SpriteParticle(glm::vec3(0.1f), 600, 20, 3.f, 0.1f, 5.1f, "images/textures/flame/flame0.png", spriteShader));
-		fires.push_back(new SpriteParticle(glm::vec3(0.1f), 600, 20, 3.f, 0.12f, 5.f, "images/textures/flame/flame1.png", spriteShader));
-		fires.push_back(new SpriteParticle(glm::vec3(0.15f), 600, 20, 3.f, 0.08f, 5.05f, "images/textures/flame/flame2.png", spriteShader));
-		fires.push_back(new SpriteParticle(glm::vec3(0.18f), 600, 20, 3.f, 0.11f, 5.02f, "images/textures/flame/flame3.png", spriteShader));
-		fires.push_back(new SpriteParticle(glm::vec3(0.14f), 600, 20, 3.f, 0.09f, 5.02f, "images/textures/flame/flame4.png", spriteShader));
-	}
+	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, glm::vec3(0.1f), std::vector<unsigned int>(), spriteShader);
+	renderParticleClusterList.push_back(flame_cluster);
 
 	// render loop
 	// -----------
@@ -208,9 +203,8 @@ int myRenderLoop()
 		skyBoxShader->setMat4("model", skybox->getModel());
 		skybox->draw();
 
-
-
-
+		//=====================================envShader=================================
+		// 一般物体的渲染表现由envShader决定
 		envShader->use();
 		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
 		envShader->setMat4("projection", projection);
@@ -225,17 +219,11 @@ int myRenderLoop()
 		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 
-		renderCallback(envShader);
+		renderActors(envShader); // 渲染场景内的物体
 
-		Snippets::renderParticles(renderParticleSystemList, view, projection);
+		Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
 
-		spriteShader->use();
-		spriteShader->setMat4("projection", projection);
-		spriteShader->setMat4("view", view);
-		list<SpriteParticle*>::iterator it; //声明一个迭代器
-		for (it = fires.begin(); it != fires.end(); it++) {
-			(*it)->draw();
-		}
+		
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------

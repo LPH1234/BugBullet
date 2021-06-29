@@ -1,7 +1,7 @@
 #version 330 core
 
 //传入的颜色值
-in vec4 sColor;
+in float alpha;
 
 //采样器 
 uniform sampler2D  texture1;
@@ -15,5 +15,6 @@ void main(void)
     vec4 tempColor = texture2D(texture1, gl_PointCoord);
 	 if(tempColor.a < 0.1)
         discard;
+	tempColor.w = tempColor.w * alpha;
 	fragColor = tempColor;
 }

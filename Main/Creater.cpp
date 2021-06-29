@@ -24,7 +24,8 @@ PxRigidDynamic* vehicle = nullptr;
 extern Shader* envShader;
 
 vector<PxActor*>		removeActorList;
-list<PxParticleSystem*> renderParticleSystemList;
+list<PxParticleSystem*> physicsParticleSystemList;
+list<BaseParticleCluster*> renderParticleClusterList;
 PxVec3					airPlaneVelocity(0, 0, 0);//飞机速度
 long long				angelAirPlane = 0.0;
 PxVec3					headForward(1, 0, 0);//机头朝向
@@ -775,7 +776,7 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 
 	if (ps) {
 		gScene->addActor(*ps);
-		renderParticleSystemList.push_back(ps);
+		physicsParticleSystemList.push_back(ps);
 	}
 	//Cleanup
 	delete newAppParticlePositions;
@@ -869,7 +870,7 @@ void createSmokeParticles(int numParticles, bool perOffset, BaseParticle* render
 			ps->userData = (void*)data;
 			cout << "创建粒子成功\n";
 			gScene->addActor(*ps);
-			renderParticleSystemList.push_back(ps);
+			physicsParticleSystemList.push_back(ps);
 		}
 		else {
 			myindexpool->freeIndices();
@@ -900,4 +901,30 @@ void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList) {
 		ps->addForces(data->numParticles, PxStrideIterator<const PxU32>(data->newAppParticleIndices), PxStrideIterator<const PxVec3>(data->newAppParticleforces), PxForceMode::eACCELERATION);
 	}
 
+}
+
+float* createUniformRandomFloatArray(int num, float bottom, float up) {
+	float* rt = new float[num];
+
+	trng::yarn2 R(clock());
+	trng::uniform_dist<> random_u(bottom, up);
+	for (int i = 0; i < num; i++)
+	{
+		rt[i] = random_u(R);
+	}
+	return rt;
+}
+
+float* createNormalRandomFloatArray(int num, float arg1, float arg2, float* rt) {
+	std::cout << "allocate:" <<num  << " \n";
+	//float* rt = new float[num];
+	std::cout << "allocate over\n";
+
+	trng::yarn2 R(clock());
+	trng::normal_dist<> random_n(arg1, arg2); // 均值、标准差
+	for (int i = 0; i < num; i++)
+	{
+		rt[i] = random_n(R);
+	}
+	return rt;
 }

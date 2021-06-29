@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Render\Camera.h" />
+    <ClInclude Include="..\..\Render\Cluster.h" />
     <ClInclude Include="..\..\Render\Mesh.h" />
     <ClInclude Include="..\..\Render\Model.h" />
     <ClInclude Include="..\..\Render\models.h" />
@@ -29,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Render\Camera.cpp" />
+    <ClCompile Include="..\..\Render\Cluster.cpp" />
     <ClCompile Include="..\..\Render\glad.c" />
     <ClCompile Include="..\..\Render\Model.cpp" />
     <ClCompile Include="..\..\Render\models.cpp" />
@@ -36,6 +38,8 @@
     <ClCompile Include="..\..\Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\cloudShader\cloud.FragmentShader" />
+    <None Include="shaders\cloudShader\cloud.VertexShader" />
     <None Include="shaders\envShader\env.FragmentShader" />
     <None Include="shaders\envShader\env.VertexShader" />
     <None Include="shaders\pointParticleShader\pointParticle.FragmentShader" />

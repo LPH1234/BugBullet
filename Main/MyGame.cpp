@@ -130,7 +130,7 @@ void initPhysics(bool interactive)
 }
 
 void beforeStepPhysics() {
-	addForceToPartivleSystem(renderParticleSystemList);
+	addForceToPartivleSystem(physicsParticleSystemList);
 }
 
 void stepPhysics(bool interactive)
