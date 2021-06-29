@@ -114,6 +114,7 @@ void initPhysics(bool interactive)
 	//setupFiltering(input_tank, FilterGroup::eTANK, FilterGroup::eMISILE);
 	//testFilter();
 	testTriggerWall();
+	testTriggerCollection();
 	vehicle = new Player(input_tank, Plane_1);
 
 	{

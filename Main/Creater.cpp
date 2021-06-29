@@ -172,6 +172,20 @@ void testTriggerWall() {
 	gScene->addActor(*borderPlaneWest);
 	gScene->addActor(*borderPlaneEast);
 }
+void testTriggerCollection() {
+	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
+	PxTransform pos(PxVec3(130.f, 15.f, 20.f));
+	PxRigidDynamic* collection = gPhysics->createRigidDynamic(pos);
+	collection->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	collectionShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	collectionShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	collection->attachShape(*collectionShape);
+	gScene->addActor(*collection);
+	collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
+	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
+
+}
+
 void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 	//PX_UNUSED(pairs);
 	//PX_UNUSED(count);

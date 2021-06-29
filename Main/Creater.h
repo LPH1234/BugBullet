@@ -90,6 +90,7 @@ bool lessThan180(PxVec3 a, PxVec3 base);
 void createAbleBreakWall();
 void createBreakableWall();
 void testTriggerWall();
+void testTriggerCollection();
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
