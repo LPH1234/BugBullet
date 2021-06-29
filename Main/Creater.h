@@ -57,6 +57,11 @@ struct FilterGroup
 		eMAP = (1 << 6),		//µØÍ¼
 		eAIRPLANE = (1 << 7),	//·É»ú
 		eTANK = (1 << 8),		//Ì¹¿Ë
+		eTower=(1<<9),
+		ePlayer=(1<<10),
+		eTowerBullet = (1<<11)
+
+
 	};
 };
 

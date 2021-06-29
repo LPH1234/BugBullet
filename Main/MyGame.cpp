@@ -84,8 +84,8 @@ void initPhysics(bool interactive)
 
 	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
 	GunTower.initguntower(pos1);*/
-	vector<glm::vec3>east_island_pos_list = {glm::vec3(247.0f, 5.6f, 29.3f),glm::vec3(245.7f, 5.6f, 83.0f),glm::vec3(253.0f, 5.6f, -141.0f),glm::vec3(361.0f, 5.6f, -138.0f),glm::vec3(361.0f, 5.6f, -55.0f),
-		                                     glm::vec3(313.0f, 5.6f, 29.0f),glm::vec3(356.0f, 5.6f, -243.0f),glm::vec3(427.0f, 5.6f, -136.0f) };
+	vector<glm::vec3>east_island_pos_list = {glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(245.7f, 7.6f, 83.0f),glm::vec3(253.0f, 7.6f, -141.0f),glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),
+		                                     glm::vec3(313.0f, 7.6f, 29.0f),glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(427.0f, 7.6f, -136.0f) };
 	vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
 		                                    glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
 	
@@ -158,7 +158,7 @@ void initPhysics(bool interactive)
 	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
 	Map->setName("map");
 
-
+	Map->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
 
 	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
 
