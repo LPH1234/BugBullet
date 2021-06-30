@@ -114,6 +114,7 @@ namespace Render
 				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE){
 					glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
 				// render object
+
 				}
 				//if (sleeping) {}
 				renderGeometry(actors[i], h, shader);

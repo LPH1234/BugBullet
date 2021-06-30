@@ -81,10 +81,11 @@ void testFilter();
 void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 //É¾³ýremoveActorListÀïÃæµÄactor
 void removeActorInList();
+void addBonusInList();
 
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(20));
-
-PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
+//
+//PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
 
 //PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
 
@@ -99,7 +100,8 @@ void createAbleBreakWall();
 void createBreakableWall();
 void testTriggerWall();
 void testTriggerCollection();
-PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type);
+
+PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type,bool movable);
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);

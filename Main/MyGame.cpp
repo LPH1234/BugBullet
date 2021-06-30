@@ -25,6 +25,7 @@ extern Shader* envShader;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 Player* vehicle;
 guntower GunTower;
+bonus Bonus;
 
 void initPhysics(bool interactive)
 {
@@ -110,7 +111,8 @@ void initPhysics(bool interactive)
 		pos_list.push_back(north_island_pos_list[i]);
 	}
 	GunTower.initlist(pos_list);
-
+	vector<glm::vec3> supply_pos_list = { glm::vec3(5.0f, 5.0f, 0.0f) };
+	Bonus.initlist(supply_pos_list);
 	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
@@ -202,7 +204,9 @@ void stepPhysics(bool interactive)
 	vehicle->automove();
 	Plane_1->manualControlAirPlane4();
 	GunTower.runguntower(Plane_1->body);
+	Bonus.runsupply();
 	//GunTower.runguntower(vehicle->getRigid());
+	addBonusInList();
 	removeActorInList();
 	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	/*gScene->fetchResults(true);

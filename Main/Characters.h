@@ -62,6 +62,7 @@ public:
 	virtual void ProcessMouseClick() {};
 
 	virtual void oncontact(DATATYPE::ACTOR_TYPE _type) {};
+	virtual void oncontact(DATATYPE::TRIGGER_TYPE _type) {};
 
 	physx::PxRigidDynamic* getRigid() {
 		return this->rigid;
@@ -102,6 +103,7 @@ private:
 	vector<PxVec3> waypoint;
 
 	int health = 100;//坦克生命值
+	bool alive = true;
 
 public:
 	PxRigidDynamic*			body;//刚体
@@ -146,6 +148,8 @@ public:
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
 	int health = 100;//飞机生命值
+	int bullet_ammo = 100;
+	int missle_ammo = 0;
 
 	void*					user_data;//信息
 
@@ -171,4 +175,5 @@ public:
 	virtual void ProcessMouseClick() {};
 
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
+	void oncontact(DATATYPE::TRIGGER_TYPE _type);
 };
