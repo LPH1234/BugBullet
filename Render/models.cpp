@@ -284,14 +284,14 @@ glm::mat4 CloudParticle::getModel() {
 
 // 物理渲染粒子
 
-BaseParticle::BaseParticle(glm::vec3 scale, Shader* shader) :PlainModel(glm::vec3(0.f, 0.f, 0.f), scale, "", shader) {}
+BaseParticle::BaseParticle(glm::vec3 scale, Shader* shader, std::string modelPath) : PlainModel(glm::vec3(0.f, 0.f, 0.f), scale, modelPath, shader) {}
 BaseParticle::~BaseParticle() {}
 void BaseParticle::update(const PxVec3& position, const PxVec3& velocity) {};
 void BaseParticle::setParticleSystem(PxParticleSystem* ps) { this->ps = ps; }
 
 
-PointParticle::PointParticle(glm::vec3 scale, glm::vec3 c, Shader* shader) :BaseParticle(scale, shader) {
-	this->objectColor = c;
+PointParticle::PointParticle(glm::vec3 scale, std::string modelPath, glm::vec3 c, Shader* shader) :BaseParticle(scale, shader, modelPath) {
+	/*this->objectColor = c;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	float vertices[] = { 0.f,0.f,0.f };
@@ -299,7 +299,8 @@ PointParticle::PointParticle(glm::vec3 scale, glm::vec3 c, Shader* shader) :Base
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBindVertexArray(VAO);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(0);*/
+
 }
 
 PointParticle::~PointParticle() {}
@@ -329,8 +330,9 @@ void PointParticle::draw(unsigned int index, glm::mat4 view, glm::mat4 projectio
 	this->shader->setMat4("view", view);
 	this->updateShaderModel();
 
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_POINTS, 0, 1);
+	/*glBindVertexArray(VAO);
+	glDrawArrays(GL_POINTS, 0, 1);*/
+	this->model->Draw(*shader);
 
 	//recover
 	shader->setVec3("objectColor", this->defaultColor);
@@ -429,7 +431,7 @@ void loadTexture(char const* path, unsigned int* textureID)
 /*
  * 加载一个cubeMap
  */
-GLuint loadCubeMapTexture(std::vector<const char*> picFilePathVec,
+GLuint loadCubeMapTexture(std::vector<std::string> picFilePathVec,
 	GLint internalFormat,
 	GLenum picFormat,
 	GLenum picDataType,
@@ -443,7 +445,7 @@ GLuint loadCubeMapTexture(std::vector<const char*> picFilePathVec,
 	for (std::vector<const char*>::size_type i = 0; i < picFilePathVec.size(); ++i)
 	{
 		int channels = 0;
-		imageData = SOIL_load_image(picFilePathVec[i], &picWidth,
+		imageData = SOIL_load_image(picFilePathVec[i].c_str(), &picWidth,
 			&picHeight, &channels, loadChannels);
 		if (imageData == NULL)
 		{

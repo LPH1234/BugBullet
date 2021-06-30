@@ -38,18 +38,18 @@
     <ClCompile Include="..\..\Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\cloudShader\cloud.FragmentShader" />
-    <None Include="shaders\cloudShader\cloud.VertexShader" />
-    <None Include="shaders\envShader\env.FragmentShader" />
-    <None Include="shaders\envShader\env.VertexShader" />
-    <None Include="shaders\pointParticleShader\pointParticle.FragmentShader" />
-    <None Include="shaders\pointParticleShader\pointParticle.VertexShader" />
-    <None Include="shaders\skyboxShader\skybox.FragmentShader" />
-    <None Include="shaders\skyboxShader\skybox.VertexShader" />
-    <None Include="shaders\smokeShader\smoke.FragmentShader" />
-    <None Include="shaders\smokeShader\smoke.VertexShader" />
-    <None Include="shaders\spriteShader\sprite.FragmentShader" />
-    <None Include="shaders\spriteShader\sprite.VertexShader" />
+    <None Include="shaders\cloudShader\cloud.fs" />
+    <None Include="shaders\cloudShader\cloud.vs" />
+    <None Include="shaders\envShader\env.fs" />
+    <None Include="shaders\envShader\env.vs" />
+    <None Include="shaders\flameShader\flame.fs" />
+    <None Include="shaders\flameShader\flame.vs" />
+    <None Include="shaders\pointParticleShader\pointParticle.fs" />
+    <None Include="shaders\pointParticleShader\pointParticle.vs" />
+    <None Include="shaders\skyboxShader\skybox.fs" />
+    <None Include="shaders\skyboxShader\skybox.vs" />
+    <None Include="shaders\smokeShader\smoke.fs" />
+    <None Include="shaders\smokeShader\smoke.vs" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\icon\icon.png" />

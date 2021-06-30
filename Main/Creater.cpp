@@ -215,6 +215,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 	//PX_UNUSED(count);
 	for (PxU32 i = 0; i < count; i++)
 	{
+
 		// ignore pairs when shapes have been deleted
 		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 			continue;
@@ -848,6 +849,9 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 			for (int i = 0; i < numParticles; i++, particleCreationData.indexBuffer++)
 				newAppParticleIndices[i] = *particleCreationData.indexBuffer;
 			ps->userData = (void*)data;
+			ps->setParticleBaseFlag(PxParticleBaseFlag::eCOLLISION_WITH_DYNAMIC_ACTORS, true);
+			ps->setParticleBaseFlag(PxParticleBaseFlag::eCOLLISION_TWOWAY, true);
+			ps->setParticleBaseFlag(PxParticleBaseFlag::eGPU, true);
 			cout << "创建粒子成功\n";
 		}
 		else {

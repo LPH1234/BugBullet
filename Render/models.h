@@ -16,7 +16,7 @@
 void loadTexture(char const* path, unsigned int* textureID);
 void loadTextureRGBA(char const* path, unsigned int* textureID);
 
-GLuint loadCubeMapTexture(std::vector<const char*> picFilePathVec,
+GLuint loadCubeMapTexture(std::vector<std::string> picFilePathVec,
 	GLint internalFormat = GL_RGB,
 	GLenum picFormat = GL_RGB,
 	GLenum picDataType = GL_UNSIGNED_BYTE,
@@ -437,7 +437,7 @@ class SkyBox : public PlainModel
 {
 public:
 
-	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, std::vector<const char*> faces) :PlainModel(pos, scale, modelPath, shader) {
+	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, std::vector<string> faces) :PlainModel(pos, scale, modelPath, shader) {
 		this->shader = shader;
 		this->Position = pos;
 		this->scale_value = scale;
@@ -548,7 +548,7 @@ class BaseParticle : public PlainModel
 protected:
 	PxParticleSystem* ps = nullptr;
 public:
-	BaseParticle(glm::vec3 scale, Shader* shader);
+	BaseParticle(glm::vec3 scale, Shader* shader, std::string modelPath);
 	~BaseParticle();
 
 	virtual void update(const PxVec3& position, const PxVec3& velocity);
@@ -563,7 +563,7 @@ class PointParticle : public BaseParticle
 	glm::vec3 defaultColor = glm::vec3(1.f, 1.f, 1.f);
 	unsigned int VBO, VAO;
 public:
-	PointParticle(glm::vec3 scale, glm::vec3 c, Shader* shader);
+	PointParticle(glm::vec3 scale,std::string modelPath, glm::vec3 c, Shader* shader);
 	~PointParticle();
 	void update(const PxVec3& position, const PxVec3& velocity);
 	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
