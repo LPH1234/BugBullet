@@ -11,6 +11,7 @@ struct DATATYPE {
 	enum TRIGGER_TYPE {
 		BORDER,
 		COLLECTION,
+		BLOOD,
 		SUPPLY
 	};
 };

@@ -704,6 +704,7 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 
 
 Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(target) {
+	this->body = target;
 	this->airPlane = airplane;
 	cout << "飞机速度：" << this->airPlane->getRigid()->getLinearVelocity().x << "\t"
 		<< this->airPlane->getRigid()->getLinearVelocity().y << "\t" << this->airPlane->getRigid()->getLinearVelocity().z << "\n";
@@ -717,7 +718,12 @@ Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(
 	autoshooting = true;
 	turnningState.resize(2);
 	turnningState[0] = true;
+	//绑定血条shape
+	PxTransform pos(this->body->getGlobalPose().p + PxVec3(0, 5, 0));
+	this->healthBody = createAndShowBlood(this->body, this->healthLength, pos, PxTransform(PxVec3(0, 4, 0)), PxTransform(PxVec3(0, -1, 0)));
+
 	gScene->addActor(*(this->rigid));
+	gScene->addActor(*(this->healthBody));
 }
 
 void Player::ProcessKeyPress() {
@@ -971,6 +977,8 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		cout << "Tank - " << damage << endl;
 	}
 	else if(this->alive==true) {
+		this->health = 0;
+		updateTankList.insert(this);
 		this->alive = false;
 		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
 		cout << "Tank died" << endl;

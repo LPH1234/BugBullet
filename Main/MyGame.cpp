@@ -86,12 +86,16 @@ void initPhysics(bool interactive)
 
 	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
 	GunTower.initguntower(pos1);*/
-	vector<glm::vec3>east_island_pos_list = {glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(245.7f, 7.6f, 83.0f),glm::vec3(253.0f, 7.6f, -141.0f),glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),
-		                                     glm::vec3(313.0f, 7.6f, 29.0f),glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(427.0f, 7.6f, -136.0f) };
-	vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
-		                                     glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
-	vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::vec3(24.6f,7.6f,-330.8f),glm::vec3(25.1f,7.6f,-394.6f),glm::vec3(26.8f,7.6f,-464.3f),
-		                                     glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),glm::vec3(-19.7f,7.6f,-256.8f) };
+	vector<glm::vec3>east_island_pos_list = {glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(245.7f, 7.6f, 83.0f),glm::vec3(253.0f, 7.6f, -141.0f),
+											glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
+											glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(427.0f, 7.6f, -136.0f) };
+	vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),
+											glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
+		                                     glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),
+											glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
+	vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::vec3(24.6f,7.6f,-330.8f),glm::vec3(25.1f,7.6f,-394.6f),
+											glm::vec3(26.8f,7.6f,-464.3f),glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),
+											glm::vec3(-19.7f,7.6f,-256.8f) };
 	vector<glm::vec3>pos_list;
 
 	glm::vec3 pos1(5.0f, 5.0f, 0.0f); 
@@ -173,7 +177,31 @@ void initPhysics(bool interactive)
 	if (!interactive)
 		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
-
+//更新炮塔血条
+//void updateGuntowerInList() {
+//	int count = GunTower.count;
+//	for (int i = 0; i < count; i++) {
+//		int currentHealth = GunTower.health_list[i];
+//		if (currentHealth == 0) {
+//			if (GunTower.blood_body_list[i]) {
+//				gScene->removeActor(*GunTower.blood_body_list[i]);
+//			}
+//			GunTower.blood_body_list[i] = nullptr;
+//		}
+//		else {
+//			float l = currentHealth / 50.0*3.0;
+//			const PxU32 numShapes = GunTower.blood_body_list[i]->getNbShapes();
+//			PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
+//			GunTower.blood_body_list[i]->getShapes(shapes, numShapes);
+//			for (PxU32 j = 0; j < numShapes; j++)
+//			{
+//				PxShape* shape = shapes[j];
+//				shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
+//			}
+//			free(shapes);
+//		}
+//	}
+//}
 void beforeStepPhysics() {
 	addForceToPartivleSystem(physicsParticleSystemList);
 }
@@ -208,6 +236,8 @@ void stepPhysics(bool interactive)
 	//GunTower.runguntower(vehicle->getRigid());
 	addBonusInList();
 	removeActorInList();
+	updateTankInList();
+	updateGuntowerInList();
 	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	/*gScene->fetchResults(true);
 	removeActorInList();

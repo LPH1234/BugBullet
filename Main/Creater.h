@@ -81,6 +81,10 @@ void testFilter();
 void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 //删除removeActorList里面的actor
 void removeActorInList();
+//更新坦克血条
+void updateTankInList();
+//更新炮塔血条
+void updateGuntowerInList();
 void addBonusInList();
 
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(20));

@@ -25,6 +25,7 @@ extern Shader* envShader;
 extern Shader* spriteShader;
 
 vector<PxActor*>		removeActorList;
+set<Player*>			updateTankList;
 list<PxParticleSystem*> physicsParticleSystemList;
 list<BaseParticleCluster*> renderParticleClusterList;
 PxVec3					airPlaneVelocity(0, 0, 0);//飞机速度
@@ -39,6 +40,7 @@ vector<PxTransform> addBonusList;
 
 extern Camera camera;
 extern AirPlane* Plane_1;
+extern guntower GunTower;
 
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
@@ -186,7 +188,7 @@ void testTriggerWall() {
 	gScene->addActor(*borderPlaneEast);
 }
 void testTriggerCollection() {
-	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
+	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial); 
 	PxShape* collectionContactShape = gPhysics->createShape(PxBoxGeometry(1.f, 1.f, 1.f), *gMaterial);
 	PxTransform pos(PxVec3(130.f, 20.f, 20.f));
 	PxRigidDynamic* collection = gPhysics->createRigidDynamic(pos);
@@ -244,7 +246,9 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			removeActorList.push_back(actor_0);
 			continue;
 		}
-		if ((actor_data_1->type2 ==DATATYPE::TRIGGER_TYPE::COLLECTION|| actor_data_1->type2==DATATYPE::TRIGGER_TYPE::SUPPLY)&&actor_data_0->name == "plane") {
+
+		if ((actor_data_1->type2 ==DATATYPE::TRIGGER_TYPE::COLLECTION
+			|| actor_data_1->type2==DATATYPE::TRIGGER_TYPE::SUPPLY)&&actor_data_0->name == "plane") {
 			//飞机拾取道具的回调
 			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
 				bool isvalid = actor_data_1->basesce->supplyoncontact(actor_data_1->id, DATATYPE::ACTOR_TYPE::PLANE);
@@ -367,6 +371,57 @@ void removeActorInList() {
 	}
 	removeActorList.clear();
 }
+
+//更新坦克血条
+void updateTankInList() {
+	for (auto i = updateTankList.begin(); i != updateTankList.end(); i++) {
+		if ((*i)->health > 0) {
+			const PxU32 numShapes = (*i)->healthBody->getNbShapes();
+			PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
+			(*i)->healthBody->getShapes(shapes, numShapes);
+			for (PxU32 j = 0; j < numShapes; j++)
+			{
+				PxShape* shape = shapes[j];
+				float l = (((*i)->health / 100.0)*(*i)->healthLength / 2 > 0 ? ((*i)->health / 100.0)*(*i)->healthLength / 2 : 0.01);
+				cout << "更改血条！当前血量：" << (*i)->health << "\tl:" << l << "\n";
+				shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
+			}
+			free(shapes);
+		}
+		else {
+			if((*i)->healthBody)
+			gScene->removeActor(*(*i)->healthBody);
+			(*i)->healthBody = nullptr;
+		}
+	}
+	updateTankList.clear();
+}
+////更新炮塔血条
+void updateGuntowerInList() {
+	int count = GunTower.count;
+	for (int i = 0; i < count; i++) {
+		int currentHealth = GunTower.health_list[i];
+		if (currentHealth == 0) {
+			if (GunTower.blood_body_list[i]) {
+				gScene->removeActor(*GunTower.blood_body_list[i]);
+			}
+			GunTower.blood_body_list[i] = nullptr;
+		}
+		else {
+			float l = currentHealth / 50.0*3.0;
+			const PxU32 numShapes = GunTower.blood_body_list[i]->getNbShapes();
+			PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
+			GunTower.blood_body_list[i]->getShapes(shapes, numShapes);
+			for (PxU32 j = 0; j < numShapes; j++)
+			{
+				PxShape* shape = shapes[j];
+				shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
+			}
+			free(shapes);
+		}
+	}
+}
+
 void addBonusInList() {
 	int n = addBonusList.size();
 	for (int i = 0; i < n; i++) {
