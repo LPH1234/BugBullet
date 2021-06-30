@@ -139,6 +139,7 @@ void Camera::trackDynamicPosition() { // 设置相机跟随物体
 			PxVec3 t_f; this->target->getFront(t_f);
 			PxVec3 t_u; this->target->getUp(t_u);
 			glm::vec3 t_f1; pxVec3ToGlmVec3(t_f - 0.3f * t_u, t_f1);
+			t_f1 = glm::normalize(t_f1);
 			//glm::vec3 t_f1; pxVec3ToGlmVec3(t_f - Pitch / 180.f * t_u, t_f1);
 			Position.y = target_position.y - t_f1.y * track_radius;
 			float curr_radians = sqrtf(track_radius * track_radius - (target_position.y - Position.y) * (target_position.y - Position.y));

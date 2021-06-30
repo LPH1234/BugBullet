@@ -94,7 +94,7 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 	}
 }
 
-namespace Snippets
+namespace Render
 {
 
 	void renderActors(PxRigidActor** actors, const PxU32 numActors, Shader* shader, bool shadows, const PxVec3 & color)
@@ -105,56 +105,33 @@ namespace Snippets
 			const PxU32 nbShapes = actors[i]->getNbShapes();
 			PX_ASSERT(nbShapes <= MAX_NUM_ACTOR_SHAPES);
 			actors[i]->getShapes(shapes, nbShapes);
-			bool sleeping = actors[i]->is<PxRigidDynamic>() ? actors[i]->is<PxRigidDynamic>()->isSleeping() : false;
-
+			//bool sleeping = actors[i]->is<PxRigidDynamic>() ? actors[i]->is<PxRigidDynamic>()->isSleeping() : false;
 			for (PxU32 j = 0; j < nbShapes; j++)
 			{
 				const PxMat44 shapePose(PxShapeExt::getGlobalPose(*shapes[j], *actors[i]));
 				PxGeometryHolder h = shapes[j]->getGeometry();
-
-				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE)
+				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				// render object
-
-
-				if (sleeping)
-				{
-					//PxVec3 darkColor = color * 0.25f;
-					//glColor4f(darkColor.x, darkColor.y, darkColor.z, 1.0f);
 				}
-				else {
-					// glColor4f(color.x, color.y, color.z, 1.0f); 
-				}
+				//if (sleeping) {}
 				renderGeometry(actors[i], h, shader);
-
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-				if (shadows)
-				{
-					//const PxVec3 shadowDir(0.0f, -0.7071067f, -0.7071067f);
-					//const PxReal shadowMat[] = { 1,0,0,0, -shadowDir.x / shadowDir.y,0,-shadowDir.z / shadowDir.y,0, 0,0,1,0, 0,0,0,1 };
-					//glPushMatrix();
-					//glMultMatrixf(shadowMat);
-					//glMultMatrixf(reinterpret_cast<const float*>(&shapePose));
-					////glDisable(GL_LIGHTING);
-					////glColor4f(0.1f, 0.2f, 0.3f, 1.0f);
-					//renderGeometry(h);
-					////glEnable(GL_LIGHTING);
-					//glPopMatrix();
-				}
+				//if (shadows) {}
 			}
 		}
 	}
 
-	void renderParticles(list<PxParticleSystem*>& particleSystemList, glm::mat4 view, glm::mat4 projection) {
+	void renderParticles(list<PxParticleSystem*>& particleSystemList, list<BaseParticleCluster*>& renderParticleClusterList, glm::mat4 view, glm::mat4 projection) {
+
+		//1、物理粒子的渲染
+		//-----------------------------------------------------------------------
 		vector<PxParticleSystem*> remove_list; //要移除的粒子系统列表
-		list<PxParticleSystem*>::iterator it; //声明一个迭代器
-		for (it = particleSystemList.begin(); it != particleSystemList.end(); it++) {
-			PxParticleSystem* ps = *it;
+		list<PxParticleSystem*>::iterator pIt; //声明一个迭代器
+		for (pIt = particleSystemList.begin(); pIt != particleSystemList.end(); pIt++) {
+			PxParticleSystem* ps = *pIt;
 			// lock SDK buffers of *PxParticleSystem* ps for reading
 			PxParticleReadData* rd = ps->lockParticleReadData();
-			char str[12];
-			sprintf(str, "%d", ps);
+
 			bool stop_flag = true;
 			ParticleSystemData* data = reinterpret_cast<ParticleSystemData*>(ps->userData);
 
@@ -190,6 +167,7 @@ namespace Snippets
 			}
 
 		}
+		//1.1、物理粒子系统的回收
 		for (size_t i = 0; i < remove_list.size(); i++)
 		{
 			PxParticleSystem* ps = remove_list[i];
@@ -201,10 +179,28 @@ namespace Snippets
 			ps->release();
 		}
 
+		//2、点精灵、纯渲染粒子的渲染
+		//-----------------------------------------------------------------------
+		vector<BaseParticleCluster*> remove_list_c; //要移除的粒子cluster列表
+		list<BaseParticleCluster*>::iterator rIt;
+		for (rIt = renderParticleClusterList.begin(); rIt != renderParticleClusterList.end(); rIt++) {
+			(*rIt)->update();
+			(*rIt)->draw(view, projection);
+			if ((*rIt)->isRemoveable())
+				remove_list_c.push_back(*rIt);
+		}
+		//2.1、点精灵、纯渲染粒子de回收
+		for (size_t i = 0; i < remove_list_c.size(); i++) {
+			BaseParticleCluster* pc = remove_list_c[i];
+			renderParticleClusterList.remove(pc);
+			delete pc;
+		}
+
+
 	}
 
 
-} //namespace Snippets
+} //namespace Render
 
 PxFilterFlags testCCDFilterShader(
 	PxFilterObjectAttributes attributes0,
@@ -225,15 +221,15 @@ PxFilterFlags testCCDFilterShader(
 	pairFlags = PxPairFlag::eSOLVE_CONTACT;
 	pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
 	pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-		/*| PxPairFlag::eNOTIFY_TOUCH_FOUND
-		| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
-		| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
+	/*| PxPairFlag::eNOTIFY_TOUCH_FOUND
+	| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+	| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
 	// generate contacts for all that were not filtered above
 	//pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
-	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1 
+	cout << "fiterData0.word0:" << filterData0.word0 << "filterData1.word1:" << filterData1.word1
 		<< "\tand:" << (filterData0.word0 & filterData1.word1) << "\n";
 	if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
 		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;

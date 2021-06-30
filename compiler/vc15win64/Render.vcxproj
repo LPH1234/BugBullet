@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Render\Camera.h" />
+    <ClInclude Include="..\..\Render\Cluster.h" />
     <ClInclude Include="..\..\Render\Mesh.h" />
     <ClInclude Include="..\..\Render\Model.h" />
     <ClInclude Include="..\..\Render\models.h" />
@@ -29,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Render\Camera.cpp" />
+    <ClCompile Include="..\..\Render\Cluster.cpp" />
     <ClCompile Include="..\..\Render\glad.c" />
     <ClCompile Include="..\..\Render\Model.cpp" />
     <ClCompile Include="..\..\Render\models.cpp" />
@@ -36,14 +38,18 @@
     <ClCompile Include="..\..\Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\cloudShader\cloud.FragmentShader" />
+    <None Include="shaders\cloudShader\cloud.VertexShader" />
     <None Include="shaders\envShader\env.FragmentShader" />
     <None Include="shaders\envShader\env.VertexShader" />
     <None Include="shaders\pointParticleShader\pointParticle.FragmentShader" />
     <None Include="shaders\pointParticleShader\pointParticle.VertexShader" />
     <None Include="shaders\skyboxShader\skybox.FragmentShader" />
     <None Include="shaders\skyboxShader\skybox.VertexShader" />
-    <None Include="shaders\smokeParticleShader\smokeParticle.FragmentShader" />
-    <None Include="shaders\smokeParticleShader\smokeParticle.VertexShader" />
+    <None Include="shaders\smokeShader\smoke.FragmentShader" />
+    <None Include="shaders\smokeShader\smoke.VertexShader" />
+    <None Include="shaders\spriteShader\sprite.FragmentShader" />
+    <None Include="shaders\spriteShader\sprite.VertexShader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\icon\icon.png" />
@@ -51,7 +57,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{43554530-2170-F5A9-4794-3AD09344F18D}</ProjectGuid>
     <RootNamespace>SnippetRender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
@@ -114,7 +120,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glfw3d.lib;libglew32d.lib;assimp-vc140-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3d.lib;libglew32d.lib;assimp-vc140-mtd.lib;trng4d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)DEBUG.lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -236,7 +242,7 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/INCREMENTAL:NO</AdditionalOptions>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;libglew32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;libglew32.lib;assimp-vc140-mt.lib;trng4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>

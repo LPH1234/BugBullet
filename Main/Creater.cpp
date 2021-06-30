@@ -24,7 +24,8 @@ extern AirPlane		*Plane_1;
 extern Shader* envShader;
 
 vector<PxActor*>		removeActorList;
-list<PxParticleSystem*> renderParticleSystemList;
+list<PxParticleSystem*> physicsParticleSystemList;
+list<BaseParticleCluster*> renderParticleClusterList;
 PxVec3					airPlaneVelocity(0, 0, 0);//飞机速度
 long long				angelAirPlane = 0.0;
 PxVec3					headForward(1, 0, 0);//机头朝向
@@ -55,7 +56,6 @@ PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath,
 	}
 	return rigid;
 }
-
 
 
 
@@ -149,6 +149,13 @@ void testTriggerWall() {
 	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 850), *gMaterial);
 	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 850), *gMaterial);
 	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 850), *gMaterial);
+
+	borderPlaneSky->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneNorth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneSouth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneWest->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	borderPlaneEast->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+
 	PxShape *triggerShape1, *triggerShape2, *triggerShape3, *triggerShape4, *triggerShape5;
 	borderPlaneSky->getShapes(&triggerShape1, 1);
 	borderPlaneNorth->getShapes(&triggerShape2, 1);
@@ -173,6 +180,36 @@ void testTriggerWall() {
 	gScene->addActor(*borderPlaneWest);
 	gScene->addActor(*borderPlaneEast);
 }
+void testTriggerCollection() {
+	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
+	PxShape* collectionContactShape = gPhysics->createShape(PxBoxGeometry(1.f, 1.f, 1.f), *gMaterial);
+	PxTransform pos(PxVec3(130.f, 20.f, 20.f));
+	PxRigidDynamic* collection = gPhysics->createRigidDynamic(pos);
+	collection->userData = new UserData(1, "collection", DATATYPE::TRIGGER_TYPE::COLLECTION);
+	collection->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	collectionShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	collectionShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	collection->attachShape(*collectionShape);
+	collection->attachShape(*collectionContactShape);
+	gScene->addActor(*collection);
+	collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
+	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
+
+}
+PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type) {
+	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
+	PxRigidDynamic* collection = gPhysics->createRigidDynamic(tran);
+	collection->userData = new UserData(1, "collection", _type);
+	collection->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	collectionShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	collectionShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	collection->attachShape(*collectionShape);
+	gScene->addActor(*collection);
+	collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
+	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
+	return collection;
+}
+
 void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 	//PX_UNUSED(pairs);
 	//PX_UNUSED(count);
@@ -181,12 +218,35 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 		// ignore pairs when shapes have been deleted
 		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 			continue;
-
-		if (pairs[i].otherActor != Plane_1->getRigid())
-		{
-			//printf("onTrigger!\n");
-			removeActorList.push_back(pairs[i].otherActor);
+		PxRigidActor *actor_0 = (PxRigidActor*)pairs[i].otherActor, *actor_1 = (PxRigidActor*)pairs[i].triggerActor;
+		UserData* actor_data_0 = reinterpret_cast<UserData*>(actor_0->userData);
+		UserData* actor_data_1 = reinterpret_cast<UserData*>(actor_1->userData);
+		/*cout << "onTrigger!\t";
+		cout << "actor_data_0->name:" << actor_data_0->name << "\tactor_data_1->name:" << actor_data_1->name << "\n";*/
+		/*if (actor_data_0->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
+			&&actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER
+			|| actor_data_0->type2 == DATATYPE::TRIGGER_TYPE::BORDER
+			&&actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
+			PxRigidActor* temp = (actor_data_0->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
+				? actor_0 : actor_1);
+			removeActorList.push_back(temp);
+			continue;
+		}*/
+		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
+			removeActorList.push_back(actor_0);
+			continue;
 		}
+		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION&&actor_data_0->name == "plane") {
+			//飞机拾取道具的回调
+			cout << "获得道具!\n";
+			removeActorList.push_back(actor_1);
+		}
+		//if (pairs[i].otherActor != Plane_1->getRigid())
+		//{
+		//	//printf("onTrigger!\n");
+		//	removeActorList.push_back(pairs[i].otherActor);
+		//}
+		
 	}
 }
 
@@ -302,6 +362,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 
 void testFilter() {
 	//131.f, 7.0f, 22.0f
+
 	PxRigidDynamic* body1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(-2.f, 2.0f, 0.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
 	cout << "创造body1\n";
 	//PxRigidDynamic* body2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(131.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
@@ -610,7 +671,7 @@ void createBreakableWall() {
 		for (int j = 0; j < 5; j++) {
 			PxTransform pos(PxVec3(x + (j - 2) * 4, y, z));
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(pos);
-			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE|FilterGroup::eWALL);
+			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE | FilterGroup::eWALL);
 			Wall[i][j] = body;
 			body->attachShape(*shape);
 			PxRigidBodyExt::updateMassAndInertia(*body, 0.1f);
@@ -801,7 +862,7 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 
 	if (ps) {
 		gScene->addActor(*ps);
-		renderParticleSystemList.push_back(ps);
+		physicsParticleSystemList.push_back(ps);
 	}
 	//Cleanup
 	delete newAppParticlePositions;
@@ -895,7 +956,7 @@ void createSmokeParticles(int numParticles, bool perOffset, BaseParticle* render
 			ps->userData = (void*)data;
 			cout << "创建粒子成功\n";
 			gScene->addActor(*ps);
-			renderParticleSystemList.push_back(ps);
+			physicsParticleSystemList.push_back(ps);
 		}
 		else {
 			myindexpool->freeIndices();
@@ -926,4 +987,27 @@ void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList) {
 		ps->addForces(data->numParticles, PxStrideIterator<const PxU32>(data->newAppParticleIndices), PxStrideIterator<const PxVec3>(data->newAppParticleforces), PxForceMode::eACCELERATION);
 	}
 
+}
+
+float* createUniformRandomFloatArray(int num, float bottom, float up) {
+	float* rt = new float[num];
+
+	trng::yarn2 R(clock());
+	trng::uniform_dist<> random_u(bottom, up);
+	for (int i = 0; i < num; i++)
+	{
+		rt[i] = random_u(R);
+	}
+	return rt;
+}
+
+float* createNormalRandomFloatArray(int num, float arg1, float arg2) {
+	float* rt = new float[num];
+	trng::yarn2 R(clock());
+	trng::normal_dist<> random_n(arg1, arg2); // 均值、标准差
+	for (int i = 0; i < num; i++)
+	{
+		rt[i] = random_n(R);
+	}
+	return rt;
 }

@@ -20,12 +20,13 @@
 #include "foundation/PxPreprocessor.h"
 
 #include "objLoader.h"
+#include "Cluster.h"
 
 
-namespace Snippets
+namespace Render
 {
 	void renderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, Shader* shader, bool shadows = false, const physx::PxVec3 & color = physx::PxVec3(0.0f, 0.75f, 0.0f));
-	void renderParticles(list<PxParticleSystem*>& particleSystemList, glm::mat4 view, glm::mat4 projection);
+	void renderParticles(list<PxParticleSystem*>& particleSystemList, list<BaseParticleCluster*>& renderParticleClusterList, glm::mat4 view, glm::mat4 projection);
 }
 
 PxFilterFlags testCCDFilterShader(

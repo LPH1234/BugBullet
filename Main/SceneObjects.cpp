@@ -69,7 +69,7 @@ void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos) {
 	PxVec3 target_pos = target->getGlobalPose().p;
 	double distance = sqrt(pow(target_pos.x - pos.x, 2) + pow(target_pos.y - pos.y, 2) + pow(target_pos.z - pos.z, 2));
 	if (distance > 200.0f) {
-		cout << "out of range" << endl;
+		//cout << "out of range" << endl;
 		return;
 	}
 	PxVec3 velocity = (target_pos - pos);
