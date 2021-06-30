@@ -488,13 +488,24 @@ void AirPlane::emit() {
 	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
 	PxQuat bulletRot2 = body->getGlobalPose().q;
 	PxQuat bulletRot3(PxPi / 180 * (-10), currentSwingForward);
+	PxVec3 emitPos; PxRigidDynamic* dynamic;
+	if (activatemissle) {
+		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
+		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
+			PxCapsuleGeometry(0.04, 0.17), *gMaterial, 1.0f);
+		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_MISSLE);
+	}
+	else {
+		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
+		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
+			PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+	}
 	
-	PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward+leftOrRight*currentSwingForward;
 	leftOrRight *= -1;
 	//emitTransform.q = bulletRot;
 	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos,bulletRot3*bulletRot2*bulletRot),
-		PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+	
 	//设置刚体名称
 	setupFiltering((PxRigidActor*)(dynamic), FilterGroup::eMISILE, FilterGroup::eMAP|FilterGroup::eTANK);
 	dynamic->setName("bullet");
@@ -504,7 +515,7 @@ void AirPlane::emit() {
 	dynamic->setLinearVelocity((veclocity + emitVeclocity)*emitDirection);
 	//dynamic->setLinearVelocity((veclocity + emitVeclocity)*currentHeadForward);
 
-	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+	
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	gScene->addActor(*dynamic);
 	airPlaneBullet.insert(dynamic);
@@ -614,10 +625,20 @@ void AirPlane::ProcessKeyPress() {
 	if (!keyToPressState[GLFW_KEY_E] && keyToPrePressState[GLFW_KEY_E]) {
 		turningState2[6] = false;
 	}
-
+	if (keyToPressState[GLFW_KEY_1]) {
+		activatemissle = false;
+	}
+	if (keyToPressState[GLFW_KEY_2]) {
+		activatemissle = true;
+	}
 	//发射
-	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]&&bullet_ammo>0) {
-		bullet_ammo--;
+	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]&&((!activatemissle&&bullet_ammo>0)||(activatemissle&&missle_ammo>0))) {
+		if (activatemissle) {
+			missle_ammo--;
+		}
+		else {
+			bullet_ammo--;
+		}
 		emit();
 		cout<<"bullet_ammo: "<<bullet_ammo<<endl;
 	}

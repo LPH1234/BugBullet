@@ -40,6 +40,7 @@ vector<PxTransform> addBonusList;
 extern Camera camera;
 extern AirPlane* Plane_1;
 
+
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	PxRigidActor* rigid;
 	if (FileUtils::isFileExist(modelPath)) {
@@ -289,10 +290,13 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 		UserData* actor_data_0 = reinterpret_cast<UserData*>(actor_0->userData);
 		UserData* actor_data_1 = reinterpret_cast<UserData*>(actor_1->userData);
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
-			if (actor_data_0->type== DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+			if ((actor_data_0->type== DATATYPE::ACTOR_TYPE::PLANE_BULLET|| actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) 
+				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) 
+				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				printf("·É»úµ¯Ò©£¡\n");
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET|| 
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
 				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
 			}
@@ -314,17 +318,27 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TOWER_BULLET);
 			}
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
+				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
+				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK ? actor_data_0 : actor_data_1);
-				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+				UserData* temp2 = ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(temp2->type);
 			}
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
+				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
+				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER ? actor_data_0 : actor_data_1);
-				temp1->basesce->oncontact(temp1->id,DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+				UserData* temp2 = ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_data_0 : actor_data_1);
+				temp1->basesce->oncontact(temp1->id,temp2->type);
 				PxU32 num = pairs[i].contactCount;
 				cout << "num: " << num << endl;
 				if (num > 0) {
