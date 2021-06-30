@@ -3,7 +3,6 @@
 
 extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 
-
 AirPlane::AirPlane() :BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
 
@@ -58,6 +57,8 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	currentHeadForward = headForward = head;
 	currentBackForward = backForward = back;
 	currentSwingForward = swingForward = swing;
+	PxQuat emitRot(PxPi / 180 * (-10), currentSwingForward);
+	emitDirection = emitRot.rotate(currentHeadForward).getNormalized();
 	this->body = _body;
 	setupFiltering(this->body, FilterGroup::eAIRPLANE, FilterGroup::eMAP | FilterGroup::ePLAYERBULLET);
 	body->setName("airPlane");
@@ -462,6 +463,8 @@ void AirPlane::manualControlAirPlane4() {
 	currentHeadForward = (body->getGlobalPose().q).rotate(headForward);
 	currentBackForward = (body->getGlobalPose().q).rotate(backForward);
 	currentSwingForward = (body->getGlobalPose().q).rotate(swingForward);
+	PxQuat emitRot(PxPi / 180 * (-10), currentSwingForward);
+	emitDirection = emitRot.rotate(currentHeadForward).getNormalized();
 	//body->setLinearVelocity(veclocity * currentHeadForward);
 }
 
@@ -483,27 +486,28 @@ void AirPlane::emit() {
 	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxSphereGeometry(0.1), *gMaterial, 10.0f);
 	//½ºÄÒÌåµ¯Ò©
 	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
-	//emitTransform.q = getBulletRotate(currentHeadForward, PxVec3(1.0f, 0.0f, 0.0f));
-	emitTransform.q = bulletRot;
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+	PxQuat bulletRot2 = body->getGlobalPose().q;
+	PxQuat bulletRot3(PxPi / 180 * (-10), currentSwingForward);
+	
+	PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward+leftOrRight*currentSwingForward;
+	leftOrRight *= -1;
+	//emitTransform.q = bulletRot;
+	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos,bulletRot3*bulletRot2*bulletRot),
+		PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
 	//ÉèÖÃ¸ÕÌåÃû³Æ
 	setupFiltering((PxRigidActor*)(dynamic), FilterGroup::eMISILE, FilterGroup::eMAP|FilterGroup::eTANK);
 	dynamic->setName("bullet");
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	dynamic->setLinearVelocity((veclocity + emitVeclocity)*currentHeadForward);
-	/*UserData data;
-	(data).id = 1;
-	(data).name = "littleBall";
-	(data).health = 10;
-	cout << data.id << endl;*/
+	dynamic->setLinearVelocity((veclocity + emitVeclocity)*emitDirection);
+	//dynamic->setLinearVelocity((veclocity + emitVeclocity)*currentHeadForward);
 
 	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::PLANE_BULLET);
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
-	//cout << temp->id << endl;
-	//cout << a << endl;
 	gScene->addActor(*dynamic);
+	airPlaneBullet.insert(dynamic);
 }
 
 void AirPlane::reset() {

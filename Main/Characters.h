@@ -20,6 +20,8 @@
 #include <cmath>
 #include "../Data/Consts.h"
 #include "Creater.h"
+#include <set>
+
 
 
 extern std::unordered_map<int, bool> keyToPressState;
@@ -31,6 +33,7 @@ extern PxMaterial*				gMaterial;
 extern Camera camera;
 extern PxTransform born_pos;
 extern const float velocity;
+extern std::set<PxRigidDynamic*> airPlaneBullet;
 
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 
@@ -131,6 +134,7 @@ public:
 	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
 	PxVec3					backForward, currentBackForward;//初始机背朝向、当前机背朝向
 	PxVec3					swingForward, currentSwingForward;//初始机翼朝向、当前机翼朝向
+	PxVec3					emitDirection;//发射方向，定为前进方向下压20°
 	vector<bool>			turningState;//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
 	vector<bool>			turningState2;//飞机转向的7个状态，直行、左偏航、右偏航、俯冲、上仰、左翻滚、右翻滚
 	int						rollingAngel = 0;//滚转角
@@ -141,7 +145,8 @@ public:
 	float					veclocity = 8.0f;//默认飞行速度
 	float					emitVeclocity = 24.0f;//默认炮弹飞行速度
 	float					turningSpeed = 6.0f;//转向速度
-	
+	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
+
 	int health = 100;//飞机生命值
 	int bullet_ammo = 100;
 	int missle_ammo = 0;
