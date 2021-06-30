@@ -16,6 +16,7 @@
 #include "Characters.h"
 
 
+//extern set<PxRigidDynamic*>		airPlaneBullet;
 extern PxFoundation*			gFoundation;
 extern PxPhysics*				gPhysics;
 extern PxCooking*				gCooking;
