@@ -17,10 +17,10 @@ PxPvd*                  gPvd = nullptr;
 PxRigidDynamic*	airPlane = nullptr;
 PxRigidDynamic* player = nullptr;
 PlainModel *street = nullptr;
+set<PxRigidDynamic*>	airPlaneBullet;
 
 extern Player  *vehicle;
 extern AirPlane		*Plane_1;
-
 extern Shader* envShader;
 
 vector<PxActor*>		removeActorList;
@@ -323,6 +323,10 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 void removeActorInList() {
 	int n = removeActorList.size();
 	for (int i = 0; i < n; i++) {
+		if (airPlaneBullet.find((PxRigidDynamic*)removeActorList[i]) != airPlaneBullet.end()) {
+			airPlaneBullet.erase((PxRigidDynamic*)removeActorList[i]);
+			//cout << "erase!\n";
+		}
 		gScene->removeActor(*removeActorList[i]);
 	}
 	removeActorList.clear();

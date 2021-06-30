@@ -113,7 +113,7 @@ namespace Snippets
 				PxGeometryHolder h = shapes[j]->getGeometry();
 
 				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE)
-					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
 				// render object
 
 
