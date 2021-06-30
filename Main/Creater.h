@@ -81,6 +81,12 @@ void testFilter();
 void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 //删除removeActorList里面的actor
 void removeActorInList();
+//更新坦克血条
+void updateTankInList();
+//更新炮塔血条
+void updateGuntowerInList();
+//生成血条,参数为：被绑定的物体、血条长度、血条位置、joint相对于物体的位置以及joint相对于血条的位置
+//PxRigidDynamic* createAndShowBlood(PxRigidDynamic* body, float healthLength, PxTransform healthPos, PxTransform t0, PxTransform t1);
 
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(20));
 

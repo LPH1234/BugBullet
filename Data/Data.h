@@ -10,7 +10,8 @@ struct DATATYPE {
 };	
 	enum TRIGGER_TYPE {
 		BORDER,
-		COLLECTION
+		COLLECTION,
+		BLOOD,
 	};
 };
 class BaseCharacter;

@@ -23,7 +23,7 @@
 #include <set>
 
 
-
+class Player;
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
 extern bool mouseButtonPressState[3];
@@ -34,6 +34,7 @@ extern Camera camera;
 extern PxTransform born_pos;
 extern const float velocity;
 extern std::set<PxRigidDynamic*> airPlaneBullet;
+extern set<Player*>		updateTankList;
 
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 
@@ -86,6 +87,19 @@ public:
 	void setTransform(physx::PxTransform& t) {
 		this->rigid->setGlobalPose(t);
 	}
+	//生成血条,参数为：被绑定的物体、血条长度、血条位置、joint相对于物体的位置以及joint相对于血条的位置
+	PxRigidDynamic* createAndShowBlood(PxRigidDynamic* _body, float _healthLength, PxTransform _healthPos, PxTransform t0, PxTransform t1) {
+		PxShape* healthShape = gPhysics->createShape(PxBoxGeometry(_healthLength / 2, 0.1f, 0.1f), *gMaterial, true);
+		PxRigidDynamic* bloodDynamic = PxCreateDynamic(*gPhysics, _healthPos, *healthShape, 0.0001);
+		bloodDynamic->setName("blood");
+		bloodDynamic->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
+		healthShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+		healthShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+		bloodDynamic->attachShape(*healthShape);
+		bloodDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+		PxFixedJointCreate(*gPhysics, _body, t0, bloodDynamic, t1);
+		return bloodDynamic;
+	}
 };
 
 class AirPlane;
@@ -101,10 +115,12 @@ private:
 	PxVec3 born;
 	vector<PxVec3> waypoint;
 
-	int health = 100;//坦克生命值
 
 public:
 	PxRigidDynamic*			body;//刚体
+	PxRigidDynamic*			healthBody;//血条刚体
+	int health = 100;//坦克生命值
+	float healthLength = 6.0;//血条长度
 	AirPlane*				airPlane;//飞机类
 	float					bulletVelocity = 40.f;//默认子弹速度
 	vector<bool>			turnningState;//转向状态，分别是直行中、转向中

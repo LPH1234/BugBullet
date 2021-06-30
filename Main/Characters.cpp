@@ -669,6 +669,7 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 
 
 Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(target) {
+	this->body = target;
 	this->airPlane = airplane;
 	cout << "飞机速度：" << this->airPlane->getRigid()->getLinearVelocity().x << "\t"
 		<< this->airPlane->getRigid()->getLinearVelocity().y << "\t" << this->airPlane->getRigid()->getLinearVelocity().z << "\n";
@@ -682,7 +683,12 @@ Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(
 	autoshooting = true;
 	turnningState.resize(2);
 	turnningState[0] = true;
+	//绑定血条shape
+	PxTransform pos(this->body->getGlobalPose().p + PxVec3(0, 5, 0));
+	this->healthBody = createAndShowBlood(this->body, this->healthLength, pos, PxTransform(PxVec3(0, 4, 0)), PxTransform(PxVec3(0, -1, 0)));
+
 	gScene->addActor(*(this->rigid));
+	gScene->addActor(*(this->healthBody));
 }
 
 void Player::ProcessKeyPress() {
@@ -931,11 +937,33 @@ void Player::autoEmit() {
 }
 void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	int damage = int(_type) * 2;
-	if (this->health - damage > 0) {
-		this->health -= damage;
-		cout << "Tank - " << damage << endl;
-	}
-	else {
-		cout << "Tank died" << endl;
-	}
+	this->health = max(0, this->health - damage);
+	cout << "health:" << this->health << "\n";
+	updateTankList.insert(this);
+	/*const PxU32 numShapes = this->healthBody->getNbShapes();
+	PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
+	this->healthBody->getShapes(shapes, numShapes);*/
+	//if (this->health - damage > 0) {
+	//	this->health -= damage;
+	//	cout << "Tank - " << damage << endl;
+	//	//for (PxU32 i = 0; i < numShapes; i++)
+	//	//{
+	//	//	PxShape* shape = shapes[i];
+	//	//	//if (shape->getName() == "healthShape") {
+	//	//	float l = ((this->health / 100.0)*healthLength / 2 > 0 ? (this->health / 100.0)*healthLength / 2 : 0.01);
+	//	//	cout << "更改血条！当前血量：" << this->health << "\tl:" << l << "\n";
+	//	//	shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
+	//	//	//}
+	//	//}
+	//	//free(shapes);
+	//}
+	//else {
+	//	cout << "Tank died" << endl;
+	//	/*for (PxU32 i = 0; i < numShapes; i++)
+	//	{
+	//		PxShape* shape = shapes[i];
+	//		this->healthBody->detachShape(*shape);
+	//	}*/
+	//}
+	///*free(shapes);*/
 }

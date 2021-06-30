@@ -16,15 +16,31 @@
 #include "Creater.h"
 
 //extern struct DATATYPE;
+extern PxPhysics*				gPhysics;
+extern PxScene*					gScene;
+extern PxMaterial*				gMaterial;
 
 class BaseSceneObject {
 public:
 	virtual void oncontact(DATATYPE::ACTOR_TYPE _type) {};
 	virtual void oncontact(int id, DATATYPE::ACTOR_TYPE _type) {};
+	//生成血条,参数为：被绑定的物体、血条长度、血条位置、joint相对于物体的位置以及joint相对于血条的位置
+	/*PxRigidDynamic* createAndShowBlood(PxRigidDynamic* _body, float _healthLength, PxTransform _healthPos, PxTransform t0, PxTransform t1) {
+		PxShape* healthShape = gPhysics->createShape(PxBoxGeometry(_healthLength / 2, 0.1f, 0.1f), *gMaterial, true);
+		PxRigidDynamic* bloodDynamic = PxCreateDynamic(*gPhysics, _healthPos, *healthShape, 0.0001);
+		bloodDynamic->setName("blood");
+		bloodDynamic->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
+		healthShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+		healthShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+		bloodDynamic->attachShape(*healthShape);
+		bloodDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+		PxFixedJointCreate(*gPhysics, _body, t0, bloodDynamic, t1);
+		return bloodDynamic;
+	}*/
 };
 class guntower : public BaseSceneObject
 {
-private:
+public:
 	int count = 0;
 	PxVec3 towerpos;
 	clock_t timer_last = 0;
@@ -38,7 +54,8 @@ private:
 	
 	vector<int>health_list;	
 	vector<bool>enable_attack_list;
-public:
+	vector<PxRigidStatic*>blood_body_list;
+
 	PxVec3 initguntower(glm::vec3 pos);
 	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
 	void fire(const PxTransform& t, const PxVec3& velocity);
