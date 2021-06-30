@@ -62,7 +62,8 @@ struct FilterGroup
 		eTANK = (1 << 8),		//Ì¹¿Ë
 		eTower=(1<<9),
 		ePlayer=(1<<10),
-		eTowerBullet = (1<<11)
+		eTowerBullet = (1<<11),
+		eBONUS = (1<<12)
 
 	};
 };
