@@ -5,7 +5,7 @@
 #include "../Utils/Utils.h"
 #include "../Render/objLoader.h"
 #include "../Utils/module.h"
-#include "../Render/models.h"
+#include "../Render/Cluster.h"
 #include "../Render/Render.h"
 #include "../Data/Data.h"
 #include "../Data/Consts.h"
@@ -26,7 +26,8 @@ extern PxMaterial*				gMaterial;
 extern PxPvd*                  gPvd;
 
 
-extern list<PxParticleSystem*> renderParticleSystemList; //储存粒子系统的链表
+extern list<PxParticleSystem*> physicsParticleSystemList; //储存粒子系统的链表
+extern list<BaseParticleCluster*> renderParticleClusterList; //储存粒子系统的链表
 
 
 extern physx::PxRigidDynamic*	airPlane;
@@ -44,6 +45,7 @@ extern PlainModel *street;
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic = true);
 
 
+
 //碰撞过滤枚举类型
 struct FilterGroup
 {
@@ -55,17 +57,17 @@ struct FilterGroup
 		eBIGBALL = (1 << 3),	//大球
 		ePLAYERBULLET = (1 << 4),	//玩家发射的子弹
 		eMISILE = (1 << 5),		//飞机弹药
+
 		eMAP = (1 << 6),		//地图
 		eAIRPLANE = (1 << 7),	//飞机
 		eTANK = (1 << 8),		//坦克
 		eTower=(1<<9),
 		ePlayer=(1<<10),
-		eTowerBullet = (1<<11)
-
+		eTowerBullet = (1<<11),
+		eBONUS = (1<<12)
 
 	};
 };
-
 
 //自定义FilterShader，大球或小球跟方块发生碰撞时为pairFlags添加eCONTACT_DEFAULT
 PxFilterFlags testCollisionFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1,
@@ -136,4 +138,5 @@ void createSmokeParticles( //创建普通粒子系统
 
 void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList);
 
-
+float* createUniformRandomFloatArray(int num, float bottom, float up); //得到长度为num的符合随机分布的随机数数组
+float* createNormalRandomFloatArray(int num, float arg1, float arg2);  //得到长度为num的符合正态分布的随机数数组

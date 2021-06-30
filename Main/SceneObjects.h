@@ -30,7 +30,7 @@ private:
 	clock_t timer_last = 0;
 	vector<PxVec3> towerpos_list;
 	vector<clock_t>timer_list;
-	vector<PxRigidDynamic* >tower_list;
+	vector<PxRigidStatic* >tower_list;
 	PxVec3 headforward = PxVec3(1.0f, 0.0f, 0.0f);
 	PxVec3 backforward = PxVec3(0.0f, 1.0f, 0.0f);
 	PxVec3 currentheadforward;
@@ -50,9 +50,15 @@ public:
 };
 class bonus:public BaseSceneObject {
 private:
-
+	int count = 0;
+	vector<PxVec3> bonus_pos_list;
+	vector<clock_t>timer_list;
+	vector<PxRigidStatic* >bonus_list;
+	vector<bool> exist_list;
 public:
 	PxVec3 initbonus(glm::vec3 pos);
 	void initlist(vector<glm::vec3>pos_list);
-	void runbonus(PxRigidDynamic* target);
+	void autorefresh();
+
+	void runbonus();
 };

@@ -259,13 +259,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="./SnippetUtils.vcxproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="Data.vcxproj">
+      <Project>{9031a9d8-7100-4754-b11b-d92c8a368f96}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="./SnippetRender.vcxproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="Render.vcxproj">
+      <Project>{43554530-2170-f5a9-4794-3ad09344f18d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Utils.vcxproj">
+      <Project>{f44672d8-5198-bba4-87e8-c790415e403c}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

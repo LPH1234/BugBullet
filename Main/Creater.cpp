@@ -24,7 +24,8 @@ extern AirPlane		*Plane_1;
 extern Shader* envShader;
 
 vector<PxActor*>		removeActorList;
-list<PxParticleSystem*> renderParticleSystemList;
+list<PxParticleSystem*> physicsParticleSystemList;
+list<BaseParticleCluster*> renderParticleClusterList;
 PxVec3					airPlaneVelocity(0, 0, 0);//飞机速度
 long long				angelAirPlane = 0.0;
 PxVec3					headForward(1, 0, 0);//机头朝向
@@ -55,7 +56,6 @@ PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath,
 	}
 	return rigid;
 }
-
 
 
 
@@ -366,6 +366,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 
 void testFilter() {
 	//131.f, 7.0f, 22.0f
+
 	PxRigidDynamic* body1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(-2.f, 2.0f, 0.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
 	cout << "创造body1\n";
 	//PxRigidDynamic* body2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(131.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
@@ -674,7 +675,7 @@ void createBreakableWall() {
 		for (int j = 0; j < 5; j++) {
 			PxTransform pos(PxVec3(x + (j - 2) * 4, y, z));
 			PxRigidDynamic* body = gPhysics->createRigidDynamic(pos);
-			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE|FilterGroup::eWALL);
+			setupFiltering(body, FilterGroup::eWALL, FilterGroup::eMISILE | FilterGroup::eWALL);
 			Wall[i][j] = body;
 			body->attachShape(*shape);
 			PxRigidBodyExt::updateMassAndInertia(*body, 0.1f);
@@ -865,7 +866,7 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 
 	if (ps) {
 		gScene->addActor(*ps);
-		renderParticleSystemList.push_back(ps);
+		physicsParticleSystemList.push_back(ps);
 	}
 	//Cleanup
 	delete newAppParticlePositions;
@@ -959,7 +960,7 @@ void createSmokeParticles(int numParticles, bool perOffset, BaseParticle* render
 			ps->userData = (void*)data;
 			cout << "创建粒子成功\n";
 			gScene->addActor(*ps);
-			renderParticleSystemList.push_back(ps);
+			physicsParticleSystemList.push_back(ps);
 		}
 		else {
 			myindexpool->freeIndices();
@@ -990,4 +991,27 @@ void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList) {
 		ps->addForces(data->numParticles, PxStrideIterator<const PxU32>(data->newAppParticleIndices), PxStrideIterator<const PxVec3>(data->newAppParticleforces), PxForceMode::eACCELERATION);
 	}
 
+}
+
+float* createUniformRandomFloatArray(int num, float bottom, float up) {
+	float* rt = new float[num];
+
+	trng::yarn2 R(clock());
+	trng::uniform_dist<> random_u(bottom, up);
+	for (int i = 0; i < num; i++)
+	{
+		rt[i] = random_u(R);
+	}
+	return rt;
+}
+
+float* createNormalRandomFloatArray(int num, float arg1, float arg2) {
+	float* rt = new float[num];
+	trng::yarn2 R(clock());
+	trng::normal_dist<> random_n(arg1, arg2); // 均值、标准差
+	for (int i = 0; i < num; i++)
+	{
+		rt[i] = random_n(R);
+	}
+	return rt;
 }

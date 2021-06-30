@@ -15,6 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+
 class Logger
 {
 public:
@@ -30,7 +31,10 @@ public:
 
 };
 
-
+class PointerUtils {
+public:
+	static int getPtrIntValue(void* ptr);
+};
 
 class FileUtils
 {
@@ -64,6 +68,7 @@ public:
 	 */
 	static std::string getModelPath(std::string dir);
 };
+
 
 namespace physx
 {
