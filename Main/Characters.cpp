@@ -616,8 +616,10 @@ void AirPlane::ProcessKeyPress() {
 	}
 
 	//发射
-	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]) {
+	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]&&bullet_ammo>0) {
+		bullet_ammo--;
 		emit();
+		cout<<"bullet_ammo: "<<bullet_ammo<<endl;
 	}
 	//重置
 	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
@@ -658,6 +660,18 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		cout << "Plane died" << endl;
 	}
 }
+void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
+	if (_type == DATATYPE::TRIGGER_TYPE::SUPPLY) {
+		this->bullet_ammo += 15;
+		cout << bullet_ammo << endl;
+	}
+	else if(_type == DATATYPE::TRIGGER_TYPE::COLLECTION){
+		this->missle_ammo += 5;
+		cout << "missle_ammo"<<missle_ammo << endl;
+	}
+	else {}
+}
+
 
 
 
@@ -937,33 +951,15 @@ void Player::autoEmit() {
 }
 void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	int damage = int(_type) * 2;
-	this->health = max(0, this->health - damage);
-	cout << "health:" << this->health << "\n";
-	updateTankList.insert(this);
-	/*const PxU32 numShapes = this->healthBody->getNbShapes();
-	PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
-	this->healthBody->getShapes(shapes, numShapes);*/
-	//if (this->health - damage > 0) {
-	//	this->health -= damage;
-	//	cout << "Tank - " << damage << endl;
-	//	//for (PxU32 i = 0; i < numShapes; i++)
-	//	//{
-	//	//	PxShape* shape = shapes[i];
-	//	//	//if (shape->getName() == "healthShape") {
-	//	//	float l = ((this->health / 100.0)*healthLength / 2 > 0 ? (this->health / 100.0)*healthLength / 2 : 0.01);
-	//	//	cout << "更改血条！当前血量：" << this->health << "\tl:" << l << "\n";
-	//	//	shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
-	//	//	//}
-	//	//}
-	//	//free(shapes);
-	//}
-	//else {
-	//	cout << "Tank died" << endl;
-	//	/*for (PxU32 i = 0; i < numShapes; i++)
-	//	{
-	//		PxShape* shape = shapes[i];
-	//		this->healthBody->detachShape(*shape);
-	//	}*/
-	//}
-	///*free(shapes);*/
+	if (this->health - damage > 0) {
+		this->health -= damage;
+		cout << "Tank - " << damage << endl;
+	}
+	else if(this->alive==true) {
+		this->health = 0;
+		updateTankList.insert(this);
+		this->alive = false;
+		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
+		cout << "Tank died" << endl;
+	}
 }

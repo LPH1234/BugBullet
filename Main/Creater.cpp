@@ -22,6 +22,7 @@ set<PxRigidDynamic*>	airPlaneBullet;
 extern Player  *vehicle;
 extern AirPlane		*Plane_1;
 extern Shader* envShader;
+extern Shader* spriteShader;
 
 vector<PxActor*>		removeActorList;
 set<Player*>			updateTankList;
@@ -34,6 +35,9 @@ PxVec3					backForward(0, 1, 0);//机背朝向
 PxVec3					swingForward(0, 0, 1);//机翼朝向
 vector<bool>			turningState(5,false);//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
 long long				rollingAngel = 0, pitchingAngel = 0;//滚转角、俯仰角
+
+vector<PxTransform> addBonusList;
+
 extern Camera camera;
 extern AirPlane* Plane_1;
 extern guntower GunTower;
@@ -198,7 +202,7 @@ void testTriggerCollection() {
 	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
 
 }
-PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type) {
+PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type,bool movable) {
 	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
 	PxRigidDynamic* collection = gPhysics->createRigidDynamic(tran);
 	collection->userData = new UserData(1, "collection", _type);
@@ -207,7 +211,10 @@ PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type
 	collectionShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
 	collection->attachShape(*collectionShape);
 	gScene->addActor(*collection);
-	collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
+	if (movable) {
+       collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
+	}
+	
 	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
 	return collection;
 }
@@ -238,20 +245,22 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			removeActorList.push_back(actor_0);
 			continue;
 		}
-		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION&&actor_data_0->name == "plane") {
-			/*const PxU32 numShapes = actor_1->getNbShapes();
-			PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
-			actor_1->getShapes(shapes, numShapes);
-			for (PxU32 i = 0; i < numShapes; i++)
-			{
-				PxShape* shape = shapes[i];
-				if (shape->getName() == "triggerShape")cout << "this is trigger shape!\n";
-				else cout << "this is not trigger shape/n";
-			}
-			free(shapes);*/
+
+		if ((actor_data_1->type2 ==DATATYPE::TRIGGER_TYPE::COLLECTION
+			|| actor_data_1->type2==DATATYPE::TRIGGER_TYPE::SUPPLY)&&actor_data_0->name == "plane") {
 			//飞机拾取道具的回调
-			cout << "获得道具!\n";
-			removeActorList.push_back(actor_1);
+			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
+				bool isvalid = actor_data_1->basesce->supplyoncontact(actor_data_1->id, DATATYPE::ACTOR_TYPE::PLANE);
+				if (isvalid) {
+					actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::SUPPLY);
+					cout << "获得补给!\n";
+				}
+			}
+			else if(actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
+				actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::COLLECTION);
+				removeActorList.push_back(actor_1);
+			}
+			
 		}
 		//if (pairs[i].otherActor != Plane_1->getRigid())
 		//{
@@ -290,6 +299,11 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
 			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
 				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
+			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+				printf("炮塔弹药！\n");
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
@@ -394,6 +408,22 @@ void updateGuntowerInList() {
 	}
 }
 
+void addBonusInList() {
+	int n = addBonusList.size();
+	for (int i = 0; i < n; i++) {
+		PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(addBonusList[i], DATATYPE::TRIGGER_TYPE::COLLECTION,true));
+		bonus->userData = new UserData(0, "BONUS", DATATYPE::TRIGGER_TYPE::COLLECTION);
+		bonus->setName("BONUS");
+		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
+		cout << addBonusList[i].p.x << addBonusList[i].p.y << addBonusList[i].p.z << endl;
+		glm::vec3 input(addBonusList[i].p.x, addBonusList[i].p.y, addBonusList[i].p.z);
+		cout << input.x << input.y << input.z << endl;
+		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f,input, std::vector<string>(), spriteShader);
+		renderParticleClusterList.push_back(flame_cluster);
+		gScene->addActor(*bonus);
+	}
+	addBonusList.clear();
+}
 
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity)
 {

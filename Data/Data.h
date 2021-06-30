@@ -6,12 +6,13 @@
 #include<string>
 struct DATATYPE {
 	enum ACTOR_TYPE {
-		MAP,TOWER, PLANE,TANK,TANK_BULLET,TOWER_BULLET,PLANE_BULLET,BONUS
+		MAP,TOWER, PLANE,TANK,TANK_BULLET,TOWER_BULLET,PLANE_BULLET
 };	
 	enum TRIGGER_TYPE {
 		BORDER,
 		COLLECTION,
 		BLOOD,
+		SUPPLY
 	};
 };
 class BaseCharacter;
@@ -35,6 +36,12 @@ struct UserData
 		id = input;
 		name = a;
 		type = _type;
+	}
+	UserData(BaseSceneObject* _basesce, int input, std::string a, DATATYPE::TRIGGER_TYPE _type) {
+		basesce = _basesce;
+		id = input;
+		name = a;
+		type2 = _type;
 	}
 	UserData(int input, std::string a, DATATYPE::ACTOR_TYPE _type) {
 		id = input;
