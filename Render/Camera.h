@@ -73,7 +73,7 @@ class Camera
 	float Zoom;
 
 	VIEW_TYPE mode;
-	float track_radius = 5.f;
+	float track_radius = 12.f; //默认相机追踪包围球半径
 	const float MIN_TRACK_RADIUS = 4.f;
 	const float MAX_TRACK_RADIUS = 64.f;
 	glm::vec3 target_position = glm::vec3(0.f, 0.f, 0.f);

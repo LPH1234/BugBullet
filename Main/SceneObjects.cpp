@@ -1,28 +1,29 @@
 #pragma once
 #include "SceneObjects.h"
+
+
 extern Shader* envShader;
-extern PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(20));
-extern PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic = true);
+
 PxVec3 guntower::initguntower(glm::vec3 pos) {
 	//glm::vec3 pos1(5.0f, 5.0f, 0.0f);
 
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
 
-	PxRigidStatic* guntower_5 = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.05f, 0.05f, 0.05f), "model/vehicle/tower/c.obj", envShader));
+	PxRigidDynamic* guntower = reinterpret_cast<PxRigidDynamic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader,false));
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
-	//PxTransform mDir = PxTransform(target->getGlobalPose().p-mPos);
-	//PxVec3 mDir = (target->getGlobalPose().p - mPos);
-	//autoattack(PxTransform(mPos), mDir);
-	//guntower::towerpos = mPos;
-	guntower_5->userData = new TowerData(1, "Tower", 50, true);
-	guntower_5->setName("Tower");
-	//guntower::towerpos_list.push_back(mPos);
-	//guntower::timer_list.push_back(0);
-	//guntower::tower_list.push_back(guntower_5);
-	TowerData* temp = reinterpret_cast<TowerData*>(guntower_5->userData);
-	guntower::tower_list.push_back(temp);
-	cout << temp->id << endl;
+	
+	
+	/*guntower->userData = new TowerData(1, "Tower", 50, true,DATATYPE::ACTOR_TYPE::TOWER);*/
+	guntower->userData = new UserData(this, count, "tower", DATATYPE::ACTOR_TYPE::TOWER);
+	count++;
+	guntower->setName("Tower");
+	
+	guntower::health_list.push_back(50);
+	guntower::enable_attack_list.push_back(true);
+	setupFiltering(guntower, FilterGroup::eTower, FilterGroup::eMISILE );
+	
+	//cout << temp->id << endl;
 	return mPos;
 }
 void guntower::initlist(vector<glm::vec3> pos_list) {
@@ -32,37 +33,79 @@ void guntower::initlist(vector<glm::vec3> pos_list) {
 		guntower::timer_list.push_back(0);
 	}
 }
-
-void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos) {
-	PxVec3 velocity = (target->getGlobalPose().p - pos);
-	createDynamic(PxTransform(pos), PxSphereGeometry(0.1f), velocity);
-	cout << "gunshot" << endl;
+PxQuat guntower::getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront) {
+	/*cout << "neededFront:" << needfront.x << "\t" << needfront.y << "\t" << needfront.z << "\t\t"
+		<< "bulletFront:" << bulletfront.x << "\t" << bulletfront.y << "\t" << bulletfront.z << "\n";*/
+	double cosine = needfront.getNormalized().dot(bulletfront.getNormalized());
+	float angelRadius = acos(cosine);
+	PxVec3 rotateAxis = bulletfront.cross(needfront);
+	PxQuat rot(angelRadius, rotateAxis.getNormalized());
+	return rot;
 }
+void guntower::fire(const PxTransform& t, const PxVec3& velocity) {
+	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
+	/*emitTransform.q = getBulletRotate(t, PxVec3(1.0f, 0.0f, 0.0f));*/
+	//PxTransform emitTransform = PxTransform(currentbackforward * 1);
+	PxTransform emitTransform = t;
+	/*emitTransform.q = bulletRot;*/
+	emitTransform.q = getshellrotate(velocity, PxVec3(1.0f, 0.0f, 0.0f));
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, emitTransform, PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+	//ÉèÖÃ¸ÕÌåÃû³Æ
+	dynamic->setName("bullet");
+	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	dynamic->setLinearVelocity(velocity);
+	
+	setupFiltering(dynamic, FilterGroup::eTowerBullet, FilterGroup::ePlayer);
 
+	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::TOWER_BULLET);
+	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
+	//cout << temp->id << endl;
+	//cout << a << endl;
+	gScene->addActor(*dynamic);
+}
+void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos) {
+	PxVec3 target_pos = target->getGlobalPose().p;
+	double distance = sqrt(pow(target_pos.x - pos.x, 2) + pow(target_pos.y - pos.y, 2) + pow(target_pos.z - pos.z, 2));
+	if (distance > 200.0f) {
+		//cout << "out of range" << endl;
+		return;
+	}
+	PxVec3 velocity = (target_pos - pos);
+	fire(PxTransform(pos), velocity);
+	//cout << "gunshot" << endl;
+}
+void guntower::rotate(PxRigidDynamic* target,PxVec3 current) {
+	PxVec3 target_pos = PxVec3(target->getGlobalPose().p.x,current.y, target->getGlobalPose().p.z);
+	PxVec3 dir = target_pos - current;
+	cout << dir.x << " " << dir.y << " " << dir.z << endl;
+	
+	double angle = acos((dir.getNormalized()).dot(this->currentheadforward.getNormalized()));
+	PxQuat rot(angle, currentbackforward);
+}
 void guntower::runguntower(PxRigidDynamic* target) {
-	//clock_t timer_now = clock();
 	for (int i = 0; i < towerpos_list.size(); i++) {
 		PxVec3 e = towerpos_list[i];
-		//cout << tower_list[i] << endl;
-		//TowerData* temp = reinterpret_cast<TowerData*>(tower_list[i]);
-		cout << tower_list[i]->enable_attacking << endl;
-		if (tower_list[i]->enable_attacking == true) {
-			//cout << temp->enable_attacking << endl;
+		if (enable_attack_list[i] == true) {
 			clock_t timer_now = clock();
-			if (timer_now - timer_list[i] > 1000) {
+			if (timer_now - timer_list[i] > 3000) {
 				autoattack(target, e);
 				timer_list[i] = timer_now;
 			}
 		}
 
 	}
-
-	/*PxVec3 e= guntower::towerpos;
-	clock_t timer_now = clock();
-	if (timer_now - timer_last > 1000) {
-		autoattack(target, e);
-		timer_last = timer_now;
-	}*/
-
 }
 
+void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
+	int damage = int(_type) * 2;
+	if (this->health_list[id]- damage > 0) {
+		this->health_list[id] -= damage;
+		cout << "Tower - " << damage << endl;
+	}
+	else {
+		this->enable_attack_list[id] = false;
+		cout << "Tower died" << endl;
+	}
+}

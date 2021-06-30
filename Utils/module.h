@@ -18,7 +18,7 @@ public:
 
 	// Implements PxSimulationEventCallback
 	void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs);
-	void onTrigger(PxTriggerPair* pairs, PxU32 count) { PX_UNUSED(pairs); PX_UNUSED(count);};
+	void onTrigger(PxTriggerPair* pairs, PxU32 count);
 	void onConstraintBreak(PxConstraintInfo* a, PxU32 b) { PX_UNUSED(a); PX_UNUSED(b);}
 	void onWake(PxActor** a, PxU32 b){ PX_UNUSED(a); PX_UNUSED(b); }
 	void onSleep(PxActor** a, PxU32 b) { PX_UNUSED(a); PX_UNUSED(b);}

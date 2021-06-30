@@ -1,49 +1,50 @@
 #pragma once
-#include<string>
+#ifndef _DATA_
+#define _DATA_
 
+
+#include<string>
+struct DATATYPE {
+	enum ACTOR_TYPE {
+		MAP,TOWER, PLANE,TANK,TANK_BULLET,TOWER_BULLET,PLANE_BULLET
+	};
+	enum TRIGGER_TYPE {
+		BORDER,
+		COLLECTION
+	};
+};
+class BaseCharacter;
+class BaseSceneObject;
 struct UserData
 {
 	int id;
 	std::string name;
-	int health;
-	int ammo;
-	UserData(int input, std::string a, int hea,int am) {
+	DATATYPE::ACTOR_TYPE type;
+	DATATYPE::TRIGGER_TYPE type2;
+	BaseCharacter* basecha = nullptr;
+	BaseSceneObject* basesce = nullptr;
+	UserData(BaseCharacter* _basecha,int input, std::string a, DATATYPE::ACTOR_TYPE _type) {
+		basecha = _basecha;
 		id = input;
 		name = a;
-		health = hea;
-		ammo = am;
+		type = _type;
+	}
+	UserData(BaseSceneObject* _basesce, int input, std::string a, DATATYPE::ACTOR_TYPE _type) {
+		basesce = _basesce;
+		id = input;
+		name = a;
+		type = _type;
+	}
+	UserData(int input, std::string a, DATATYPE::ACTOR_TYPE _type) {
+		id = input;
+		name = a;
+		type = _type;
+	}
+	UserData(int input, std::string a, DATATYPE::TRIGGER_TYPE _type) {
+		id = input;
+		name = a;
+		type2 = _type;
 	}
 };
-struct PlaneData {
-	int id;
-	std::string name;
-	int health;
-};
-struct TowerData {
-	int id;
-	std::string name;
-	int health;
-	bool enable_attacking;
-	TowerData(int _id, std::string _name, int _hea,bool _enable) {
-		id = _id;
-		name = _name;
-		health = _hea;
-		enable_attacking = _enable;
-	}
-};
-struct BulletData {
-	int id;
-	std::string name;
-	int damage;
 
-};
-struct BombData {
-	int id;
-	std::string name;
-	int damage;
-};
-struct enemy_Bomb_Data {
-	int id;
-	std::string name;
-	int damage;
-};
+#endif
