@@ -87,8 +87,9 @@ void initPhysics(bool interactive)
 	vector<glm::vec3>east_island_pos_list = {glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(245.7f, 7.6f, 83.0f),glm::vec3(253.0f, 7.6f, -141.0f),glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),
 		                                     glm::vec3(313.0f, 7.6f, 29.0f),glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(427.0f, 7.6f, -136.0f) };
 	vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
-		                                    glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
-	
+		                                     glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
+	vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::vec3(24.6f,7.6f,-330.8f),glm::vec3(25.1f,7.6f,-394.6f),glm::vec3(26.8f,7.6f,-464.3f),
+		                                     glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),glm::vec3(-19.7f,7.6f,-256.8f) };
 	vector<glm::vec3>pos_list;
 
 	glm::vec3 pos1(5.0f, 5.0f, 0.0f); 
@@ -98,15 +99,18 @@ void initPhysics(bool interactive)
 		pos1.x += i * 1.0f;
 		pos1.y += i * 1.0f;
 	}*/
-	for (int i = 0; i < east_island_pos_list.size(); i++) {
+	/*for (int i = 0; i < east_island_pos_list.size(); i++) {
 		pos_list.push_back(east_island_pos_list[i]);
-	}
+	}*/
 	/*for (int i = 0; i < south_island_pos_list.size(); i++) {
 		pos_list.push_back(south_island_pos_list[i]);
 	}*/
+	for (int i = 0; i < north_island_pos_list.size(); i++) {
+		pos_list.push_back(north_island_pos_list[i]);
+	}
 	GunTower.initlist(pos_list);
 
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.1f, 0.1f, 0.1f),
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
 	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),

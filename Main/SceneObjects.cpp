@@ -9,7 +9,7 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
 
-	PxRigidDynamic* guntower = reinterpret_cast<PxRigidDynamic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader,false));
+	PxRigidStatic* guntower = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader));
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 	
@@ -108,4 +108,36 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 		this->enable_attack_list[id] = false;
 		cout << "Tower died" << endl;
 	}
+}
+
+PxVec3 bonus::initbonus(glm::vec3 pos) {
+	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
+
+	PxRigidStatic* bonus = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader));
+
+	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
+
+
+	/*guntower->userData = new TowerData(1, "Tower", 50, true,DATATYPE::ACTOR_TYPE::TOWER);*/
+	bonus->userData = new UserData(this, count, "bonus", DATATYPE::ACTOR_TYPE::BONUS);
+	count++;
+	bonus->setName("BONUS");
+
+	setupFiltering(bonus, FilterGroup::eBONUS, FilterGroup::eMISILE);
+	bonus::exist_list.push_back(true);
+	//cout << temp->id << endl;
+	return mPos;
+}
+void bonus::initlist(vector<glm::vec3> pos_list) {
+	for (int i = 0; i < pos_list.size(); i++) {
+		PxVec3 e = initbonus(pos_list[i]);
+		bonus::bonus_pos_list.push_back(e);
+		bonus::timer_list.push_back(0);
+	}
+}
+void bonus::autorefresh() {
+
+}
+void bonus::runbonus() {
+
 }
