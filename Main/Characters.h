@@ -163,6 +163,7 @@ public:
 	float					turningSpeed = 6.0f;//转向速度
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
+	bool activatemissle = false;
 	int health = 100;//飞机生命值
 	int bullet_ammo = 100;
 	int missle_ammo = 0;
