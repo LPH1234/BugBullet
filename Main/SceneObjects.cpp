@@ -10,6 +10,15 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
 
 	PxRigidStatic* guntower = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader));
+	PxShape* bloodShape = gPhysics->createShape(PxBoxGeometry(3, 0.1f, 0.1f), *gMaterial, true);
+	PxRigidStatic* blood_body = PxCreateStatic(*gPhysics, PxTransform(guntower->getGlobalPose().p + PxVec3(0, 5, 0)), *bloodShape);
+	blood_body->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
+	bloodShape->setName("blood");
+	bloodShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	bloodShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	//bloodShape->setLocalPose(PxTransform(guntower->getGlobalPose().p + PxVec3(0, 5, 0)));
+	blood_body->attachShape(*bloodShape);
+	gScene->addActor(*blood_body);
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 	
@@ -22,6 +31,7 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	guntower::tower_list.push_back(guntower);
 	guntower::health_list.push_back(50);
 	guntower::enable_attack_list.push_back(true);
+	guntower::blood_body_list.push_back(blood_body);
 	setupFiltering(guntower, FilterGroup::eTower, FilterGroup::eMISILE );
 	
 	//cout << temp->id << endl;
@@ -106,6 +116,7 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 		cout << "Tower - " << damage << endl;
 	}
 	else if(this->enable_attack_list[id] ==true) {
+		this->health_list[id] = 0;
 		this->enable_attack_list[id] = false;
 		PxRigidActor* temp = reinterpret_cast<PxRigidActor*>(this->tower_list[id]);
 		bonus::generate_bonus_pos(temp->getGlobalPose());

@@ -16,6 +16,9 @@
 #include "Creater.h"
 
 //extern struct DATATYPE;
+extern PxPhysics*				gPhysics;
+extern PxScene*					gScene;
+extern PxMaterial*				gMaterial;
 extern PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type);
 extern vector<PxTransform> addBonusList;
 class BaseSceneObject {
@@ -26,7 +29,7 @@ public:
 };
 class guntower : public BaseSceneObject
 {
-private:
+public:
 	int count = 0;
 	PxVec3 towerpos;
 	clock_t timer_last = 0;
@@ -40,7 +43,8 @@ private:
 	
 	vector<int>health_list;	
 	vector<bool>enable_attack_list;
-public:
+	vector<PxRigidStatic*>blood_body_list;
+
 	PxVec3 initguntower(glm::vec3 pos);
 	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
 	void fire(const PxTransform& t, const PxVec3& velocity);

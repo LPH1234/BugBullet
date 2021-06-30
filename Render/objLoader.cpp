@@ -131,7 +131,7 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 	
 
 	// 创建三角网格形状 *gMaterial
-	PxShape* shape = gPhysics->createShape(geom, *gMaterial);
+	PxShape* shape = gPhysics->createShape(geom, *gMaterial, true);
 	//shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
 
 	{
