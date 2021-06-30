@@ -290,7 +290,7 @@ void BaseParticle::update(const PxVec3& position, const PxVec3& velocity) {};
 void BaseParticle::setParticleSystem(PxParticleSystem* ps) { this->ps = ps; }
 
 
-PointParticle::PointParticle(glm::vec3 scale, std::string modelPath, glm::vec3 c, Shader* shader) :BaseParticle(scale, shader, modelPath) {
+PointParticle::PointParticle(glm::vec3 scale, vector<string>& modelPathes, glm::vec3 c, Shader* shader) :BaseParticle(scale, shader, "") {
 	/*this->objectColor = c;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -300,6 +300,7 @@ PointParticle::PointParticle(glm::vec3 scale, std::string modelPath, glm::vec3 c
 	glBindVertexArray(VAO);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);*/
+	this->modelPathes = modelPathes;
 
 }
 
@@ -321,22 +322,38 @@ void PointParticle::update(const PxVec3& position, const  PxVec3& velocity) {
 	}
 	//std::cout << "alpha:" << alpha << "\n";
 	shader->setFloat("alpha", alpha);
+	//3.旋转轴和角度
+	axisAndAngle.x = data->axisAndAngle->x;
+	axisAndAngle.y = data->axisAndAngle->y;
+	axisAndAngle.z = data->axisAndAngle->z;
+	axisAndAngle.w = data->axisAndAngle->w;
+	angle += 1;
 }
 
 void PointParticle::draw(unsigned int index, glm::mat4 view, glm::mat4 projection) {
-	shader->setVec3("objectColor", this->objectColor);
+	//shader->setVec3("objectColor", this->objectColor);
 	this->shader->use();
 	this->shader->setMat4("projection", projection);
 	this->shader->setMat4("view", view);
 	this->updateShaderModel();
-
 	/*glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, 1);*/
-	this->model->Draw(*shader);
-
+	
+	ModelManager::getModel(this->modelPathes[index%this->modelPathes.size()])->Draw(*shader);
 	//recover
-	shader->setVec3("objectColor", this->defaultColor);
+	//shader->setVec3("objectColor", this->defaultColor);
 	shader->setFloat("alpha", 1.f);
+}
+
+glm::mat4 PointParticle::getModel() {
+	glm::mat4 model = glm::mat4(1.0f);
+
+	model = glm::translate(model, glm::vec3(0.f));
+	//model = glm::rotate(model, glm::radians(axisAndAngle.w + angle), glm::normalize(glm::vec3(axisAndAngle.x, axisAndAngle.y, axisAndAngle.z)));
+	model = glm::rotate(model, glm::radians(axisAndAngle.w ), glm::normalize(glm::vec3(axisAndAngle.x, axisAndAngle.y, axisAndAngle.z)));
+	model = glm::translate(model, Position);
+	model = glm::scale(model, scale_value);//
+	return model;
 }
 
 // 物理渲染粒子end

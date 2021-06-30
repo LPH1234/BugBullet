@@ -26,6 +26,7 @@
     <ClInclude Include="..\..\Render\models.h" />
     <ClInclude Include="..\..\Render\objLoader.h" />
     <ClInclude Include="..\..\Render\Render.h" />
+    <ClInclude Include="..\..\Render\ResourceManager.h" />
     <ClInclude Include="..\..\Render\Shader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +37,7 @@
     <ClCompile Include="..\..\Render\models.cpp" />
     <ClCompile Include="..\..\Render\objLoader.cpp" />
     <ClCompile Include="..\..\Render\Render.cpp" />
+    <ClCompile Include="..\..\Render\ResourceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cloudShader\cloud.fs" />

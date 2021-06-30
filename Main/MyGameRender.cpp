@@ -24,8 +24,8 @@ void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
 
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1920 / 2;
+const unsigned int SCR_HEIGHT = 1080 / 2;
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
@@ -159,6 +159,8 @@ int myRenderLoop()
 
 	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), flameShader);
 	renderParticleClusterList.push_back(flame_cluster);
+
+	ModelManager::initModels();
 
 	// render loop
 	// -----------

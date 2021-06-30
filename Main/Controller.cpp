@@ -78,19 +78,24 @@ void mouseClick() {
 		//renderParticleClusterList.push_back(smoke_cluster);
 
 		///////2、爆炸粒子
+		vector<string> paths;
+		for (int i = 1; i <= 18; i++) {
+			paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
+		}
+		Logger::debug("create pos:", camera.getPosition() + camera.getFront() * 3.f + camera.getUp() * 0.5f);
 
 		createPointParticles(
 			10, false,
-			new PointParticle(glm::vec3(0.1f, 0.1f, 0.1f), "model/particle/p1.obj", glm::vec3(1.f, 1.f, 0.f), pointParticleShader),
+			new PointParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
 			glmVec3ToPxVec3(camera.getPosition()) + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 0.5f),
 			false, 2.0, // true是散开
 			true, 20.0, // true是随机速度
-			20, 5, // 消失时间、开始渐隐时间
-			PxVec3(10.f, 0.f, 0.f), //初始速度
-			PxVec3(2.f, 0.f, 0.f)  //力场
+			12, 5, // 消失时间、开始渐隐时间
+			PxVec3(10.f, 5.f, 0.f), //初始速度
+			PxVec3(2.f, 5.f, 0.f)  //力场
 		);
 
-		/////////3、拖尾云
+		/////////3、拖尾云	
 		//CloudParticleCluster(int cloudDensity, float cloudRadis, float cloudVy, float cloudMaxY, glm::vec3 initPos, vector<string> textures, Shader* shader)
 		//CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
 		//	100, 0.05f,  //云密度、云团的半径

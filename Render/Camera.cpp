@@ -42,6 +42,7 @@ void Camera::ProcessKeyboard(Movement direction, float deltaTime)
 		if (direction == SHIFT_RELEASE)
 			movementSpeed = SPEED;
 	}
+	//
 }
 
 // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -79,7 +80,12 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 	}
 
 	// update Front, Right and Up Vectors using the updated Euler angles
-	//updateCameraVectors();
+	updateCameraVectors();
+	Logger::debug("Camera Front:", Front);
+	Logger::debug("Camera Up:", Up);
+	Logger::debug("Camera Right:", Right);
+	Logger::debug("Camera Pos:", Position);
+	Logger::debug("======================");
 }
 
 // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
@@ -120,7 +126,7 @@ void Camera::trackDynamicPosition() { // 设置相机跟随物体
 		if (this->target == nullptr)
 			return;
 		if (IsBadWritePtr(this->target, 1) != 0) {
-			std::cout << "不可访问指针：dynamic target\n";
+			Logger::error("不可访问指针：dynamic target");
 			return;
 		}
 		pxVec3ToGlmVec3(target->getRigid()->getGlobalPose().p, this->target_position);

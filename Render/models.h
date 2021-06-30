@@ -6,9 +6,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <ctime>
 #include "Shader.h"
-#include "Model.h"
+#include "ResourceManager.h"
 #include "../Utils/Convert.h"
-#include "../Utils/Utils.h"
 #include "foundation/PxQuat.h"
 #include "particles/PxParticleSystem.h"
 
@@ -50,9 +49,8 @@ public:
 
 	BaseModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) {
 		this->Position = pos; this->scale_value = scale;  this->shader = shader;   this->modelPath = modelPath;
-
 		if (modelPath.compare("") != 0) {
-			this->model = new Model(modelPath);
+			this->model = ModelManager::getModel(modelPath);
 		}
 	}
 
@@ -562,11 +560,15 @@ class PointParticle : public BaseParticle
 	glm::vec3 objectColor;
 	glm::vec3 defaultColor = glm::vec3(1.f, 1.f, 1.f);
 	unsigned int VBO, VAO;
+	vector<string> modelPathes;
+	glm::vec4 axisAndAngle;
+	int angle = 0;
 public:
-	PointParticle(glm::vec3 scale,std::string modelPath, glm::vec3 c, Shader* shader);
+	PointParticle(glm::vec3 scale, vector<string>& modelPathes, glm::vec3 c, Shader* shader);
 	~PointParticle();
 	void update(const PxVec3& position, const PxVec3& velocity);
 	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
+	glm::mat4 getModel();
 };
 
 
