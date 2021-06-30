@@ -19,6 +19,7 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	count++;
 	guntower->setName("Tower");
 	
+	guntower::tower_list.push_back(guntower);
 	guntower::health_list.push_back(50);
 	guntower::enable_attack_list.push_back(true);
 	setupFiltering(guntower, FilterGroup::eTower, FilterGroup::eMISILE );
@@ -104,40 +105,59 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 		this->health_list[id] -= damage;
 		cout << "Tower - " << damage << endl;
 	}
-	else {
+	else if(this->enable_attack_list[id] ==true) {
 		this->enable_attack_list[id] = false;
+		PxRigidActor* temp = reinterpret_cast<PxRigidActor*>(this->tower_list[id]);
+		bonus::generate_bonus_pos(temp->getGlobalPose());
 		cout << "Tower died" << endl;
 	}
 }
 
-PxVec3 bonus::initbonus(glm::vec3 pos) {
+PxVec3 bonus::initsupply(glm::vec3 pos) {
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
-
-	PxRigidStatic* bonus = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader));
+	PxVec3 input;glmVec3ToPxVec3(pos1, input);
+	PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(PxTransform(input), DATATYPE::TRIGGER_TYPE::COLLECTION,false));
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 
-
-	/*guntower->userData = new TowerData(1, "Tower", 50, true,DATATYPE::ACTOR_TYPE::TOWER);*/
-	bonus->userData = new UserData(this, count, "bonus", DATATYPE::ACTOR_TYPE::BONUS);
+	bonus->userData = new UserData(this, count, "SUPPLY", DATATYPE::TRIGGER_TYPE::SUPPLY);
 	count++;
-	bonus->setName("BONUS");
+	bonus->setName("SUPPLY");
 
-	setupFiltering(bonus, FilterGroup::eBONUS, FilterGroup::eMISILE);
-	bonus::exist_list.push_back(true);
+	bonus::supply_list.push_back(bonus);
+	//setupFiltering(bonus, FilterGroup::eBONUS, FilterGroup::eMISILE);
+	bonus::enable_supply_list.push_back(true);
 	//cout << temp->id << endl;
 	return mPos;
 }
 void bonus::initlist(vector<glm::vec3> pos_list) {
 	for (int i = 0; i < pos_list.size(); i++) {
-		PxVec3 e = initbonus(pos_list[i]);
-		bonus::bonus_pos_list.push_back(e);
+		PxVec3 e = initsupply(pos_list[i]);
+		bonus::supply_pos_list.push_back(e);
 		bonus::timer_list.push_back(0);
 	}
 }
-void bonus::autorefresh() {
-
+void bonus::autorefresh(int i) {
+	bonus::enable_supply_list[i] = true;
+	//cout << "refresh" << endl;
 }
-void bonus::runbonus() {
-
+void bonus::runsupply() {
+	for (int i = 0; i < supply_pos_list.size(); i++) {
+		PxVec3 e = supply_pos_list[i];
+		if (enable_supply_list[i] == false) {
+			clock_t timer_now = clock();
+			if (timer_now - timer_list[i] >600000) {
+				autorefresh(i);
+				timer_list[i] = timer_now;
+			}
+		}
+	}
 }
+bool bonus::supplyoncontact(int id, DATATYPE::ACTOR_TYPE _type) {
+	if (_type==DATATYPE::ACTOR_TYPE::PLANE &&enable_supply_list[id] == true) {
+		enable_supply_list[id] = false;
+		return true;
+	}
+	return false;
+}
+

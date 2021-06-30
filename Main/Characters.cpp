@@ -612,8 +612,10 @@ void AirPlane::ProcessKeyPress() {
 	}
 
 	//·¢Éä
-	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]) {
+	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]&&bullet_ammo>0) {
+		bullet_ammo--;
 		emit();
+		cout<<"bullet_ammo: "<<bullet_ammo<<endl;
 	}
 	//ÖØÖÃ
 	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
@@ -654,6 +656,18 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		cout << "Plane died" << endl;
 	}
 }
+void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
+	if (_type == DATATYPE::TRIGGER_TYPE::SUPPLY) {
+		this->bullet_ammo += 15;
+		cout << bullet_ammo << endl;
+	}
+	else if(_type == DATATYPE::TRIGGER_TYPE::COLLECTION){
+		this->missle_ammo += 5;
+		cout << "missle_ammo"<<missle_ammo << endl;
+	}
+	else {}
+}
+
 
 
 
@@ -931,7 +945,9 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		this->health -= damage;
 		cout << "Tank - " << damage << endl;
 	}
-	else {
+	else if(this->alive==true) {
+		this->alive = false;
+		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
 		cout << "Tank died" << endl;
 	}
 }
