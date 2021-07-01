@@ -18,9 +18,11 @@ bool BaseSpriteParticle::isRemoveable() {
 	return this->readyToLeave;
 }
 
-FlameParticle::FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader) :BaseSpriteParticle(pos, pointNum, pointSize, radis, texturePath, shader) {
+FlameParticle::FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, int timeToLeave, std::string texturePath, Shader* shader) :BaseSpriteParticle(pos, pointNum, pointSize, radis, texturePath, shader) {
 	this->VY = vy;
 	this->maxY = maxY;
+	this->timeToLeave = timeToLeave;
+	this->createTime = clock();
 	//顶点属性
 	const int STEP = 3;
 	float* vertices = new float[pointNum * STEP]; // x y z
@@ -50,12 +52,14 @@ FlameParticle::FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float
 
 void FlameParticle::draw() {
 	dy += VY;
-	//if ( timeToLeave ) { this->readyToLeave = true; return; }
+	if ( clock() - createTime > timeToLeave * 1000) { this->readyToLeave = true; return; }
+	alpha = 1 - (clock() - createTime) / (timeToLeave * 1000.f);
 	shader->setFloat("dy", dy);
 	shader->setFloat("pointSize", pointSize);
 	shader->setVec3("initPos", Position);
 	shader->setFloat("radis", radis);
 	shader->setFloat("maxY", maxY);
+	shader->setFloat("alpha1", alpha);
 	this->updateShaderModel();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	if (hasTexture) {
@@ -75,9 +79,7 @@ SmokeParticle::SmokeParticle(glm::vec3 pos, int pointNum, float pointSize, float
 	//顶点属性
 	const int STEP = 4;
 	float* vertices = new float[pointNum * STEP]; // x y z r
-	std::cout << "weaewaewae\n";
 	float* random = createNormalRandomFloatArray(pointNum * STEP, 0.f, 1.f);
-	std::cout << "voewavervevrevr\n";
 
 	srand(clock());
 	for (int i = 0; i < pointNum; i++)
@@ -290,7 +292,7 @@ void BaseParticle::update(const PxVec3& position, const PxVec3& velocity) {};
 void BaseParticle::setParticleSystem(PxParticleSystem* ps) { this->ps = ps; }
 
 
-PointParticle::PointParticle(glm::vec3 scale, vector<string>& modelPathes, glm::vec3 c, Shader* shader) :BaseParticle(scale, shader, "") {
+DebrisParticle::DebrisParticle(glm::vec3 scale, vector<string>& modelPathes, glm::vec3 c, Shader* shader) :BaseParticle(scale, shader, "") {
 	/*this->objectColor = c;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -301,12 +303,11 @@ PointParticle::PointParticle(glm::vec3 scale, vector<string>& modelPathes, glm::
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);*/
 	this->modelPathes = modelPathes;
-
 }
 
-PointParticle::~PointParticle() {}
+DebrisParticle::~DebrisParticle() {}
 
-void PointParticle::update(const PxVec3& position, const  PxVec3& velocity) {
+void DebrisParticle::update(const PxVec3& position, const  PxVec3& velocity) {
 	//1.设置位置
 	this->setPosition(glm::vec3(position.x, position.y, position.z));
 	//2.设置透明度
@@ -328,9 +329,11 @@ void PointParticle::update(const PxVec3& position, const  PxVec3& velocity) {
 	axisAndAngle.z = data->axisAndAngle->z;
 	axisAndAngle.w = data->axisAndAngle->w;
 	angle += 1;
+	//4.id
+	this->id = PointerUtils::getPtrIntValue(ps);
 }
 
-void PointParticle::draw(unsigned int index, glm::mat4 view, glm::mat4 projection) {
+void DebrisParticle::draw(unsigned int index, glm::mat4 view, glm::mat4 projection) {
 	//shader->setVec3("objectColor", this->objectColor);
 	this->shader->use();
 	this->shader->setMat4("projection", projection);
@@ -338,147 +341,22 @@ void PointParticle::draw(unsigned int index, glm::mat4 view, glm::mat4 projectio
 	this->updateShaderModel();
 	/*glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, 1);*/
-	
+	index += this->id;
 	ModelManager::getModel(this->modelPathes[index%this->modelPathes.size()])->Draw(*shader);
 	//recover
 	//shader->setVec3("objectColor", this->defaultColor);
 	shader->setFloat("alpha", 1.f);
 }
 
-glm::mat4 PointParticle::getModel() {
+glm::mat4 DebrisParticle::getModel() {
 	glm::mat4 model = glm::mat4(1.0f);
 
 	model = glm::translate(model, glm::vec3(0.f));
 	//model = glm::rotate(model, glm::radians(axisAndAngle.w + angle), glm::normalize(glm::vec3(axisAndAngle.x, axisAndAngle.y, axisAndAngle.z)));
-	model = glm::rotate(model, glm::radians(axisAndAngle.w ), glm::normalize(glm::vec3(axisAndAngle.x, axisAndAngle.y, axisAndAngle.z)));
+	//model = glm::rotate(model, glm::radians(axisAndAngle.w ), glm::normalize(glm::vec3(axisAndAngle.x, axisAndAngle.y, axisAndAngle.z)));
 	model = glm::translate(model, Position);
 	model = glm::scale(model, scale_value);//
 	return model;
 }
 
 // 物理渲染粒子end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void loadTextureRGBA(char const* path, unsigned int* textureID)
-{
-	glGenTextures(1, textureID);
-	int width, height;
-	unsigned char* data = SOIL_load_image(path, &width, &height, 0, SOIL_LOAD_RGBA);
-	if (data)
-	{
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, *textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		SOIL_free_image_data(data);
-	}
-	else
-	{
-		Logger::error("Texture failed to load at path : " + string(path));
-		SOIL_free_image_data(data);
-		*textureID = 0;
-	}
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-
-
-
-
-void loadTexture(char const* path, unsigned int* textureID)
-{
-
-	glGenTextures(1, textureID);
-
-	int width, height, nrComponents;
-	unsigned char* data = SOIL_load_image(path, &width, &height, &nrComponents, 0);
-	if (data)
-	{
-		GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, *textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		SOIL_free_image_data(data);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		SOIL_free_image_data(data);
-		*textureID = 0;
-	}
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-}
-
-
-/*
- * 加载一个cubeMap
- */
-GLuint loadCubeMapTexture(std::vector<std::string> picFilePathVec,
-	GLint internalFormat,
-	GLenum picFormat,
-	GLenum picDataType,
-	int loadChannels)
-{
-	GLuint textId;
-	glGenTextures(1, &textId);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textId);
-	GLubyte *imageData = NULL;
-	int picWidth, picHeight;
-	for (std::vector<const char*>::size_type i = 0; i < picFilePathVec.size(); ++i)
-	{
-		int channels = 0;
-		imageData = SOIL_load_image(picFilePathVec[i].c_str(), &picWidth,
-			&picHeight, &channels, loadChannels);
-		if (imageData == NULL)
-		{
-			std::cerr << "Error::loadCubeMapTexture could not load texture file:"
-				<< picFilePathVec[i] << std::endl;
-			return 0;
-		}
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-			0, internalFormat, picWidth, picHeight, 0, picFormat, picDataType, imageData);
-		SOIL_free_image_data(imageData);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	return textId;
-}

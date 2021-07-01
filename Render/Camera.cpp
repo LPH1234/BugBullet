@@ -81,11 +81,6 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 
 	// update Front, Right and Up Vectors using the updated Euler angles
 	updateCameraVectors();
-	Logger::debug("Camera Front:", Front);
-	Logger::debug("Camera Up:", Up);
-	Logger::debug("Camera Right:", Right);
-	Logger::debug("Camera Pos:", Position);
-	Logger::debug("======================");
 }
 
 // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis

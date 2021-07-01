@@ -11,6 +11,7 @@ uniform float  dy;
 uniform float  maxY;
 uniform float  pointSize;
 uniform float  radis;
+uniform float  alpha1;
 uniform vec3  initPos;
 
 out float alpha;
@@ -47,6 +48,6 @@ void main(void)
 	float fade_size = 4.0;
     if(gl_PointSize < fade_size)
         alpha = smoothstep(0.0, fade_size, gl_PointSize);
-
+	alpha = alpha * alpha1;
     gl_Position = projection * view * model * vec4(vNewPosition, 1.0); 
 }

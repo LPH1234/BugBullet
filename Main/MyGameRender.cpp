@@ -4,7 +4,7 @@
 
 
 #include "Controller.h"
-
+#include "../Render/UI.h"
 
 
 using namespace physx;
@@ -13,9 +13,6 @@ extern void initPhysics(bool interactive);
 extern void stepPhysics(bool interactive);
 extern void cleanupPhysics(bool interactive);
 
-extern PxRigidDynamic* player_ctl;
-
-extern guntower GunTower;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -44,6 +41,7 @@ glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
 
 
 SkyBox* skybox;
+HPBarUI* HPBar;
 
 Shader* skyBoxShader;
 Shader* envShader;
@@ -51,6 +49,7 @@ Shader* pointParticleShader;
 Shader* cloudShader;
 Shader* flameShader;
 Shader* smokeShader;
+Shader* HPBarShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
@@ -68,6 +67,7 @@ void renderActors(Shader* shader)
 		Render::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
 	}
 }
+
 
 void exitCallback(void)
 {
@@ -125,10 +125,11 @@ int myRenderLoop()
 
 	skyBoxShader = new Shader("shaders/skyboxShader/skybox.vs", "shaders/skyboxShader/skybox.fs");
 	envShader = new Shader("shaders/envShader/env.vs", "shaders/envShader/env.fs");
-	pointParticleShader = new Shader("shaders/pointParticleShader/pointParticle.vs", "shaders/pointParticleShader/pointParticle.fs");
+	pointParticleShader = new Shader("shaders/debrisShader/debris.vs", "shaders/debrisShader/debris.fs");
 	smokeShader = new Shader("shaders/smokeShader/smoke.vs", "shaders/smokeShader/smoke.fs");
 	flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
 	cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
+	HPBarShader = new Shader("shaders/HPBarShader/HPBar.vs","shaders/HPBarShader/HPBar.fs");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -157,8 +158,10 @@ int myRenderLoop()
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
 
-	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), flameShader);
-	renderParticleClusterList.push_back(flame_cluster);
+	HPBar = new HPBarUI("images/textures/green.png", HPBarShader);
+
+	/*FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), flameShader);
+	renderParticleClusterList.push_back(flame_cluster);*/
 
 	ModelManager::initModels();
 
@@ -226,7 +229,11 @@ int myRenderLoop()
 
 		Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
 
-
+		HPBarShader->use();
+		HPBarShader->setInt("image", 0);
+		//projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
+		HPBarShader->setMat4("projection", projection);
+		HPBar->draw(glm::vec2(200, 200), glm::vec2(0.8f, 0.4f), 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------

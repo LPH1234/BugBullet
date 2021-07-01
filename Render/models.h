@@ -12,14 +12,7 @@
 #include "particles/PxParticleSystem.h"
 
 
-void loadTexture(char const* path, unsigned int* textureID);
-void loadTextureRGBA(char const* path, unsigned int* textureID);
 
-GLuint loadCubeMapTexture(std::vector<std::string> picFilePathVec,
-	GLint internalFormat = GL_RGB,
-	GLenum picFormat = GL_RGB,
-	GLenum picDataType = GL_UNSIGNED_BYTE,
-	int loadChannels = SOIL_LOAD_RGB);
 class ParticleSystemData;
 
 enum MOUSE_EVENT_TYPE {
@@ -186,9 +179,12 @@ class FlameParticle : public BaseSpriteParticle {
 	float dy = 0.f;
 	float VY; //中心火焰在y方向的最大速度
 	float maxY;
+	int timeToLeave;
+	int createTime;
+	float alpha;
 public:
-	FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
-	void draw();
+	FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, int timeToLeave, std::string texturePath, Shader* shader);
+	void draw(); 
 
 };
 
@@ -555,7 +551,7 @@ public:
 };
 
 
-class PointParticle : public BaseParticle
+class DebrisParticle : public BaseParticle
 {
 	glm::vec3 objectColor;
 	glm::vec3 defaultColor = glm::vec3(1.f, 1.f, 1.f);
@@ -563,9 +559,10 @@ class PointParticle : public BaseParticle
 	vector<string> modelPathes;
 	glm::vec4 axisAndAngle;
 	int angle = 0;
+	int id;
 public:
-	PointParticle(glm::vec3 scale, vector<string>& modelPathes, glm::vec3 c, Shader* shader);
-	~PointParticle();
+	DebrisParticle(glm::vec3 scale, vector<string>& modelPathes, glm::vec3 c, Shader* shader);
+	~DebrisParticle();
 	void update(const PxVec3& position, const PxVec3& velocity);
 	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
 	glm::mat4 getModel();

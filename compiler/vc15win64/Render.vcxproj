@@ -26,28 +26,33 @@
     <ClInclude Include="..\..\Render\models.h" />
     <ClInclude Include="..\..\Render\objLoader.h" />
     <ClInclude Include="..\..\Render\Render.h" />
+    <ClInclude Include="..\..\Render\RenderUtils.h" />
     <ClInclude Include="..\..\Render\ResourceManager.h" />
     <ClInclude Include="..\..\Render\Shader.h" />
+    <ClInclude Include="..\..\Render\UI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Render\Camera.cpp" />
     <ClCompile Include="..\..\Render\Cluster.cpp" />
     <ClCompile Include="..\..\Render\glad.c" />
-    <ClCompile Include="..\..\Render\Model.cpp" />
     <ClCompile Include="..\..\Render\models.cpp" />
     <ClCompile Include="..\..\Render\objLoader.cpp" />
     <ClCompile Include="..\..\Render\Render.cpp" />
+    <ClCompile Include="..\..\Render\RenderUtils.cpp" />
     <ClCompile Include="..\..\Render\ResourceManager.cpp" />
+    <ClCompile Include="..\..\Render\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cloudShader\cloud.fs" />
     <None Include="shaders\cloudShader\cloud.vs" />
+    <None Include="shaders\debrisShader\debris.fs" />
+    <None Include="shaders\debrisShader\debris.vs" />
     <None Include="shaders\envShader\env.fs" />
     <None Include="shaders\envShader\env.vs" />
     <None Include="shaders\flameShader\flame.fs" />
     <None Include="shaders\flameShader\flame.vs" />
-    <None Include="shaders\pointParticleShader\pointParticle.fs" />
-    <None Include="shaders\pointParticleShader\pointParticle.vs" />
+    <None Include="shaders\HPBarShader\HPBar.fs" />
+    <None Include="shaders\HPBarShader\HPBar.vs" />
     <None Include="shaders\skyboxShader\skybox.fs" />
     <None Include="shaders\skyboxShader\skybox.vs" />
     <None Include="shaders\smokeShader\smoke.fs" />

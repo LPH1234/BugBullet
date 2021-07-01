@@ -10,14 +10,12 @@
 #include <scene.h>
 #include <postprocess.h>
 
-#ifndef SOIL2_H
-#define SOIL2_H
-#include <SOIL2/SOIL2.h>
-#endif
+
 
 
 #include "Camera.h"
 #include "Mesh.h"
+#include "RenderUtils.h"
 
 #include <fstream>
 #include <sstream>
@@ -26,7 +24,6 @@
 using namespace std;
 
 
-unsigned int TextureFromFile(const char *path, const string &directory);
 
 
 class Model

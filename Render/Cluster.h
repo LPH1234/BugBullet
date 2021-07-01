@@ -22,7 +22,7 @@ public:
 class FlameParticleCluster : public BaseParticleCluster {
 	int flameNum;
 public:
-	FlameParticleCluster(int flameNum, float flameRadis, float height, glm::vec3 initPos, vector<string> textures, Shader* shader);
+	FlameParticleCluster(int flameNum, float flameRadis, float height,float timeToLeave, glm::vec3 initPos, vector<string> textures, Shader* shader);
 };
 
 class SmokeParticleCluster : public BaseParticleCluster {
