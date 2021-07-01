@@ -21,8 +21,9 @@ void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
 
-const unsigned int SCR_WIDTH = 1920 ;
-const unsigned int SCR_HEIGHT = 1080 ;
+unsigned int SCR_WIDTH = 1920 / 2;
+unsigned int SCR_HEIGHT = 1080 / 2;
+
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
@@ -234,7 +235,7 @@ int myRenderLoop()
 		HPBarShader->setInt("image", 0);
 		//projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
 		HPBarShader->setMat4("projection", projection);
-		HPBar->draw(glm::vec2(200, 200), glm::vec2(0.8f, 0.4f), 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		HPBar->draw(SCR_WIDTH,SCR_HEIGHT, glm::vec2(-1.4f, -0.8f), glm::vec2(0.7f, 0.12f));
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -309,6 +310,8 @@ void processInput(GLFWwindow *window)
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+	SCR_WIDTH = width;
+	SCR_HEIGHT = height;
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);

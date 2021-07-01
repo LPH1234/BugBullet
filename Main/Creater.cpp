@@ -22,6 +22,7 @@ set<PxRigidDynamic*>	airPlaneBullet;
 extern Player  *vehicle;
 extern AirPlane		*Plane_1;
 extern Shader* envShader;
+
 extern Shader* smokeShader;
 extern Shader* flameShader;
 
@@ -440,6 +441,7 @@ void addBonusInList() {
 		bonus->setName("BONUS");
 		gScene->addActor(*bonus);
 		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
+
 		//cout << addBonusList[i].p.x <<"\t"<< addBonusList[i].p.y << addBonusList[i].p.z << endl;
 		glm::vec3 input(addBonusList[i].p.x/2, addBonusList[i].p.y-2.f, addBonusList[i].p.z/2);
 		//glm::vec3 input(64.996f, 3.19607f, 27.6939f);

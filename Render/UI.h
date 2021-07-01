@@ -11,7 +11,8 @@
 class BaseUI {
 
 public:
-	virtual void draw(glm::vec2 position, glm::vec2 size = glm::vec2(10, 10), GLfloat rotate = 0.0f, glm::vec3 color = glm::vec3(1.0f)) = 0;
+	virtual void draw(unsigned int w, unsigned int h, glm::vec2 position, glm::vec2 size = glm::vec2(10, 10)) = 0;
+	
 };
 
 class HPBarUI : public BaseUI
@@ -22,13 +23,16 @@ public:
 	// Destructor
 	~HPBarUI();
 	// Renders a defined quad textured with given sprite
-	void draw( glm::vec2 position, glm::vec2 size = glm::vec2(10, 10), GLfloat rotate = 0.0f, glm::vec3 color = glm::vec3(1.0f));
+	void draw(unsigned int w, unsigned int h, glm::vec2 position, glm::vec2 size = glm::vec2(10, 10));
+	void updateProgress(float progress);
 private:
 	// Render state
 	Shader* shader;
 	GLuint VAO;
 	// Initializes and configures the quad's buffer and vertex attributes
 	unsigned int textureID;
+	float progress = 100.f;
+	float length;
 };
 
 #endif

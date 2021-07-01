@@ -28,12 +28,16 @@ FlameParticle::FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float
 	float* vertices = new float[pointNum * STEP]; // x y z
 	float* random = createUniformRandomFloatArray(pointNum * STEP, -1.f, 1.f);
 	//float* random = createNormalRandomFloatArray(pointNum * STEP, 0.f, 1.f);
+	Logger::debug("pos:", pos);
+	Logger::debug("pos:", Position);
 	for (int i = 0; i < pointNum; i++)
 	{
 		vertices[STEP * i] = random[STEP * i] * radis + pos.x;
 		vertices[STEP * i + 1] = pos.y;
 		vertices[STEP * i + 2] = random[STEP * i + 2] * radis + pos.z;
 	}
+	std::cout << "vertices0:" << vertices[0] << "\t" << vertices[2] << "\n";
+	std::cout << "vertices1:" << vertices[3] << "\t" << vertices[5] << "\n======================\n";
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
