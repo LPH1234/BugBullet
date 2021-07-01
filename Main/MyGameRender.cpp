@@ -24,7 +24,8 @@ void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 unsigned int SCR_WIDTH = 1920 / 2;
 unsigned int SCR_HEIGHT = 1080 / 2;
 
-
+float barX = 0.f;
+float barY = 0.f;
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -50,7 +51,6 @@ Shader* pointParticleShader;
 Shader* cloudShader;
 Shader* flameShader;
 Shader* smokeShader;
-Shader* HPBarShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
@@ -130,7 +130,6 @@ int myRenderLoop()
 	smokeShader = new Shader("shaders/smokeShader/smoke.vs", "shaders/smokeShader/smoke.fs");
 	flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
 	cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
-	HPBarShader = new Shader("shaders/HPBarShader/HPBar.vs","shaders/HPBarShader/HPBar.fs");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -159,10 +158,10 @@ int myRenderLoop()
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
 
-	//FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), spriteShader);
-	//renderParticleClusterList.push_back(flame_cluster);
+	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, 10, glm::vec3(0.1f), std::vector<string>(), flameShader);
+	renderParticleClusterList.push_back(flame_cluster);
 
-	HPBar = new HPBarUI("images/textures/green.png", HPBarShader);
+	HPBar = new HPBarUI("images/textures/hpbar-border.png");
 
 	ModelManager::initModels();
 
@@ -231,11 +230,7 @@ int myRenderLoop()
 
 		Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
 
-		HPBarShader->use();
-		HPBarShader->setInt("image", 0);
-		//projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
-		HPBarShader->setMat4("projection", projection);
-		HPBar->draw(SCR_WIDTH,SCR_HEIGHT, glm::vec2(-1.4f, -0.8f), glm::vec2(0.7f, 0.12f));
+		HPBar->draw(SCR_WIDTH, SCR_HEIGHT, glm::vec2(10, SCR_HEIGHT - 18 - 10), glm::vec2(170.f, 18.f));
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------

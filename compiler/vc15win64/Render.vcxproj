@@ -51,8 +51,9 @@
     <None Include="shaders\envShader\env.vs" />
     <None Include="shaders\flameShader\flame.fs" />
     <None Include="shaders\flameShader\flame.vs" />
-    <None Include="shaders\HPBarShader\HPBar.fs" />
+    <None Include="shaders\HPBarShader\HPBarBorder.fs" />
     <None Include="shaders\HPBarShader\HPBar.vs" />
+    <None Include="shaders\HPBarShader\HPBarFill.fs" />
     <None Include="shaders\skyboxShader\skybox.fs" />
     <None Include="shaders\skyboxShader\skybox.vs" />
     <None Include="shaders\smokeShader\smoke.fs" />

@@ -142,10 +142,13 @@
     <None Include="shaders\debrisShader\debris.vs">
       <Filter>资源文件\shader\debrisShader</Filter>
     </None>
-    <None Include="shaders\HPBarShader\HPBar.fs">
+    <None Include="shaders\HPBarShader\HPBar.vs">
       <Filter>资源文件\shader\HPBarShader</Filter>
     </None>
-    <None Include="shaders\HPBarShader\HPBar.vs">
+    <None Include="shaders\HPBarShader\HPBarBorder.fs">
+      <Filter>资源文件\shader\HPBarShader</Filter>
+    </None>
+    <None Include="shaders\HPBarShader\HPBarFill.fs">
       <Filter>资源文件\shader\HPBarShader</Filter>
     </None>
   </ItemGroup>

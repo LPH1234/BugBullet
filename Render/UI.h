@@ -12,14 +12,14 @@ class BaseUI {
 
 public:
 	virtual void draw(unsigned int w, unsigned int h, glm::vec2 position, glm::vec2 size = glm::vec2(10, 10)) = 0;
-	
+
 };
 
 class HPBarUI : public BaseUI
 {
 public:
 	// Constructor (inits shaders/shapes)
-	HPBarUI(std::string texture, Shader *shader);
+	HPBarUI(std::string texture);
 	// Destructor
 	~HPBarUI();
 	// Renders a defined quad textured with given sprite
@@ -29,6 +29,9 @@ private:
 	// Render state
 	Shader* shader;
 	GLuint VAO;
+	Shader* HPBarBorderShader;
+	Shader* HPBarFillShader;
+
 	// Initializes and configures the quad's buffer and vertex attributes
 	unsigned int textureID;
 	float progress = 100.f;
