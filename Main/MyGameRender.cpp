@@ -156,8 +156,8 @@ int myRenderLoop()
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
 
-	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), spriteShader);
-	renderParticleClusterList.push_back(flame_cluster);
+	//FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), spriteShader);
+	//renderParticleClusterList.push_back(flame_cluster);
 
 	// render loop
 	// -----------
