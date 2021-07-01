@@ -22,7 +22,7 @@ set<PxRigidDynamic*>	airPlaneBullet;
 extern Player  *vehicle;
 extern AirPlane		*Plane_1;
 extern Shader* envShader;
-extern Shader* spriteShader;
+extern Shader* flameShader;
 
 vector<PxActor*>		removeActorList;
 set<Player*>			updateTankList;
@@ -433,7 +433,7 @@ void addBonusInList() {
 		cout << addBonusList[i].p.x << addBonusList[i].p.y << addBonusList[i].p.z << endl;
 		glm::vec3 input(addBonusList[i].p.x, addBonusList[i].p.y, addBonusList[i].p.z);
 		cout << input.x << input.y << input.z << endl;
-		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f,input, std::vector<string>(), spriteShader);
+		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f,100,input, std::vector<string>(), flameShader);
 		renderParticleClusterList.push_back(flame_cluster);
 		gScene->addActor(*bonus);
 	}
