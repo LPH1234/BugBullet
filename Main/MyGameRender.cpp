@@ -21,8 +21,8 @@ void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
 
-unsigned int SCR_WIDTH = 1920 / 2;
-unsigned int SCR_HEIGHT = 1080 / 2;
+unsigned int SCR_WIDTH = 1920 ;
+unsigned int SCR_HEIGHT = 1080 ;
 
 
 // camera

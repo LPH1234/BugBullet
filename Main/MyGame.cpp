@@ -231,10 +231,13 @@ void stepPhysics(bool interactive)
 	gScene->fetchResults(true);
 	vehicle->automove();
 	Plane_1->manualControlAirPlane4();
+	Plane_1->formcloud();
+	Plane_1->formmisslecloud();
 	GunTower.runguntower(Plane_1->body);
 	Bonus.runsupply();
 	//GunTower.runguntower(vehicle->getRigid());
 	addBonusInList();
+	
 	removeActorInList();
 	updateTankInList();
 	updateGuntowerInList();
