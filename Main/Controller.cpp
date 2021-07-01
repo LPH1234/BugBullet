@@ -14,7 +14,7 @@ extern PxTransform born_pos;
 extern Shader* envShader;
 extern Shader* pointParticleShader;
 extern Shader* cloudShader;
-extern Shader* spriteShader;
+extern Shader* flameShader;
 extern Shader* smokeShader;
 
 bool autoshooting = true;//射击机制
@@ -64,44 +64,54 @@ void mouseClick() {
 
 	}
 	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT]) { //鼠标右键
+		glm::vec3 initPos = camera.getPosition() + camera.getFront() * 2.f + camera.getUp() * 0.3f;
 		//SmokeParticleCluster(int cloudDensity, float cloudRadis, glm::vec3 initPos, vector<unsigned int> textures, Shader* shader);
 		//camera.getPosition() + camera.getFront() * 1.f + camera.getUp() * 0.5f,
 		////// 1、烟雾
-		//SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(
-		//	100, 2.f,  // 烟雾密度、烟雾团的半径
-		//	90, 0.01f, 3.4f, // 每个烟雾粒子大小、烟雾在y方向的速度、烟雾在y方向上最大能上升的距离
-		//	glm::vec3(3.f, 1.5f, 3.f), //初始位置
-		//	//camera.getPosition() + camera.getFront() * 1.f,
-		//	std::vector<string>(), // 纹理路径列表
-		//	smokeShader //渲染此烟雾的shader
-		//);
-		//renderParticleClusterList.push_back(smoke_cluster);
-
-		///////2、爆炸粒子
-
-		//createPointParticles(
-		//	1000, false,
-		//	new PointParticle(glm::vec3(1.f, 1.f, 1.f), glm::vec3(1.f, 1.f, 0.f), pointParticleShader),
-		//	glmVec3ToPxVec3(camera.getPosition()) + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 0.5f),
-		//	false, 2.0, // true是散开
-		//	true, 20.0, // true是随机速度
-		//	20, 5,
-		//	PxVec3(0.f, 0.f, 0.f), //初始速度
-		//	PxVec3(0.f, 0.f, 0.f)  //力场
-		//);
-
-		/////////3、拖尾云
-		//CloudParticleCluster(int cloudDensity, float cloudRadis, float cloudVy, float cloudMaxY, glm::vec3 initPos, vector<string> textures, Shader* shader)
-		CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
-			100, 0.05f,  //云密度、云团的半径
-			0.01f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
+		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(
+			100, 2.f,  // 烟雾密度、烟雾团的半径
+			90, 0.01f, 3.4f, // 每个烟雾粒子大小、烟雾在y方向的速度、烟雾在y方向上最大能上升的距离
 			glm::vec3(3.f, 1.5f, 3.f), //初始位置
-			glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
 			//camera.getPosition() + camera.getFront() * 1.f,
 			std::vector<string>(), // 纹理路径列表
-			cloudShader //渲染此烟雾的shader
+			smokeShader //渲染此烟雾的shader
 		);
-		renderParticleClusterList.push_back(cloud_cluster);
+		renderParticleClusterList.push_back(smoke_cluster);
+
+		///////2、爆炸粒子
+		//vector<string> paths;
+		//for (int i = 1; i <= 18; i++) {
+		//	paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
+		//}
+
+		//createPointParticles(
+		//	10, false,
+		//	new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
+		//	glmVec3ToPxVec3(initPos),
+		//	false, 2.0, // true是散开
+		//	true, 20.0, // true是随机速度
+		//	12, 5, // 消失时间、开始渐隐时间
+		//	PxVec3(10.f, 5.f, 0.f), //初始速度
+		//	PxVec3(2.f, 5.f, 0.f)  //力场
+		//);
+
+		///////3、拖尾云	
+		///////CloudParticleCluster(int cloudDensity, float cloudRadis, float cloudVy, float cloudMaxY, glm::vec3 initPos, vector<string> textures, Shader* shader)
+		//CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
+		//	100, 0.05f,  //云密度、云团的半径
+		//	0.01f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
+		//	glm::vec3(3.f, 1.5f, 3.f), //初始位置
+		//	glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
+		//	//camera.getPosition() + camera.getFront() * 1.f,
+		//	std::vector<string>(), // 纹理路径列表
+		//	cloudShader //渲染此烟雾的shader
+		//);
+		//renderParticleClusterList.push_back(cloud_cluster);
+
+
+		///////4.flame
+		/*FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, 10, initPos, std::vector<string>(), flameShader);
+		renderParticleClusterList.push_back(flame_cluster);*/
 
 		//std::vector<std::string> ts;
 		////ts.push_back("images/textures/smoke/smoke-white-1.png");
@@ -122,7 +132,7 @@ void mouseClick() {
 
 			//createPointParticles(
 			//	100, false,
-			//	//new PointParticle(glm::vec3(0.f, 0.f, 0.f), glm::vec3(50.f, 50.f, 50.f), glm::vec3(1.f, 1.f, 0.f), pointParticleShader),
+			//	//new DebrisParticle(glm::vec3(0.f, 0.f, 0.f), glm::vec3(50.f, 50.f, 50.f), glm::vec3(1.f, 1.f, 0.f), pointParticleShader),
 			//	new Cube(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.01f, 0.01f, 0.01f), "", envShader, "images/textures/smoke.png"),
 			//	glmVec3ToPxVec3(camera.getPosition()) + glmVec3ToPxVec3(camera.getFront() * 3.f) + glmVec3ToPxVec3(camera.getUp() * 0.5f),
 			//	true, 0.5,

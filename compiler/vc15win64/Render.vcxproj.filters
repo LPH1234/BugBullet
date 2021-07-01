@@ -25,6 +25,15 @@
     <ClInclude Include="..\..\Render\Cluster.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Render\ResourceManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\UI.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Render\RenderUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="源文件">
@@ -54,14 +63,17 @@
     <Filter Include="资源文件\shader\smokeShader">
       <UniqueIdentifier>{cd566769-0113-4b79-8c3c-7cc337f3e1cd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="资源文件\shader\pointShader">
-      <UniqueIdentifier>{bb7ad06d-4fa2-49f3-a188-002c2f536c2e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="资源文件\shader\spriteShader">
-      <UniqueIdentifier>{36d982f7-7770-44a1-b7d1-7a50d015effc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="资源文件\shader\cloudShader">
       <UniqueIdentifier>{0244eaeb-2f23-4eca-b830-887f029a3294}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shader\flameShader">
+      <UniqueIdentifier>{a5fa16d6-b270-47f4-95cc-0734afe1db32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shader\debrisShader">
+      <UniqueIdentifier>{bb7ad06d-4fa2-49f3-a188-002c2f536c2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shader\HPBarShader">
+      <UniqueIdentifier>{d619b263-538b-4fab-9699-de0c5ce7403f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -74,9 +86,6 @@
     <ClCompile Include="..\..\Render\models.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Render\Model.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Render\glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -86,43 +95,58 @@
     <ClCompile Include="..\..\Render\Cluster.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Render\ResourceManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Render\UI.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Render\RenderUtils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\envShader\env.FragmentShader">
-      <Filter>资源文件\shader\envShader</Filter>
-    </None>
-    <None Include="shaders\envShader\env.VertexShader">
-      <Filter>资源文件\shader\envShader</Filter>
-    </None>
-    <None Include="shaders\skyboxShader\skybox.FragmentShader">
-      <Filter>资源文件\shader\skyBoxShader</Filter>
-    </None>
-    <None Include="shaders\skyboxShader\skybox.VertexShader">
-      <Filter>资源文件\shader\skyBoxShader</Filter>
-    </None>
-    <None Include="shaders\pointParticleShader\pointParticle.FragmentShader">
-      <Filter>资源文件\shader\pointShader</Filter>
-    </None>
-    <None Include="shaders\pointParticleShader\pointParticle.VertexShader">
-      <Filter>资源文件\shader\pointShader</Filter>
-    </None>
-    <None Include="shaders\spriteShader\sprite.FragmentShader">
-      <Filter>资源文件\shader\spriteShader</Filter>
-    </None>
-    <None Include="shaders\spriteShader\sprite.VertexShader">
-      <Filter>资源文件\shader\spriteShader</Filter>
-    </None>
-    <None Include="shaders\cloudShader\cloud.FragmentShader">
+    <None Include="shaders\cloudShader\cloud.fs">
       <Filter>资源文件\shader\cloudShader</Filter>
     </None>
-    <None Include="shaders\cloudShader\cloud.VertexShader">
+    <None Include="shaders\cloudShader\cloud.vs">
       <Filter>资源文件\shader\cloudShader</Filter>
     </None>
-    <None Include="shaders\smokeShader\smoke.FragmentShader">
+    <None Include="shaders\envShader\env.fs">
+      <Filter>资源文件\shader\envShader</Filter>
+    </None>
+    <None Include="shaders\envShader\env.vs">
+      <Filter>资源文件\shader\envShader</Filter>
+    </None>
+    <None Include="shaders\flameShader\flame.fs">
+      <Filter>资源文件\shader\flameShader</Filter>
+    </None>
+    <None Include="shaders\flameShader\flame.vs">
+      <Filter>资源文件\shader\flameShader</Filter>
+    </None>
+    <None Include="shaders\skyboxShader\skybox.fs">
+      <Filter>资源文件\shader\skyBoxShader</Filter>
+    </None>
+    <None Include="shaders\skyboxShader\skybox.vs">
+      <Filter>资源文件\shader\skyBoxShader</Filter>
+    </None>
+    <None Include="shaders\smokeShader\smoke.fs">
       <Filter>资源文件\shader\smokeShader</Filter>
     </None>
-    <None Include="shaders\smokeShader\smoke.VertexShader">
+    <None Include="shaders\smokeShader\smoke.vs">
       <Filter>资源文件\shader\smokeShader</Filter>
+    </None>
+    <None Include="shaders\debrisShader\debris.fs">
+      <Filter>资源文件\shader\debrisShader</Filter>
+    </None>
+    <None Include="shaders\debrisShader\debris.vs">
+      <Filter>资源文件\shader\debrisShader</Filter>
+    </None>
+    <None Include="shaders\HPBarShader\HPBar.fs">
+      <Filter>资源文件\shader\HPBarShader</Filter>
+    </None>
+    <None Include="shaders\HPBarShader\HPBar.vs">
+      <Filter>资源文件\shader\HPBarShader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
