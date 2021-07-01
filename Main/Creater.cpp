@@ -22,6 +22,8 @@ set<PxRigidDynamic*>	airPlaneBullet;
 extern Player  *vehicle;
 extern AirPlane		*Plane_1;
 extern Shader* envShader;
+
+extern Shader* smokeShader;
 extern Shader* flameShader;
 
 vector<PxActor*>		removeActorList;
@@ -247,9 +249,12 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			removeActorList.push_back(actor_0);
 			continue;
 		}
-
+		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BLOOD) {
+			cout << "Blood" << endl;
+		}
 		if ((actor_data_1->type2 ==DATATYPE::TRIGGER_TYPE::COLLECTION
 			|| actor_data_1->type2==DATATYPE::TRIGGER_TYPE::SUPPLY)&&actor_data_0->name == "plane") {
+
 			//飞机拾取道具的回调
 			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
 				bool isvalid = actor_data_1->basesce->supplyoncontact(actor_data_1->id, DATATYPE::ACTOR_TYPE::PLANE);
@@ -429,13 +434,22 @@ void addBonusInList() {
 		PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(addBonusList[i], DATATYPE::TRIGGER_TYPE::COLLECTION,true));
 		bonus->userData = new UserData(0, "BONUS", DATATYPE::TRIGGER_TYPE::COLLECTION);
 		bonus->setName("BONUS");
-		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
-		cout << addBonusList[i].p.x << addBonusList[i].p.y << addBonusList[i].p.z << endl;
-		glm::vec3 input(addBonusList[i].p.x, addBonusList[i].p.y, addBonusList[i].p.z);
-		cout << input.x << input.y << input.z << endl;
-		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f,100,input, std::vector<string>(), flameShader);
-		renderParticleClusterList.push_back(flame_cluster);
 		gScene->addActor(*bonus);
+		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
+
+		//cout << addBonusList[i].p.x <<"\t"<< addBonusList[i].p.y << addBonusList[i].p.z << endl;
+		glm::vec3 input(addBonusList[i].p.x/2, addBonusList[i].p.y-2.f, addBonusList[i].p.z/2);
+		//glm::vec3 input(64.996f, 3.19607f, 27.6939f);
+		Logger::debug(input);	
+		
+		//cout << input.x << input.y << input.z << endl;
+		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f,10.f,input, std::vector<string>(), flameShader);
+
+		renderParticleClusterList.push_back(flame_cluster);
+		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 34.f, 
+			input, std::vector<string>(), smokeShader);
+		renderParticleClusterList.push_back(smoke_cluster);
+		
 	}
 	addBonusList.clear();
 }

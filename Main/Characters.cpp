@@ -682,9 +682,15 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	}
 }
 void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
-	if (_type == DATATYPE::TRIGGER_TYPE::SUPPLY) {
+	if (_type == DATATYPE::TRIGGER_TYPE::SUPPLY ) {
 		this->bullet_ammo += 15;
-		cout << bullet_ammo << endl;
+		if (this->health + 20 >= 100) {
+			this->health = 100;
+		}
+		else {
+			this->health += 20;
+		}
+		cout << bullet_ammo<<'\t'<<health << endl;
 	}
 	else if(_type == DATATYPE::TRIGGER_TYPE::COLLECTION){
 		this->missle_ammo += 5;
@@ -860,9 +866,11 @@ int Player::forward(PxVec3& dir, double velocity) {
 	return 0;
 }
 void Player::automove() {
+	if (this->alive == false)return;
 	fireTime++;
+	
 	if (fireTime % 200 == 0) {
-		//autoEmit();
+		autoEmit();
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);
@@ -980,6 +988,7 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		this->health = 0;
 		updateTankList.insert(this);
 		this->alive = false;
+		Logger::debug(this->getGlobalPose());
 		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
 		cout << "Tank died" << endl;
 	}

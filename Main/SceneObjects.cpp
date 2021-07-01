@@ -131,9 +131,19 @@ PxVec3 bonus::initsupply(glm::vec3 pos) {
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 
-	bonus->userData = new UserData(this, count, "SUPPLY", DATATYPE::TRIGGER_TYPE::SUPPLY);
-	count++;
-	bonus->setName("SUPPLY");
+	if (odd) {
+		bonus->userData = new UserData(this, count, "HEALTH", DATATYPE::TRIGGER_TYPE::SUPPLY);
+		count++;
+		bonus->setName("HEALTH");
+		odd = !odd;
+	}
+	else {
+		bonus->userData = new UserData(this, count, "SUPPLY", DATATYPE::TRIGGER_TYPE::SUPPLY);
+		count++;
+		bonus->setName("SUPPLY");
+		odd = !odd;
+	}
+	
 
 	bonus::supply_list.push_back(bonus);
 	//setupFiltering(bonus, FilterGroup::eBONUS, FilterGroup::eMISILE);
@@ -167,6 +177,7 @@ void bonus::runsupply() {
 bool bonus::supplyoncontact(int id, DATATYPE::ACTOR_TYPE _type) {
 	if (_type==DATATYPE::ACTOR_TYPE::PLANE &&enable_supply_list[id] == true) {
 		enable_supply_list[id] = false;
+		
 		return true;
 	}
 	return false;
