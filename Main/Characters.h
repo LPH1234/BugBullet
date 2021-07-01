@@ -138,6 +138,7 @@ public:
 	void automove();
 	void autoEmit();
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
+	
 };
 
 
@@ -165,6 +166,7 @@ public:
 
 	bool activatemissle = false;
 	int health = 100;//·É»úÉúÃüÖµ
+	bool alive = true;
 	int bullet_ammo = 100;
 	int missle_ammo = 0;
 
@@ -193,4 +195,6 @@ public:
 
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
 	void oncontact(DATATYPE::TRIGGER_TYPE _type);
+	void formcloud();
+	void formmisslecloud();
 };

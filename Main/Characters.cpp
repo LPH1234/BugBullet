@@ -2,6 +2,7 @@
 #include "../Render/Camera.h"
 
 extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
+extern Shader* cloudShader;
 
 AirPlane::AirPlane() :BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
@@ -494,6 +495,7 @@ void AirPlane::emit() {
 		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
 			PxCapsuleGeometry(0.04, 0.17), *gMaterial, 1.0f);
 		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_MISSLE);
+		airPlaneBullet.insert(dynamic);
 	}
 	else {
 		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
@@ -518,7 +520,7 @@ void AirPlane::emit() {
 	
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	gScene->addActor(*dynamic);
-	airPlaneBullet.insert(dynamic);
+	
 }
 
 void AirPlane::reset() {
@@ -677,7 +679,9 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		this->health -= damage;
 		cout << "Plane - " << damage << endl;
 	}
-	else {
+	else if(this->alive==true) {
+		this->health = 0;
+		this->alive = false;
 		cout << "Plane died" << endl;
 	}
 }
@@ -698,7 +702,34 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 	}
 	else {}
 }
-
+void AirPlane::formcloud() {
+	PxVec3 pos = body->getGlobalPose().p + (-1)*currentHeadForward;
+	CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
+			10, 0.05f,  //云密度、云团的半径
+			0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
+			glm::vec3(pos.x, pos.y, pos.z), //初始位置
+			glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
+			//camera.getPosition() + camera.getFront() * 1.f,
+			std::vector<string>(), // 纹理路径列表
+			cloudShader //渲染此烟雾的shader
+		);
+	renderParticleClusterList.push_back(cloud_cluster);
+}
+void AirPlane::formmisslecloud() {
+	for (auto i = airPlaneBullet.begin(); i != airPlaneBullet.end(); i++) {
+		PxVec3 pos = (*i)->getGlobalPose().p ;
+		CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
+			10, 0.05f,  //云密度、云团的半径
+			0.1f, 4.0f, // 云在y方向的速度、云在y方向上最大能上升的距离
+			glm::vec3(pos.x, pos.y, pos.z), //初始位置
+			glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
+			//camera.getPosition() + camera.getFront() * 1.f,
+			std::vector<string>(), // 纹理路径列表
+			cloudShader //渲染此烟雾的shader
+		);
+		renderParticleClusterList.push_back(cloud_cluster);
+	}
+}
 
 
 
@@ -983,6 +1014,7 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	if (this->health - damage > 0) {
 		this->health -= damage;
 		cout << "Tank - " << damage << endl;
+		updateTankList.insert(this);
 	}
 	else if(this->alive==true) {
 		this->health = 0;

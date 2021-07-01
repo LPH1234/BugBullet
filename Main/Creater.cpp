@@ -309,6 +309,11 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
 				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
 			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::MAP);
+			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				printf("ÅÚËþµ¯Ò©£¡\n");
