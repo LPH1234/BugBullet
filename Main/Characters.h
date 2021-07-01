@@ -20,8 +20,10 @@
 #include <cmath>
 #include "../Data/Consts.h"
 #include "Creater.h"
+#include <set>
 
 
+class Player;
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
 extern bool mouseButtonPressState[3];
@@ -31,6 +33,8 @@ extern PxMaterial*				gMaterial;
 extern Camera camera;
 extern PxTransform born_pos;
 extern const float velocity;
+extern std::set<PxRigidDynamic*> airPlaneBullet;
+extern set<Player*>		updateTankList;
 
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 
@@ -59,6 +63,7 @@ public:
 	virtual void ProcessMouseClick() {};
 
 	virtual void oncontact(DATATYPE::ACTOR_TYPE _type) {};
+	virtual void oncontact(DATATYPE::TRIGGER_TYPE _type) {};
 
 	physx::PxRigidDynamic* getRigid() {
 		return this->rigid;
@@ -83,6 +88,19 @@ public:
 	void setTransform(physx::PxTransform& t) {
 		this->rigid->setGlobalPose(t);
 	}
+	//生成血条,参数为：被绑定的物体、血条长度、血条位置、joint相对于物体的位置以及joint相对于血条的位置
+	PxRigidDynamic* createAndShowBlood(PxRigidDynamic* _body, float _healthLength, PxTransform _healthPos, PxTransform t0, PxTransform t1) {
+		PxShape* healthShape = gPhysics->createShape(PxBoxGeometry(_healthLength / 2, 0.1f, 0.1f), *gMaterial, true);
+		PxRigidDynamic* bloodDynamic = PxCreateDynamic(*gPhysics, _healthPos, *healthShape, 0.0001);
+		bloodDynamic->setName("blood");
+		bloodDynamic->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
+		healthShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+		healthShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+		bloodDynamic->attachShape(*healthShape);
+		bloodDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+		PxFixedJointCreate(*gPhysics, _body, t0, bloodDynamic, t1);
+		return bloodDynamic;
+	}
 };
 
 class AirPlane;
@@ -98,10 +116,13 @@ private:
 	PxVec3 born;
 	vector<PxVec3> waypoint;
 
-	int health = 100;//坦克生命值
 
 public:
 	PxRigidDynamic*			body;//刚体
+	PxRigidDynamic*			healthBody;//血条刚体
+	int health = 100;//坦克生命值
+	bool alive = true;
+	float healthLength = 6.0;//血条长度
 	AirPlane*				airPlane;//飞机类
 	float					bulletVelocity = 40.f;//默认子弹速度
 	vector<bool>			turnningState;//转向状态，分别是直行中、转向中
@@ -129,6 +150,7 @@ public:
 	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
 	PxVec3					backForward, currentBackForward;//初始机背朝向、当前机背朝向
 	PxVec3					swingForward, currentSwingForward;//初始机翼朝向、当前机翼朝向
+	PxVec3					emitDirection;//发射方向，定为前进方向下压20°
 	vector<bool>			turningState;//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
 	vector<bool>			turningState2;//飞机转向的7个状态，直行、左偏航、右偏航、俯冲、上仰、左翻滚、右翻滚
 	int						rollingAngel = 0;//滚转角
@@ -139,8 +161,12 @@ public:
 	float					veclocity = 8.0f;//默认飞行速度
 	float					emitVeclocity = 24.0f;//默认炮弹飞行速度
 	float					turningSpeed = 6.0f;//转向速度
-	
+	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
+
+	bool activatemissle = false;
 	int health = 100;//飞机生命值
+	int bullet_ammo = 100;
+	int missle_ammo = 0;
 
 	void*					user_data;//信息
 
@@ -166,4 +192,5 @@ public:
 	virtual void ProcessMouseClick() {};
 
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
+	void oncontact(DATATYPE::TRIGGER_TYPE _type);
 };

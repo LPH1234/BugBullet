@@ -3,7 +3,6 @@
 
 extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 
-
 AirPlane::AirPlane() :BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
 
@@ -58,6 +57,8 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	currentHeadForward = headForward = head;
 	currentBackForward = backForward = back;
 	currentSwingForward = swingForward = swing;
+	PxQuat emitRot(PxPi / 180 * (-10), currentSwingForward);
+	emitDirection = emitRot.rotate(currentHeadForward).getNormalized();
 	this->body = _body;
 	setupFiltering(this->body, FilterGroup::eAIRPLANE, FilterGroup::eMAP | FilterGroup::ePLAYERBULLET);
 	body->setName("airPlane");
@@ -462,6 +463,8 @@ void AirPlane::manualControlAirPlane4() {
 	currentHeadForward = (body->getGlobalPose().q).rotate(headForward);
 	currentBackForward = (body->getGlobalPose().q).rotate(backForward);
 	currentSwingForward = (body->getGlobalPose().q).rotate(swingForward);
+	PxQuat emitRot(PxPi / 180 * (-10), currentSwingForward);
+	emitDirection = emitRot.rotate(currentHeadForward).getNormalized();
 	//body->setLinearVelocity(veclocity * currentHeadForward);
 }
 
@@ -483,27 +486,39 @@ void AirPlane::emit() {
 	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxSphereGeometry(0.1), *gMaterial, 10.0f);
 	//胶囊体弹药
 	PxQuat bulletRot(-PxPi / 2, PxVec3(0, 1, 0));
-	//emitTransform.q = getBulletRotate(currentHeadForward, PxVec3(1.0f, 0.0f, 0.0f));
-	emitTransform.q = bulletRot;
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+	PxQuat bulletRot2 = body->getGlobalPose().q;
+	PxQuat bulletRot3(PxPi / 180 * (-10), currentSwingForward);
+	PxVec3 emitPos; PxRigidDynamic* dynamic;
+	if (activatemissle) {
+		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
+		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
+			PxCapsuleGeometry(0.04, 0.17), *gMaterial, 1.0f);
+		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_MISSLE);
+	}
+	else {
+		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
+		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
+			PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+	}
+	
+	leftOrRight *= -1;
+	//emitTransform.q = bulletRot;
+	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+	
 	//设置刚体名称
 	setupFiltering((PxRigidActor*)(dynamic), FilterGroup::eMISILE, FilterGroup::eMAP|FilterGroup::eTANK);
 	dynamic->setName("bullet");
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	dynamic->setLinearVelocity((veclocity + emitVeclocity)*currentHeadForward);
-	/*UserData data;
-	(data).id = 1;
-	(data).name = "littleBall";
-	(data).health = 10;
-	cout << data.id << endl;*/
+	dynamic->setLinearVelocity((veclocity + emitVeclocity)*emitDirection);
+	//dynamic->setLinearVelocity((veclocity + emitVeclocity)*currentHeadForward);
 
-	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+	
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
-	//cout << temp->id << endl;
-	//cout << a << endl;
 	gScene->addActor(*dynamic);
+	airPlaneBullet.insert(dynamic);
 }
 
 void AirPlane::reset() {
@@ -610,10 +625,22 @@ void AirPlane::ProcessKeyPress() {
 	if (!keyToPressState[GLFW_KEY_E] && keyToPrePressState[GLFW_KEY_E]) {
 		turningState2[6] = false;
 	}
-
+	if (keyToPressState[GLFW_KEY_1]) {
+		activatemissle = false;
+	}
+	if (keyToPressState[GLFW_KEY_2]) {
+		activatemissle = true;
+	}
 	//发射
-	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]) {
+	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]&&((!activatemissle&&bullet_ammo>0)||(activatemissle&&missle_ammo>0))) {
+		if (activatemissle) {
+			missle_ammo--;
+		}
+		else {
+			bullet_ammo--;
+		}
 		emit();
+		cout<<"bullet_ammo: "<<bullet_ammo<<endl;
 	}
 	//重置
 	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
@@ -654,6 +681,18 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		cout << "Plane died" << endl;
 	}
 }
+void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
+	if (_type == DATATYPE::TRIGGER_TYPE::SUPPLY) {
+		this->bullet_ammo += 15;
+		cout << bullet_ammo << endl;
+	}
+	else if(_type == DATATYPE::TRIGGER_TYPE::COLLECTION){
+		this->missle_ammo += 5;
+		cout << "missle_ammo"<<missle_ammo << endl;
+	}
+	else {}
+}
+
 
 
 
@@ -665,6 +704,7 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 
 
 Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(target) {
+	this->body = target;
 	this->airPlane = airplane;
 	cout << "飞机速度：" << this->airPlane->getRigid()->getLinearVelocity().x << "\t"
 		<< this->airPlane->getRigid()->getLinearVelocity().y << "\t" << this->airPlane->getRigid()->getLinearVelocity().z << "\n";
@@ -678,7 +718,12 @@ Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(
 	autoshooting = true;
 	turnningState.resize(2);
 	turnningState[0] = true;
+	//绑定血条shape
+	PxTransform pos(this->body->getGlobalPose().p + PxVec3(0, 5, 0));
+	this->healthBody = createAndShowBlood(this->body, this->healthLength, pos, PxTransform(PxVec3(0, 4, 0)), PxTransform(PxVec3(0, -1, 0)));
+
 	gScene->addActor(*(this->rigid));
+	gScene->addActor(*(this->healthBody));
 }
 
 void Player::ProcessKeyPress() {
@@ -931,7 +976,11 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		this->health -= damage;
 		cout << "Tank - " << damage << endl;
 	}
-	else {
+	else if(this->alive==true) {
+		this->health = 0;
+		updateTankList.insert(this);
+		this->alive = false;
+		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
 		cout << "Tank died" << endl;
 	}
 }

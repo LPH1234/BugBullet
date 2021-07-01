@@ -16,6 +16,7 @@
 #include "Characters.h"
 
 
+//extern set<PxRigidDynamic*>		airPlaneBullet;
 extern PxFoundation*			gFoundation;
 extern PxPhysics*				gPhysics;
 extern PxCooking*				gCooking;
@@ -62,7 +63,8 @@ struct FilterGroup
 		eTANK = (1 << 8),		//坦克
 		eTower=(1<<9),
 		ePlayer=(1<<10),
-		eTowerBullet = (1<<11)
+		eTowerBullet = (1<<11),
+		eBONUS = (1<<12)
 
 	};
 };
@@ -79,10 +81,15 @@ void testFilter();
 void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 //删除removeActorList里面的actor
 void removeActorInList();
+//更新坦克血条
+void updateTankInList();
+//更新炮塔血条
+void updateGuntowerInList();
+void addBonusInList();
 
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(20));
-
-PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
+//
+//PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);
 
 //PxRigidDynamic* initvehicle(const PxTransform& t, const PxGeometry& geometry);
 
@@ -97,7 +104,8 @@ void createAbleBreakWall();
 void createBreakableWall();
 void testTriggerWall();
 void testTriggerCollection();
-PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type);
+
+PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type,bool movable);
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);

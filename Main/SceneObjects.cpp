@@ -9,7 +9,16 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
 
-	PxRigidDynamic* guntower = reinterpret_cast<PxRigidDynamic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader,false));
+	PxRigidStatic* guntower = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader));
+	PxShape* bloodShape = gPhysics->createShape(PxBoxGeometry(3, 0.1f, 0.1f), *gMaterial, true);
+	PxRigidStatic* blood_body = PxCreateStatic(*gPhysics, PxTransform(guntower->getGlobalPose().p + PxVec3(0, 5, 0)), *bloodShape);
+	blood_body->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
+	bloodShape->setName("blood");
+	bloodShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	bloodShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	//bloodShape->setLocalPose(PxTransform(guntower->getGlobalPose().p + PxVec3(0, 5, 0)));
+	blood_body->attachShape(*bloodShape);
+	gScene->addActor(*blood_body);
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 	
@@ -19,8 +28,10 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	count++;
 	guntower->setName("Tower");
 	
+	guntower::tower_list.push_back(guntower);
 	guntower::health_list.push_back(50);
 	guntower::enable_attack_list.push_back(true);
+	guntower::blood_body_list.push_back(blood_body);
 	setupFiltering(guntower, FilterGroup::eTower, FilterGroup::eMISILE );
 	
 	//cout << temp->id << endl;
@@ -104,8 +115,60 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 		this->health_list[id] -= damage;
 		cout << "Tower - " << damage << endl;
 	}
-	else {
+	else if(this->enable_attack_list[id] ==true) {
+		this->health_list[id] = 0;
 		this->enable_attack_list[id] = false;
+		PxRigidActor* temp = reinterpret_cast<PxRigidActor*>(this->tower_list[id]);
+		bonus::generate_bonus_pos(temp->getGlobalPose());
 		cout << "Tower died" << endl;
 	}
 }
+
+PxVec3 bonus::initsupply(glm::vec3 pos) {
+	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
+	PxVec3 input;glmVec3ToPxVec3(pos1, input);
+	PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(PxTransform(input), DATATYPE::TRIGGER_TYPE::COLLECTION,false));
+
+	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
+
+	bonus->userData = new UserData(this, count, "SUPPLY", DATATYPE::TRIGGER_TYPE::SUPPLY);
+	count++;
+	bonus->setName("SUPPLY");
+
+	bonus::supply_list.push_back(bonus);
+	//setupFiltering(bonus, FilterGroup::eBONUS, FilterGroup::eMISILE);
+	bonus::enable_supply_list.push_back(true);
+	//cout << temp->id << endl;
+	return mPos;
+}
+void bonus::initlist(vector<glm::vec3> pos_list) {
+	for (int i = 0; i < pos_list.size(); i++) {
+		PxVec3 e = initsupply(pos_list[i]);
+		bonus::supply_pos_list.push_back(e);
+		bonus::timer_list.push_back(0);
+	}
+}
+void bonus::autorefresh(int i) {
+	bonus::enable_supply_list[i] = true;
+	//cout << "refresh" << endl;
+}
+void bonus::runsupply() {
+	for (int i = 0; i < supply_pos_list.size(); i++) {
+		PxVec3 e = supply_pos_list[i];
+		if (enable_supply_list[i] == false) {
+			clock_t timer_now = clock();
+			if (timer_now - timer_list[i] >600000) {
+				autorefresh(i);
+				timer_list[i] = timer_now;
+			}
+		}
+	}
+}
+bool bonus::supplyoncontact(int id, DATATYPE::ACTOR_TYPE _type) {
+	if (_type==DATATYPE::ACTOR_TYPE::PLANE &&enable_supply_list[id] == true) {
+		enable_supply_list[id] = false;
+		return true;
+	}
+	return false;
+}
+
