@@ -115,7 +115,7 @@ void initPhysics(bool interactive)
 		pos_list.push_back(north_island_pos_list[i]);
 	}
 	GunTower.initlist(pos_list);
-	vector<glm::vec3> supply_pos_list = { glm::vec3(5.0f, 5.0f, 0.0f) };
+	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2] };
 	Bonus.initlist(supply_pos_list);
 	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
