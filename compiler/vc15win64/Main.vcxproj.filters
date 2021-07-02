@@ -22,6 +22,9 @@
     <ClCompile Include="..\..\Main\SceneObjects.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Main\Media.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Main\Characters.h">
@@ -34,6 +37,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Main\SceneObjects.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Main\Media.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
