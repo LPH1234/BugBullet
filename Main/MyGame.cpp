@@ -208,7 +208,8 @@ void beforeStepPhysics() {
 
 void stepPhysics(bool interactive)
 {
-	PX_UNUSED(interactive);
+	if (!interactive)
+		return;
 
 	beforeStepPhysics();
 

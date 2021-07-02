@@ -26,9 +26,9 @@
 
 namespace Render
 {
-	void renderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, Shader* shader, bool shadows = false, const physx::PxVec3 & color = physx::PxVec3(0.0f, 0.75f, 0.0f));
+	void renderActors(Shader* shader);
 	void renderParticles(list<PxParticleSystem*>& particleSystemList, list<BaseParticleCluster*>& renderParticleClusterList, glm::mat4 view, glm::mat4 projection);
-	//void renderUI(glm::mat4& projection, list<BaseUI*>& UIList);
+	void renderUI(const float W,const float H);
 }
 
 PxFilterFlags testCCDFilterShader(

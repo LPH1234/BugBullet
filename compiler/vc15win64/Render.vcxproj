@@ -19,6 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Common\include\imconfig.h" />
+    <ClInclude Include="..\..\Common\include\imgui.h" />
+    <ClInclude Include="..\..\Common\include\imgui_impl_glfw.h" />
+    <ClInclude Include="..\..\Common\include\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\..\Common\include\imgui_internal.h" />
+    <ClInclude Include="..\..\Common\include\imstb_rectpack.h" />
+    <ClInclude Include="..\..\Common\include\imstb_textedit.h" />
+    <ClInclude Include="..\..\Common\include\imstb_truetype.h" />
     <ClInclude Include="..\..\Render\Camera.h" />
     <ClInclude Include="..\..\Render\Cluster.h" />
     <ClInclude Include="..\..\Render\Mesh.h" />
@@ -32,6 +40,13 @@
     <ClInclude Include="..\..\Render\UI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Common\include\imgui.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_demo.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_draw.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_tables.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_widgets.cpp" />
     <ClCompile Include="..\..\Render\Camera.cpp" />
     <ClCompile Include="..\..\Render\Cluster.cpp" />
     <ClCompile Include="..\..\Render\glad.c" />

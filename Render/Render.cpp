@@ -97,8 +97,18 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 namespace Render
 {
 
-	void renderActors(PxRigidActor** actors, const PxU32 numActors, Shader* shader, bool shadows, const PxVec3 & color)
+	void renderActors(Shader* shader)
 	{
+		PxScene* scene;
+		PxGetPhysics().getScenes(&scene, 1);
+		PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+		if (!nbActors) return;
+		std::vector<PxRigidActor*> actors1(nbActors);
+		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors1[0]), nbActors);
+		PxRigidActor** actors = &actors1[0];
+		const PxU32 numActors = static_cast<PxU32>(actors1.size());
+		bool shadows = true;
+
 		PxShape* shapes[MAX_NUM_ACTOR_SHAPES];
 		for (PxU32 i = 0; i < numActors; i++)
 		{
@@ -200,6 +210,10 @@ namespace Render
 		}
 
 
+	}
+
+	void renderUI(const float W, const float H) {
+		UIManager::draw(W, H);
 	}
 
 

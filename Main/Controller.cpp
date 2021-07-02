@@ -20,8 +20,6 @@ extern Shader* smokeShader;
 bool autoshooting = true;//Éä»÷»úÖÆ
 clock_t last = 0;
 
-extern float barX;
-extern float barY;
 
 void processOtherControlEvents() {
 	mouseClick();
@@ -36,18 +34,7 @@ void keyPress() {
 	Plane_1->ProcessKeyPress();
 	//mouseClick();
 //}
-	if (keyToPressState[GLFW_KEY_UP] && !keyToPrePressState[GLFW_KEY_UP]) {
-		barY -= 100;		std::cout << "X:" << barX << "\tY:" << barY << "\n";
-	}
-	if (keyToPressState[GLFW_KEY_DOWN] && !keyToPrePressState[GLFW_KEY_DOWN]) {
-		barY += 100;		std::cout << "X:" << barX << "\tY:" << barY << "\n";
-	}
-	if (keyToPressState[GLFW_KEY_LEFT] && !keyToPrePressState[GLFW_KEY_LEFT]) {
-		barX -= 100;		std::cout << "X:" << barX << "\tY:" << barY << "\n";
-	}
-	if (keyToPressState[GLFW_KEY_RIGHT] && !keyToPrePressState[GLFW_KEY_RIGHT]) {
-		barX += 100;		std::cout << "X:" << barX << "\tY:" << barY << "\n";
-	}
+	
 
 }
 
