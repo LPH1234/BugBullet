@@ -15,18 +15,77 @@ AirPlane				*Plane_1;
 //第三人称角色位置
 PxTransform born_pos(PxVec3(10, 0, -7));
 
-void createModel(std::string path, int scale, PxVec3& offset) {
-
-}
+void createModel(std::string path, int scale, PxVec3& offset) {}
 
 PxReal					stackZ = 3.0f;
 extern Camera camera;
 extern Shader* envShader;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
-Player* vehicle;
+vector<Player*>		tankList(4,nullptr);
+//Player* vehicle;
 guntower GunTower;
 bonus Bonus;
 
+vector<glm::vec3>east_island_pos_list = { glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(248.f, 5.5f, 80.0f),glm::vec3(248.0f, 5.5f, -141.0f),
+										glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
+										glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(380.0f, 7.6f, -136.0f),
+										glm::vec3(136.5f, 5.4f, -140.0f),glm::vec3(136.5f, 5.4f, 22.0f),glm::vec3(136.5f, 5.4f, 60.0f),
+										glm::vec3(136.5f, 5.4f, -23.0f),glm::vec3(136.5f, 5.4f, -45.0f) };
+	
+vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),
+										glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
+										 glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),
+										glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
+vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::vec3(24.6f,7.6f,-330.8f),glm::vec3(25.1f,7.6f,-394.6f),
+										glm::vec3(26.8f,7.6f,-464.3f),glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),
+										glm::vec3(-19.7f,7.6f,-256.8f) };
+//初始化坦克，一共四辆
+void initTank() {
+	int index[4][2] = { {8,3},{5,7},{1,6},{12,13} };
+	PxVec3 dir[4] = { PxVec3(-1,0,0),PxVec3(0,0,-1),PxVec3(1,0,0),PxVec3(0,0,-1) };
+	for (int i = 0; i < 4; i++) {
+		PxVec3 start; glmVec3ToPxVec3 (east_island_pos_list[index[i][0] - 1],start);
+		PxVec3 end; glmVec3ToPxVec3(east_island_pos_list[index[i][1] - 1], end);
+		PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(east_island_pos_list[index[i][0]-1], glm::vec3(1.0f, 1.0f, 1.0f),
+			"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
+		input_tank->setMass(10.f);
+		//input_tank->setMassSpaceInertiaTensor(PxVec3(0.f));
+
+		tankList[i] = new Player(input_tank, Plane_1, start, end, dir[i]);
+
+		
+	}
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(1, 1, 1), *gMaterial);
+	PxRigidDynamic* box1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(300.0f, 7.6f, -140.0f)), *shape, 100);
+	PxRigidDynamic* box2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(305.0f, 7.6f, -140.0f)), *shape, 100);
+	PxRigidDynamic* box3 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(400.0f, 7.6f, -140.0f)), *shape, 100);
+	PxRigidDynamic* box4 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(405.0f, 13.f, -140.0f)), *shape, 100);
+	PxRigidDynamic* box5 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(410.0f, 7.6f, -140.0f)), *shape, 100);
+	PxRigidDynamic* box6 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(415.0f, 7.6f, -140.0f)), *shape, 100);
+	PxRigidDynamic* box7 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(420.0f, 7.6f, -140.0f)), *shape, 100);
+	PxRigidDynamic* box8 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(425.0f, 13.f, -140.0f)), *shape, 100);
+	box1->attachShape(*shape);
+	box2->attachShape(*shape);
+	box3->attachShape(*shape);
+	box4->attachShape(*shape);
+	box5->attachShape(*shape);
+	box6->attachShape(*shape);
+	box7->attachShape(*shape);
+	box8->attachShape(*shape);
+	gScene->addActor(*box1);
+	gScene->addActor(*box2);
+	gScene->addActor(*box3);
+	gScene->addActor(*box4);
+	gScene->addActor(*box5);
+	gScene->addActor(*box6);
+	gScene->addActor(*box7);
+	gScene->addActor(*box8);
+}
+void tankAutoMove() {
+	for (int i = 0; i < 4; i++) {
+		tankList[i]->automove();
+	}
+}
 void initPhysics(bool interactive)
 {
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
@@ -86,16 +145,6 @@ void initPhysics(bool interactive)
 
 	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
 	GunTower.initguntower(pos1);*/
-	vector<glm::vec3>east_island_pos_list = {glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(245.7f, 7.6f, 83.0f),glm::vec3(253.0f, 7.6f, -141.0f),
-											glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
-											glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(427.0f, 7.6f, -136.0f) };
-	vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),
-											glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
-		                                     glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),
-											glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
-	vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::vec3(24.6f,7.6f,-330.8f),glm::vec3(25.1f,7.6f,-394.6f),
-											glm::vec3(26.8f,7.6f,-464.3f),glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),
-											glm::vec3(-19.7f,7.6f,-256.8f) };
 	vector<glm::vec3>pos_list;
 
 	glm::vec3 pos1(5.0f, 5.0f, 0.0f); 
@@ -111,22 +160,30 @@ void initPhysics(bool interactive)
 	/*for (int i = 0; i < south_island_pos_list.size(); i++) {
 		pos_list.push_back(south_island_pos_list[i]);
 	}*/
+	//加载炮塔
 	for (int i = 0; i < north_island_pos_list.size(); i++) {
 		pos_list.push_back(north_island_pos_list[i]);
 	}
 	GunTower.initlist(pos_list);
 	vector<glm::vec3> supply_pos_list = { glm::vec3(5.0f, 5.0f, 0.0f) };
 	Bonus.initlist(supply_pos_list);
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 20.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
+
+	//加载飞机
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(136.0f, 20.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
-	PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
-		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
+
+	//加载坦克
+	initTank();
+
+	/*PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
+		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));*/
 	//setupFiltering(input_tank, FilterGroup::eTANK, FilterGroup::eMISILE);
 	//testFilter();
 	testTriggerWall();
-	testTriggerCollection();
-	vehicle = new Player(input_tank, Plane_1);
+
+	//testTriggerCollection();
+	//vehicle = new Player(input_tank, Plane_1);
 
 	{
 		//PxRigidStatic* staticTank = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(-10.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
@@ -147,8 +204,8 @@ void initPhysics(bool interactive)
 	}
 
 	//camera.setTarget(player);
-	camera.setTarget(Plane_1);
-	//camera.setTarget(vehicle);
+	//camera.setTarget(Plane_1);
+	camera.setTarget(tankList[0]);
 
 	PxRigidActor* Map = nullptr;
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
@@ -229,7 +286,8 @@ void stepPhysics(bool interactive)
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
-	vehicle->automove();
+	//vehicle->automove();
+	tankAutoMove();
 	Plane_1->manualControlAirPlane4();
 	GunTower.runguntower(Plane_1->body);
 	Bonus.runsupply();

@@ -151,10 +151,10 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 }
 void testTriggerWall() {
 	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 400), *gMaterial);
-	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 850), *gMaterial);
-	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 850), *gMaterial);
-	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 850), *gMaterial);
-	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 850), *gMaterial);
+	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 350), *gMaterial);
+	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 350), *gMaterial);
+	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 350), *gMaterial);
+	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 350), *gMaterial);
 
 	borderPlaneSky->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
 	borderPlaneNorth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
@@ -241,7 +241,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			removeActorList.push_back(temp);
 			continue;
 		}*/
-		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
+		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0!=nullptr&&actor_data_0->name != "plane") {
 			removeActorList.push_back(actor_0);
 			continue;
 		}
@@ -295,15 +295,20 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
 			if (actor_data_0->type== DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				printf("飞机弹药！\n");
+				//printf("飞机弹药！\n");
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
 			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
 				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				printf("炮塔弹药！\n");
+				//printf("炮塔弹药！\n");
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
+			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+				//printf("坦克弹药！\n");
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
@@ -369,7 +374,7 @@ void updateTankInList() {
 			{
 				PxShape* shape = shapes[j];
 				float l = (((*i)->health / 100.0)*(*i)->healthLength / 2 > 0 ? ((*i)->health / 100.0)*(*i)->healthLength / 2 : 0.01);
-				cout << "更改血条！当前血量：" << (*i)->health << "\tl:" << l << "\n";
+				//cout << "更改血条！当前血量：" << (*i)->health << "\tl:" << l << "\n";
 				shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
 			}
 			free(shapes);

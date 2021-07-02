@@ -106,18 +106,19 @@ public:
 class AirPlane;
 
 class Player : public BaseCharacter {
-private:
+public:
 	PxVec3 headforward = PxVec3(0.0f, 0.0f, 1.0f);
 	PxVec3 backforward = PxVec3(0.0f, 1.0f, 0.0f);
 	PxVec3 currentheadforward;
 	PxVec3 currentbackforward;
+	PxVec3 startPos;//路线起点
+	PxVec3 endPos;//路线终点
+	PxVec3 startDir;//起始方向
 	bool autoshooting;//射击机制
 	clock_t last = 0;
 	PxVec3 born;
 	vector<PxVec3> waypoint;
 
-
-public:
 	PxRigidDynamic*			body;//刚体
 	PxRigidDynamic*			healthBody;//血条刚体
 	int health = 100;//坦克生命值
@@ -127,9 +128,12 @@ public:
 	float					bulletVelocity = 40.f;//默认子弹速度
 	vector<bool>			turnningState;//转向状态，分别是直行中、转向中
 	int						currentAngle = 0;//当前已经转过的角度
-	float					velocity = 2.0f;//默认速度
+	int						initAngel = 0;//初始转过的角度
+	float					velocity = 8.0f;//默认速度
 	int						fireTime = 0;//发射间隔计时器
-	Player(physx::PxRigidDynamic* target, AirPlane*	airplane);
+
+
+	Player(physx::PxRigidDynamic* target, AirPlane*	airplane, PxVec3 _startPos,PxVec3 _endPos, PxVec3 _startDir);
 	void ProcessKeyPress();
 	void fire(const PxTransform& t, const PxVec3& velocity);
 	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
@@ -158,8 +162,8 @@ public:
 	int						currentAngel_x = 0;//当前姿态在水平面转过的角度
 	int						currentAngel_z = 0;//当前姿态在垂直面转过的角度 
 	int						emitBulletTime = 0;//发射间隔计时器
-	float					veclocity = 8.0f;//默认飞行速度
-	float					emitVeclocity = 24.0f;//默认炮弹飞行速度
+	float					veclocity = 15.0f;//默认飞行速度
+	float					emitVeclocity = 64.0f;//默认炮弹飞行速度
 	float					turningSpeed = 6.0f;//转向速度
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
