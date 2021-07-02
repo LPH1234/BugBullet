@@ -86,7 +86,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/LIBPATH:../../../Lib/vc15win64 PhysX3CommonDEBUG_x64.lib PhysX3DEBUG_x64.lib PhysX3CookingDEBUG_x64.lib PhysX3CharacterKinematicDEBUG_x64.lib PhysX3ExtensionsDEBUG.lib PhysX3VehicleDEBUG.lib PxTaskDEBUG_x64.lib PxFoundationDEBUG_x64.lib PsFastXmlDEBUG_x64.lib PxPvdSDKDEBUG_x64.lib /LIBPATH:../../lib/vc15win64 UtilsDEBUG.lib /DEBUG /verbose:lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;trng4d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;RenderDEBUG.lib;opengl32.lib;assimp-vc140-mtd.lib;glew32d.lib;glfw3d.lib;libglew32d.lib;soil2-debug.lib;trng4d.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)DEBUG.exe</OutputFile>
       <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -274,6 +274,7 @@
     <ClCompile Include="..\..\Main\ClassicMain.cpp" />
     <ClCompile Include="..\..\Main\Controller.cpp" />
     <ClCompile Include="..\..\Main\Creater.cpp" />
+    <ClCompile Include="..\..\Main\Media.cpp" />
     <ClCompile Include="..\..\Main\MyGame.cpp" />
     <ClCompile Include="..\..\Main\MyGameRender.cpp" />
     <ClCompile Include="..\..\Main\SceneObjects.cpp" />
@@ -282,6 +283,7 @@
     <ClInclude Include="..\..\Main\Controller.h" />
     <ClInclude Include="..\..\Main\Creater.h" />
     <ClInclude Include="..\..\Main\Characters.h" />
+    <ClInclude Include="..\..\Main\Media.h" />
     <ClInclude Include="..\..\Main\SceneObjects.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

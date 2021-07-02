@@ -21,7 +21,7 @@
 #include "../Data/Consts.h"
 #include "Creater.h"
 #include <set>
-
+#include "Media.h"
 
 class Player;
 extern std::unordered_map<int, bool> keyToPressState;
@@ -35,7 +35,7 @@ extern PxTransform born_pos;
 extern const float velocity;
 extern std::set<PxRigidDynamic*> airPlaneBullet;
 extern set<Player*>		updateTankList;
-
+extern Media MediaPlayer;
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 
 class BaseCharacter {
@@ -185,6 +185,7 @@ public:
 	void emit();
 	void reset();
 	void crash();
+	void shotdown();
 
 	//ÖØÐ´
 	virtual void getRight(physx::PxVec3& right);
