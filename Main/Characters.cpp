@@ -808,18 +808,38 @@ void AirPlane::crash() {
 
 
 
-Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane) :BaseCharacter(target) {
+Player::Player(physx::PxRigidDynamic* target,AirPlane* airplane,PxVec3 _startPos,PxVec3 _endPos, PxVec3 _startDir) :BaseCharacter(target) {
 	this->body = target;
 	this->airPlane = airplane;
+	this->startPos = _startPos;
+	this->endPos = _endPos;
+	this->startDir = _startDir;
 	cout << "·É»úËÙ¶È£º" << this->airPlane->getRigid()->getLinearVelocity().x << "\t"
 		<< this->airPlane->getRigid()->getLinearVelocity().y << "\t" << this->airPlane->getRigid()->getLinearVelocity().z << "\n";
 	this->rigid->setName("vehicle");
 	this->rigid->setAngularDamping(0.5f);
 	this->rigid->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
+	//this->rigid->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	this->born = target->getGlobalPose().p;
 	this->rigid->userData = new UserData(this, 1, "tank", DATATYPE::ACTOR_TYPE::TANK);
 	currentheadforward = headforward;
 	currentbackforward = backforward;
+	if (abs(_startDir.x) > 0.5) {
+		int d = (_startDir.x > 0 ? 1 : -1);
+		PxQuat initRot(PxPi / 2 * d, currentbackforward.getNormalized());
+		currentheadforward = initRot.rotate(headforward);
+		currentbackforward = initRot.rotate(backforward);
+		initAngel = d * 90;
+		this->body->setGlobalPose(PxTransform(this->body->getGlobalPose().p, initRot));
+	}
+	else {
+		/*int d = _startDir.z > 0 ? 0 : 1;
+		PxQuat initRot(PxPi * d, currentbackforward.getNormalized());
+		this->body->setGlobalPose(PxTransform(this->body->getGlobalPose().p, initRot));
+		currentheadforward = initRot.rotate(headforward);
+		currentbackforward = initRot.rotate(backforward);
+		initAngel = d * 180;*/
+	}
 	autoshooting = true;
 	turnningState.resize(2);
 	turnningState[0] = true;
@@ -965,7 +985,7 @@ int Player::forward(PxVec3& dir, double velocity) {
 	return 0;
 }
 void Player::automove() {
-	if (this->alive == false)return;
+	if (!this->alive)return;
 	fireTime++;
 	
 	if (fireTime % 200 == 0) {
@@ -973,23 +993,40 @@ void Player::automove() {
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);
-		if (this->rigid->getGlobalPose().p.z >= 56&& this->rigid->getGlobalPose().p.z+20*currentheadforward.z>=56) {
-			turnningState[0] = false;
-			turnningState[1] = true;
+		if (abs(this->startDir.x) > 0.1) {
+			float leftPoint = this->startPos.x < this->endPos.x ? this->startPos.x : this->endPos.x;
+			float rightPoint = this->startPos.x > this->endPos.x ? this->startPos.x : this->endPos.x;
+			if (this->rigid->getGlobalPose().p.x >= rightPoint && this->rigid->getGlobalPose().p.x + 20 * currentheadforward.x >= rightPoint) {
+				turnningState[0] = false;
+				turnningState[1] = true;
+			}
+			else if (this->rigid->getGlobalPose().p.x <= leftPoint && this->rigid->getGlobalPose().p.x + 20 * currentheadforward.x <= leftPoint) {
+				turnningState[0] = false;
+				turnningState[1] = true;
+			}
 		}
-		else if (this->rigid->getGlobalPose().p.z <= 28 && this->rigid->getGlobalPose().p.z + 20 * currentheadforward.z <= 28) {
-			turnningState[0] = false;
-			turnningState[1] = true;
+		else {
+			float northPoint = this->startPos.z < this->endPos.z ? this->startPos.z : this->endPos.z;
+			float southPoint = this->startPos.z > this->endPos.z ? this->startPos.z : this->endPos.z;
+			if (this->rigid->getGlobalPose().p.z >= southPoint && this->rigid->getGlobalPose().p.z + 20 * currentheadforward.z >= southPoint) {
+				turnningState[0] = false;
+				turnningState[1] = true;
+			}
+			else if (this->rigid->getGlobalPose().p.z <= northPoint && this->rigid->getGlobalPose().p.z + 20 * currentheadforward.z <= northPoint) {
+				turnningState[0] = false;
+				turnningState[1] = true;
+			}
 		}
 	}
 	else {
+		this->rigid->setLinearVelocity(PxVec3(0, 0, 0));
 		currentAngle += 1;
 		PxQuat rot(PxPi / 180 * (1), currentbackforward);
 		this->rigid->setGlobalPose(PxTransform(this->rigid->getGlobalPose().p, rot*this->rigid->getGlobalPose().q));
 		currentheadforward = (rot*this->rigid->getGlobalPose().q).rotate(headforward);
 		currentbackforward = (rot*this->rigid->getGlobalPose().q).rotate(backforward);
 		if (currentAngle % 180 == 0) {
-			PxQuat rot(PxPi * (currentAngle/180), currentbackforward);
+			PxQuat rot(PxPi * (currentAngle/180)+PxPi/180*(initAngel), currentbackforward);
 			this->rigid->setGlobalPose(PxTransform(this->rigid->getGlobalPose().p, rot));
 			currentheadforward = (rot).rotate(headforward);
 			currentbackforward = (rot).rotate(backforward);
@@ -1022,6 +1059,7 @@ void Player::autoEmit() {
 		dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 		dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 		dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::TANK_BULLET);
 		dynamic->setLinearVelocity(bulletVelocity*tankToPlane.getNormalized());
 		return;
 	}

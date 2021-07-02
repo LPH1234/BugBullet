@@ -246,29 +246,29 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			continue;
 		}*/
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
-		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
-			removeActorList.push_back(actor_0);
-			continue;
-		}
-		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BLOOD) {
-			cout << "Blood" << endl;
-		}
-		if ((actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
-			|| actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) && actor_data_0->name == "plane") {
+			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
+				removeActorList.push_back(actor_0);
+				continue;
+			}
+			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BLOOD) {
+				cout << "Blood" << endl;
+			}
+			if ((actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
+				|| actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) && actor_data_0->name == "plane") {
 
-			//飞机拾取道具的回调
-			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
-				bool isvalid = actor_data_1->basesce->supplyoncontact(actor_data_1->id, DATATYPE::ACTOR_TYPE::PLANE);
-				if (isvalid) {
-					actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::SUPPLY);
-					cout << "获得补给!\n";
+				//飞机拾取道具的回调
+				if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
+					bool isvalid = actor_data_1->basesce->supplyoncontact(actor_data_1->id, DATATYPE::ACTOR_TYPE::PLANE);
+					if (isvalid) {
+						actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::SUPPLY);
+						cout << "获得补给!\n";
+					}
+				}
+				else if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
+					actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::COLLECTION);
+					removeActorList.push_back(actor_1);
 				}
 			}
-			else if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
-				actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::COLLECTION);
-				removeActorList.push_back(actor_1);
-			}
-		}
 		}
 		//if (pairs[i].otherActor != Plane_1->getRigid())
 		//{
@@ -318,12 +318,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				printf("炮塔弹药！\n");
+				//printf("炮塔弹药！\n");
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				printf("tank弹药！\n");
+				//printf("tank弹药！\n");
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
@@ -400,7 +400,7 @@ void updateTankInList() {
 			{
 				PxShape* shape = shapes[j];
 				float l = (((*i)->health / 100.0)*(*i)->healthLength / 2 > 0 ? ((*i)->health / 100.0)*(*i)->healthLength / 2 : 0.01);
-				cout << "更改血条！当前血量：" << (*i)->health << "\tl:" << l << "\n";
+				//cout << "更改血条！当前血量：" << (*i)->health << "\tl:" << l << "\n";
 				shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
 			}
 			free(shapes);
