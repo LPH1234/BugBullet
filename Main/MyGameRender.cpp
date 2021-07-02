@@ -7,6 +7,7 @@
 #include "../Render/UI.h"
 
 
+
 using namespace physx;
 
 extern void initPhysics(bool interactive);
@@ -20,20 +21,10 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
-
-unsigned int SCR_WIDTH = 1920 ;
-unsigned int SCR_HEIGHT = 1080 ;
-
+Game game(GAME_STATE::INIT, 1920 / 2, 1080 / 2, 1920 / 4.0f, 1080 / 4.0f, 0.f, 0.f, true);
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
-
-// timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
 
 //light
 glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -42,7 +33,6 @@ glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
 
 
 SkyBox* skybox;
-HPBarUI* HPBar;
 
 Shader* skyBoxShader;
 Shader* envShader;
@@ -50,25 +40,12 @@ Shader* pointParticleShader;
 Shader* cloudShader;
 Shader* flameShader;
 Shader* smokeShader;
-Shader* HPBarShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
 bool mouseButtonPressState[3];
 
-void renderActors(Shader* shader)
-{
-	PxScene* scene;
-	PxGetPhysics().getScenes(&scene, 1);
-	PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
-	if (nbActors)
-	{
-		std::vector<PxRigidActor*> actors(nbActors);
-		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
-		Render::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
-	}
-}
-
+bool gameStarted = true;
 
 void exitCallback(void)
 {
@@ -89,7 +66,7 @@ int myRenderLoop()
 #endif
 	// glfw window creation
 	// -------------------- 
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, WINDOW_TITLE.c_str(), NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(game.SCR_WIDTH, game.SCR_HEIGHT, WINDOW_TITLE.c_str(), NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -108,7 +85,8 @@ int myRenderLoop()
 	glfwSetScrollCallback(window, scroll_callback);
 
 	// tell GLFW to capture our mouse
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR);
 
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
@@ -130,7 +108,6 @@ int myRenderLoop()
 	smokeShader = new Shader("shaders/smokeShader/smoke.vs", "shaders/smokeShader/smoke.fs");
 	flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
 	cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
-	HPBarShader = new Shader("shaders/HPBarShader/HPBar.vs","shaders/HPBarShader/HPBar.fs");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -148,25 +125,19 @@ int myRenderLoop()
 	// build and compile shaders
 	// -------------------------
 	std::vector<string> faces;
-	string dir = "sky2"; string suffix = "png";
-	faces.push_back("images/skyboxes/" + dir + "/right." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/left." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/bottom." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/top." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/front." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/back." + suffix);
-	const float skybox_scale = 1000.f;
-	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
+	TextureManager::getSkyBoxTextures(faces);
+	skybox = new SkyBox(camera.getPosition(), glm::vec3(1000.f), "", skyBoxShader, faces);
 	faces.clear();
 
-	//FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), spriteShader);
-	//renderParticleClusterList.push_back(flame_cluster);
+	/*FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, 10, glm::vec3(0.1f), std::vector<string>(), flameShader);
+	renderParticleClusterList.push_back(flame_cluster);*/
 
-	HPBar = new HPBarUI("images/textures/green.png", HPBarShader);
+	ModelManager::init();
+	UIManager::init(game.SCR_WIDTH, game.SCR_HEIGHT);
+	MainMenu::init(window);
 
-	ModelManager::initModels();
 
-
+	game.state = GAME_STATE::MAIN_MENU;
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -174,68 +145,89 @@ int myRenderLoop()
 		// per-frame time logic
 		// --------------------
 		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
-		// input
-		// -----
-		processInput(window);
-
-		// self define actions processor
-		// -----
-		processOtherControlEvents();
-
-		// PhysX Simulation
-		// -------------------------------------------------------------------------------
-		stepPhysics(true);
-
+		game.deltaTime = currentFrame - game.lastFrame;
+		game.lastFrame = currentFrame;
 		// 渲染
-		//---------------------------
+			//---------------------------
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// GL Render Process
-		// -------------------------------------------------------------------------------
-		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.f, 12500.f);
-		camera.trackDynamicPosition();
-		glm::mat4 view = camera.GetViewMatrix();
+		if (game.state == GAME_STATE::STARTED) {
 
-		//=====================================skyBoxShader=================================
-		// 绘制包围盒
-		//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
-		skyBoxShader->use();
-		skyBoxShader->setMat4("projection", projection);
-		skyBoxShader->setMat4("view", view);
-		//skybox->setPosition(camera.getPosition());
-		skybox->setPosition(glm::vec3(0.f, 0.f, 0.f));
-		skyBoxShader->setMat4("model", skybox->getModel());
-		skybox->draw();
+			// input
+			// -----
+			processInput(window);
 
-		//=====================================envShader=================================
-		// 一般物体的渲染表现由envShader决定
-		envShader->use();
-		envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		envShader->setMat4("projection", projection);
-		envShader->setMat4("view", view);
-		envShader->setVec3("viewPos", camera.getPosition());
-		envShader->setInt("material.diffuse", 0);
-		envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		envShader->setFloat("material.shininess", 32.0f);
-		envShader->setVec3("light.position", lightPosition);
-		envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
-		envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
-		envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+			// self define actions processor
+			// -----
+			processOtherControlEvents();
+
+			// PhysX Simulation
+			// -------------------------------------------------------------------------------
+			stepPhysics(!game.pause);
+
+			// GL Render Process
+			// -------------------------------------------------------------------------------
+			glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), game.SCR_WIDTH / game.SCR_HEIGHT, 1.f, 12500.f);
+			camera.trackDynamicPosition();
+			glm::mat4 view = camera.GetViewMatrix();
+
+			//=====================================skyBoxShader=================================
+			// 绘制包围盒
+			//glDepthFunc(GL_LEQUAL); // 深度测试条件 小于等于
+			skyBoxShader->use();
+			skyBoxShader->setMat4("projection", projection);
+			skyBoxShader->setMat4("view", view);
+			skybox->setPosition(glm::vec3(0.f, 0.f, 0.f));
+			skyBoxShader->setMat4("model", skybox->getModel());
+			skybox->draw();
+
+			//=====================================envShader=================================
+			// 一般物体的渲染表现由envShader决定
+			envShader->use();
+			envShader->setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
+			envShader->setMat4("projection", projection);
+			envShader->setMat4("view", view);
+			envShader->setVec3("viewPos", camera.getPosition());
+			envShader->setInt("material.diffuse", 0);
+			envShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+			envShader->setFloat("material.shininess", 32.0f);
+			envShader->setVec3("light.position", lightPosition);
+			envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
+			envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
+			envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 
-		renderActors(envShader); // 渲染场景内的物体
+			Render::renderActors(envShader);// 渲染场景内的物体
 
-		Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
+			Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
 
-		HPBarShader->use();
-		HPBarShader->setInt("image", 0);
-		//projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
-		HPBarShader->setMat4("projection", projection);
-		HPBar->draw(SCR_WIDTH,SCR_HEIGHT, glm::vec2(-1.4f, -0.8f), glm::vec2(0.7f, 0.12f));
+			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+		}
+		else if (game.state == GAME_STATE::PAUSE) {
+			MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+		}
+		else if (game.state == GAME_STATE::INIT) {
+			MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+		}
+		else {
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+			if (game.state == GAME_STATE::MAIN_MENU) {
+				MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+				CornerTip::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+				if (HelpModal::visable)//记录
+					HelpModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+				if (ConfigModal::visable)//配置
+					ConfigModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			}
+			else if (game.state == GAME_STATE::OVER) {
+			}
+			// Rendering
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		}
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -258,8 +250,10 @@ bool last_key = 0;
 //按键时，窗口的处理逻辑
 void windowProcessInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE && last_key) {
-		glfwSetWindowShouldClose(window, true);
+		//
 		CookThread::shutdown();
+		game.state = GAME_STATE::MAIN_MENU;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 	last_key = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
 }
@@ -267,21 +261,21 @@ void windowProcessInput(GLFWwindow *window) {
 //按键时，相机的处理逻辑
 void cameraProcessInput(GLFWwindow *window) {
 	if (keyToPressState[GLFW_KEY_W])
-		camera.ProcessKeyboard(FORWARD, deltaTime);
+		camera.ProcessKeyboard(FORWARD, game.deltaTime);
 	if (keyToPressState[GLFW_KEY_S])
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
+		camera.ProcessKeyboard(BACKWARD, game.deltaTime);
 	if (keyToPressState[GLFW_KEY_A])
-		camera.ProcessKeyboard(LEFT, deltaTime);
+		camera.ProcessKeyboard(LEFT, game.deltaTime);
 	if (keyToPressState[GLFW_KEY_D])
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+		camera.ProcessKeyboard(RIGHT, game.deltaTime);
 	if (keyToPressState[GLFW_KEY_SPACE])
-		camera.ProcessKeyboard(UP, deltaTime);
+		camera.ProcessKeyboard(UP, game.deltaTime);
 	if (keyToPressState[GLFW_KEY_LEFT_CONTROL])
-		camera.ProcessKeyboard(DOWN, deltaTime);
+		camera.ProcessKeyboard(DOWN, game.deltaTime);
 	if (keyToPressState[GLFW_KEY_LEFT_SHIFT])
-		camera.ProcessKeyboard(SHIFT_PRESS, deltaTime);
+		camera.ProcessKeyboard(SHIFT_PRESS, game.deltaTime);
 	if (!keyToPressState[GLFW_KEY_LEFT_SHIFT])
-		camera.ProcessKeyboard(SHIFT_RELEASE, deltaTime);
+		camera.ProcessKeyboard(SHIFT_RELEASE, game.deltaTime);
 	if (keyToPressState[GLFW_KEY_F1])
 		camera.setMode(VIEW_TYPE::FIRST_PERSON);
 	if (keyToPressState[GLFW_KEY_F3])
@@ -310,8 +304,8 @@ void processInput(GLFWwindow *window)
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	SCR_WIDTH = width;
-	SCR_HEIGHT = height;
+	game.SCR_WIDTH = width;
+	game.SCR_HEIGHT = height;
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
@@ -321,18 +315,18 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
+	if (game.firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
+		game.lastX = xpos;
+		game.lastY = ypos;
+		game.firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = xpos - game.lastX;
+	float yoffset = game.lastY - ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	game.lastX = xpos;
+	game.lastY = ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 	mouseMove();

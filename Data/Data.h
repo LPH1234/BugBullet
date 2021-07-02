@@ -4,6 +4,34 @@
 
 
 #include<string>
+
+enum GAME_STATE
+{
+	INIT,
+	MAIN_MENU,
+	STARTED,
+	PAUSE,
+	OVER
+};
+
+struct Game
+{
+	Game(GAME_STATE state, float w,float h, float lx, float ly, float dt, float lt, bool firstMouse) {
+		this->state = state; this->SCR_WIDTH = w; this->SCR_HEIGHT = h; this->lastX = lx; this->lastY = ly; this->deltaTime = dt; this->lastFrame = lt; this->firstMouse = firstMouse; 
+		this->pause = false; 
+	}
+	GAME_STATE state;
+	float SCR_WIDTH;
+	float SCR_HEIGHT;
+	float lastX;
+	float lastY;
+	float deltaTime;
+	float lastFrame;
+	bool firstMouse;
+	bool pause;
+};
+
+
 struct DATATYPE {
 	enum ACTOR_TYPE {
 		MAP,TOWER, PLANE,TANK,TANK_BULLET,TOWER_BULLET,PLANE_BULLET,PLANE_MISSLE = (20)

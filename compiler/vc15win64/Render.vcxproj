@@ -19,6 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Common\include\imconfig.h" />
+    <ClInclude Include="..\..\Common\include\imgui.h" />
+    <ClInclude Include="..\..\Common\include\imgui_impl_glfw.h" />
+    <ClInclude Include="..\..\Common\include\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\..\Common\include\imgui_internal.h" />
+    <ClInclude Include="..\..\Common\include\imstb_rectpack.h" />
+    <ClInclude Include="..\..\Common\include\imstb_textedit.h" />
+    <ClInclude Include="..\..\Common\include\imstb_truetype.h" />
     <ClInclude Include="..\..\Render\Camera.h" />
     <ClInclude Include="..\..\Render\Cluster.h" />
     <ClInclude Include="..\..\Render\Mesh.h" />
@@ -32,6 +40,13 @@
     <ClInclude Include="..\..\Render\UI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Common\include\imgui.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_demo.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_draw.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_tables.cpp" />
+    <ClCompile Include="..\..\Common\include\imgui_widgets.cpp" />
     <ClCompile Include="..\..\Render\Camera.cpp" />
     <ClCompile Include="..\..\Render\Cluster.cpp" />
     <ClCompile Include="..\..\Render\glad.c" />
@@ -51,8 +66,9 @@
     <None Include="shaders\envShader\env.vs" />
     <None Include="shaders\flameShader\flame.fs" />
     <None Include="shaders\flameShader\flame.vs" />
-    <None Include="shaders\HPBarShader\HPBar.fs" />
+    <None Include="shaders\HPBarShader\HPBarBorder.fs" />
     <None Include="shaders\HPBarShader\HPBar.vs" />
+    <None Include="shaders\HPBarShader\HPBarFill.fs" />
     <None Include="shaders\skyboxShader\skybox.fs" />
     <None Include="shaders\skyboxShader\skybox.vs" />
     <None Include="shaders\smokeShader\smoke.fs" />
@@ -64,7 +80,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{43554530-2170-F5A9-4794-3AD09344F18D}</ProjectGuid>
     <RootNamespace>SnippetRender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
