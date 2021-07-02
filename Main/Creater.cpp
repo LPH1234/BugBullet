@@ -154,10 +154,10 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 }
 void testTriggerWall() {
 	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 400), *gMaterial);
-	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 850), *gMaterial);
-	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 850), *gMaterial);
-	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 850), *gMaterial);
-	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 850), *gMaterial);
+	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 350), *gMaterial);
+	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 350), *gMaterial);
+	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 350), *gMaterial);
+	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 350), *gMaterial);
 
 	borderPlaneSky->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
 	borderPlaneNorth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
@@ -245,6 +245,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			removeActorList.push_back(temp);
 			continue;
 		}*/
+		if (actor_data_0 != NULL && actor_data_1 != NULL) {
 		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
 			removeActorList.push_back(actor_0);
 			continue;
@@ -252,8 +253,8 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BLOOD) {
 			cout << "Blood" << endl;
 		}
-		if ((actor_data_1->type2 ==DATATYPE::TRIGGER_TYPE::COLLECTION
-			|| actor_data_1->type2==DATATYPE::TRIGGER_TYPE::SUPPLY)&&actor_data_0->name == "plane") {
+		if ((actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
+			|| actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) && actor_data_0->name == "plane") {
 
 			//飞机拾取道具的回调
 			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
@@ -263,11 +264,11 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 					cout << "获得补给!\n";
 				}
 			}
-			else if(actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
+			else if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
 				actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::COLLECTION);
 				removeActorList.push_back(actor_1);
 			}
-			
+		}
 		}
 		//if (pairs[i].otherActor != Plane_1->getRigid())
 		//{
@@ -319,6 +320,11 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				printf("炮塔弹药！\n");
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
+			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+				printf("tank弹药！\n");
+				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
@@ -449,12 +455,25 @@ void addBonusInList() {
 		
 		//cout << input.x << input.y << input.z << endl;
 		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f,10.f,input, std::vector<string>(), flameShader);
-
 		renderParticleClusterList.push_back(flame_cluster);
 		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 34.f, 
 			input, std::vector<string>(), smokeShader);
 		renderParticleClusterList.push_back(smoke_cluster);
-		
+		vector<string> paths;
+		for (int i = 1; i <= 18; i++) {
+			paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
+		}
+
+		createPointParticles(
+			10, false,
+			new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
+			PxVec3(input.x/2,input.y+7.f,input.z/2),
+			true, 2.0, // true是散开
+			true, 20.0, // true是随机速度
+			15, 12, // 消失时间、开始渐隐时间
+			PxVec3(10.f, 5.f, 0.f), //初始速度
+			PxVec3(2.f, 5.f, 0.f)  //力场
+		);
 	}
 	addBonusList.clear();
 }

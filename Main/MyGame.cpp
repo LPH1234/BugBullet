@@ -229,6 +229,7 @@ void stepPhysics(bool interactive)
 	}*/
 	gScene->simulate(1.0f / 60.0f);
 	gScene->fetchResults(true);
+	
 	vehicle->automove();
 	Plane_1->manualControlAirPlane4();
 	Plane_1->formcloud();

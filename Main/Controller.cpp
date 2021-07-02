@@ -64,19 +64,20 @@ void mouseClick() {
 
 	}
 	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT]) { //鼠标右键
-		glm::vec3 initPos = camera.getPosition() + camera.getFront() * 2.f + camera.getUp() * 0.3f;
+		//glm::vec3 initPos = camera.getPosition() + camera.getFront() * 2.f + camera.getUp() * 0.3f;
+		glm::vec3 initPos(131.f, 7.f, 56.f);
 		//SmokeParticleCluster(int cloudDensity, float cloudRadis, glm::vec3 initPos, vector<unsigned int> textures, Shader* shader);
 		//camera.getPosition() + camera.getFront() * 1.f + camera.getUp() * 0.5f,
-		////// 1、烟雾
-		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(
-			100, 2.f,  // 烟雾密度、烟雾团的半径
-			90, 0.01f, 3.4f, // 每个烟雾粒子大小、烟雾在y方向的速度、烟雾在y方向上最大能上升的距离
-			glm::vec3(3.f, 1.5f, 3.f), //初始位置
-			//camera.getPosition() + camera.getFront() * 1.f,
-			std::vector<string>(), // 纹理路径列表
-			smokeShader //渲染此烟雾的shader
-		);
-		renderParticleClusterList.push_back(smoke_cluster);
+		//////// 1、烟雾
+		//SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(
+		//	100, 2.f,  // 烟雾密度、烟雾团的半径
+		//	90, 0.01f, 3.4f, // 每个烟雾粒子大小、烟雾在y方向的速度、烟雾在y方向上最大能上升的距离
+		//	glm::vec3(3.f, 1.5f, 3.f), //初始位置
+		//	//camera.getPosition() + camera.getFront() * 1.f,
+		//	std::vector<string>(), // 纹理路径列表
+		//	smokeShader //渲染此烟雾的shader
+		//);
+		//renderParticleClusterList.push_back(smoke_cluster);
 
 		///////2、爆炸粒子
 		//vector<string> paths;

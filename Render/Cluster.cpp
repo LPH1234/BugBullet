@@ -56,5 +56,5 @@ SmokeParticleCluster::SmokeParticleCluster(int smokeDensity, float smokeRadis, f
 
 CloudParticleCluster::CloudParticleCluster(int cloudDensity, float cloudRadis, float cloudVy, float cloudMaxY, glm::vec3 initPos, glm::vec3 scale, vector<string> textures, Shader* shader) :BaseParticleCluster(initPos, textures, shader) {
 	this->cloudDensity = cloudDensity;
-	particles.push_back(new CloudParticle(initPos, scale, cloudDensity, cloudRadis, cloudVy, cloudMaxY, "images/textures/smoke/smoke-gray-0.png", shader));
+	particles.push_back(new CloudParticle(initPos, scale, cloudDensity, cloudRadis, cloudVy, cloudMaxY, textures[0], shader));//"images/textures/smoke/smoke-gray-0.png"
 }
