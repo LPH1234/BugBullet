@@ -62,6 +62,7 @@ private:
 	//vector<PxRigidStatic* >bonus_list;
 	vector<bool> enable_supply_list;
 	vector<PxRigidDynamic*>supply_list;
+	bool odd=false;//交替生成补血和补弹药
 public:
 	PxVec3 initsupply(glm::vec3 pos);
 	void initlist(vector<glm::vec3>pos_list);

@@ -165,7 +165,7 @@ void initPhysics(bool interactive)
 		pos_list.push_back(north_island_pos_list[i]);
 	}
 	GunTower.initlist(pos_list);
-	vector<glm::vec3> supply_pos_list = { glm::vec3(5.0f, 5.0f, 0.0f) };
+	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2] };
 	Bonus.initlist(supply_pos_list);
 
 	//加载飞机
@@ -289,10 +289,13 @@ void stepPhysics(bool interactive)
 	//vehicle->automove();
 	tankAutoMove();
 	Plane_1->manualControlAirPlane4();
+	//Plane_1->formcloud();
+	//Plane_1->formmisslecloud();
 	GunTower.runguntower(Plane_1->body);
 	Bonus.runsupply();
 	//GunTower.runguntower(vehicle->getRigid());
 	addBonusInList();
+	
 	removeActorInList();
 	updateTankInList();
 	updateGuntowerInList();

@@ -6,21 +6,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <ctime>
 #include "Shader.h"
-#include "Model.h"
+#include "ResourceManager.h"
 #include "../Utils/Convert.h"
-#include "../Utils/Utils.h"
 #include "foundation/PxQuat.h"
 #include "particles/PxParticleSystem.h"
 
 
-void loadTexture(char const* path, unsigned int* textureID);
-void loadTextureRGBA(char const* path, unsigned int* textureID);
 
-GLuint loadCubeMapTexture(std::vector<const char*> picFilePathVec,
-	GLint internalFormat = GL_RGB,
-	GLenum picFormat = GL_RGB,
-	GLenum picDataType = GL_UNSIGNED_BYTE,
-	int loadChannels = SOIL_LOAD_RGB);
 class ParticleSystemData;
 
 enum MOUSE_EVENT_TYPE {
@@ -50,9 +42,8 @@ public:
 
 	BaseModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader) {
 		this->Position = pos; this->scale_value = scale;  this->shader = shader;   this->modelPath = modelPath;
-
 		if (modelPath.compare("") != 0) {
-			this->model = new Model(modelPath);
+			this->model = ModelManager::getModel(modelPath);
 		}
 	}
 
@@ -188,9 +179,12 @@ class FlameParticle : public BaseSpriteParticle {
 	float dy = 0.f;
 	float VY; //中心火焰在y方向的最大速度
 	float maxY;
+	int timeToLeave;
+	int createTime;
+	float alpha;
 public:
-	FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
-	void draw();
+	FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, int timeToLeave, std::string texturePath, Shader* shader);
+	void draw(); 
 
 };
 
@@ -437,7 +431,7 @@ class SkyBox : public PlainModel
 {
 public:
 
-	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, std::vector<const char*> faces) :PlainModel(pos, scale, modelPath, shader) {
+	SkyBox(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, std::vector<string> faces) :PlainModel(pos, scale, modelPath, shader) {
 		this->shader = shader;
 		this->Position = pos;
 		this->scale_value = scale;
@@ -548,7 +542,7 @@ class BaseParticle : public PlainModel
 protected:
 	PxParticleSystem* ps = nullptr;
 public:
-	BaseParticle(glm::vec3 scale, Shader* shader);
+	BaseParticle(glm::vec3 scale, Shader* shader, std::string modelPath);
 	~BaseParticle();
 
 	virtual void update(const PxVec3& position, const PxVec3& velocity);
@@ -557,16 +551,21 @@ public:
 };
 
 
-class PointParticle : public BaseParticle
+class DebrisParticle : public BaseParticle
 {
 	glm::vec3 objectColor;
 	glm::vec3 defaultColor = glm::vec3(1.f, 1.f, 1.f);
 	unsigned int VBO, VAO;
+	vector<string> modelPathes;
+	glm::vec4 axisAndAngle;
+	int angle = 0;
+	int id;
 public:
-	PointParticle(glm::vec3 scale, glm::vec3 c, Shader* shader);
-	~PointParticle();
+	DebrisParticle(glm::vec3 scale, vector<string>& modelPathes, glm::vec3 c, Shader* shader);
+	~DebrisParticle();
 	void update(const PxVec3& position, const PxVec3& velocity);
 	void draw(unsigned int index, glm::mat4 view, glm::mat4 projection);
+	glm::mat4 getModel();
 };
 
 

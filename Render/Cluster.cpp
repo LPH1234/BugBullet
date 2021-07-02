@@ -39,11 +39,11 @@ bool BaseParticleCluster::isRemoveable() {
 }
 
 
-FlameParticleCluster::FlameParticleCluster(int flameNum, float flameRadis, float height, glm::vec3 initPos, vector<string> textures, Shader* shader) :BaseParticleCluster(initPos, textures, shader) {
+FlameParticleCluster::FlameParticleCluster(int flameNum, float flameRadis, float height, float timeToLeave,glm::vec3 initPos, vector<string> textures, Shader* shader) :BaseParticleCluster(initPos, textures, shader) {
 	this->flameNum = flameNum;
 	for (int i = 0; i < flameNum; i++) //int »»³É size_t ±¨´í
 	{
-		particles.push_back(new FlameParticle(initPos, 600, 20, flameRadis, 0.1f + (i & 1 ? 1 : -1)*i*0.01, height, "images/textures/flame/flame" + to_string(i) + ".png", shader));
+		particles.push_back(new FlameParticle(initPos, 300, 20, flameRadis, 0.1f + (i & 1 ? 1 : -1)*i*0.01, height, timeToLeave, "images/textures/flame/flame" + to_string(i) + ".png", shader));
 	}
 }
 
@@ -56,5 +56,5 @@ SmokeParticleCluster::SmokeParticleCluster(int smokeDensity, float smokeRadis, f
 
 CloudParticleCluster::CloudParticleCluster(int cloudDensity, float cloudRadis, float cloudVy, float cloudMaxY, glm::vec3 initPos, glm::vec3 scale, vector<string> textures, Shader* shader) :BaseParticleCluster(initPos, textures, shader) {
 	this->cloudDensity = cloudDensity;
-	particles.push_back(new CloudParticle(initPos, scale, cloudDensity, cloudRadis, cloudVy, cloudMaxY, "images/textures/smoke/smoke-gray-0.png", shader));
+	particles.push_back(new CloudParticle(initPos, scale, cloudDensity, cloudRadis, cloudVy, cloudMaxY, textures[0], shader));//"images/textures/smoke/smoke-gray-0.png"
 }

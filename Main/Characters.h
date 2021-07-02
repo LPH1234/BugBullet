@@ -142,6 +142,7 @@ public:
 	void automove();
 	void autoEmit();
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
+	
 };
 
 
@@ -167,7 +168,9 @@ public:
 	float					turningSpeed = 6.0f;//转向速度
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
+	bool activatemissle = false;
 	int health = 100;//飞机生命值
+	bool alive = true;
 	int bullet_ammo = 100;
 	int missle_ammo = 0;
 
@@ -185,6 +188,7 @@ public:
 	PxQuat getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront);
 	void emit();
 	void reset();
+	void crash();
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);
@@ -196,4 +200,6 @@ public:
 
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
 	void oncontact(DATATYPE::TRIGGER_TYPE _type);
+	void formcloud();
+	void formmisslecloud();
 };

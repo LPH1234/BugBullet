@@ -22,7 +22,9 @@ set<PxRigidDynamic*>	airPlaneBullet;
 extern Player  *vehicle;
 extern AirPlane		*Plane_1;
 extern Shader* envShader;
-extern Shader* spriteShader;
+
+extern Shader* smokeShader;
+extern Shader* flameShader;
 
 vector<PxActor*>		removeActorList;
 set<Player*>			updateTankList;
@@ -41,6 +43,7 @@ vector<PxTransform> addBonusList;
 extern Camera camera;
 extern AirPlane* Plane_1;
 extern guntower GunTower;
+
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
 	PxRigidActor* rigid;
@@ -224,6 +227,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 	//PX_UNUSED(count);
 	for (PxU32 i = 0; i < count; i++)
 	{
+
 		// ignore pairs when shapes have been deleted
 		if (pairs[i].flags & (PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 			continue;
@@ -241,26 +245,30 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			removeActorList.push_back(temp);
 			continue;
 		}*/
-		if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0!=nullptr&&actor_data_0->name != "plane") {
-			removeActorList.push_back(actor_0);
-			continue;
-		}
+		if (actor_data_0 != NULL && actor_data_1 != NULL) {
+			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
+				removeActorList.push_back(actor_0);
+				continue;
+			}
+			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BLOOD) {
+				cout << "Blood" << endl;
+			}
+			if ((actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
+				|| actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) && actor_data_0->name == "plane") {
 
-		if ((actor_data_1->type2 ==DATATYPE::TRIGGER_TYPE::COLLECTION
-			|| actor_data_1->type2==DATATYPE::TRIGGER_TYPE::SUPPLY)&&actor_data_0->name == "plane") {
-			//飞机拾取道具的回调
-			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
-				bool isvalid = actor_data_1->basesce->supplyoncontact(actor_data_1->id, DATATYPE::ACTOR_TYPE::PLANE);
-				if (isvalid) {
-					actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::SUPPLY);
-					cout << "获得补给!\n";
+				//飞机拾取道具的回调
+				if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
+					bool isvalid = actor_data_1->basesce->supplyoncontact(actor_data_1->id, DATATYPE::ACTOR_TYPE::PLANE);
+					if (isvalid) {
+						actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::SUPPLY);
+						cout << "获得补给!\n";
+					}
+				}
+				else if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
+					actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::COLLECTION);
+					removeActorList.push_back(actor_1);
 				}
 			}
-			else if(actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
-				actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::COLLECTION);
-				removeActorList.push_back(actor_1);
-			}
-			
 		}
 		//if (pairs[i].otherActor != Plane_1->getRigid())
 		//{
@@ -293,12 +301,20 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 		UserData* actor_data_0 = reinterpret_cast<UserData*>(actor_0->userData);
 		UserData* actor_data_1 = reinterpret_cast<UserData*>(actor_1->userData);
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
-			if (actor_data_0->type== DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				//printf("飞机弹药！\n");
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+			if ((actor_data_0->type== DATATYPE::ACTOR_TYPE::PLANE_BULLET|| actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) 
+				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) 
+				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+				printf("飞机弹药！\n");
+				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET|| 
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
 				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
+			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::MAP);
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
@@ -307,7 +323,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				//printf("坦克弹药！\n");
+				//printf("tank弹药！\n");
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
@@ -323,17 +339,27 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TOWER_BULLET);
 			}
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
+				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
+				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK ? actor_data_0 : actor_data_1);
-				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+				UserData* temp2 = ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(temp2->type);
 			}
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ? actor_0 : actor_1));
+			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
+				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
+				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
+				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER ? actor_data_0 : actor_data_1);
-				temp1->basesce->oncontact(temp1->id,DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+				UserData* temp2 = ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_data_0 : actor_data_1);
+				temp1->basesce->oncontact(temp1->id,temp2->type);
 				PxU32 num = pairs[i].contactCount;
 				cout << "num: " << num << endl;
 				if (num > 0) {
@@ -419,14 +445,36 @@ void addBonusInList() {
 		PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(addBonusList[i], DATATYPE::TRIGGER_TYPE::COLLECTION,true));
 		bonus->userData = new UserData(0, "BONUS", DATATYPE::TRIGGER_TYPE::COLLECTION);
 		bonus->setName("BONUS");
-		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
-		cout << addBonusList[i].p.x << addBonusList[i].p.y << addBonusList[i].p.z << endl;
-		glm::vec3 input(addBonusList[i].p.x, addBonusList[i].p.y, addBonusList[i].p.z);
-		cout << input.x << input.y << input.z << endl;
-		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f,input, std::vector<string>(), spriteShader);
-		renderParticleClusterList.push_back(flame_cluster);
 		gScene->addActor(*bonus);
-	}
+		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
+
+		//cout << addBonusList[i].p.x <<"\t"<< addBonusList[i].p.y << addBonusList[i].p.z << endl;
+		glm::vec3 input(addBonusList[i].p.x/2, addBonusList[i].p.y-2.f, addBonusList[i].p.z/2);
+		//glm::vec3 input(64.996f, 3.19607f, 27.6939f);
+		Logger::debug(input);	
+		
+		//cout << input.x << input.y << input.z << endl;
+		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f,5.f,input, std::vector<string>(), flameShader);
+		renderParticleClusterList.push_back(flame_cluster);
+		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 3.4f, 
+			input, std::vector<string>(), smokeShader);
+		renderParticleClusterList.push_back(smoke_cluster);
+	//	vector<string> paths;
+	//	for (int i = 1; i <= 18; i++) {
+	//		paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
+	//	}
+
+	//	createPointParticles(
+	//		10, false,
+	//		new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
+	//		PxVec3(input.x/2,input.y+7.f,input.z/2),
+	//		true, 2.0, // true是散开
+	//		true, 20.0, // true是随机速度
+	//		15, 12, // 消失时间、开始渐隐时间
+	//		PxVec3(10.f, 5.f, 0.f), //初始速度
+	//		PxVec3(2.f, 5.f, 0.f)  //力场
+	//	);
+	 }
 	addBonusList.clear();
 }
 
@@ -885,6 +933,7 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 	PxVec3 *newAppParticlePositions = new PxVec3[numParticles];
 	PxVec3 *newAppParticleVelocities = new PxVec3[numParticles];
 	PxVec3 *newAppParticleforces = new PxVec3[numParticles];
+	PxVec4 *axisAndAngle = new PxVec4[numParticles];
 	PxParticleCreationData particleCreationData;
 	ps->setDamping(1.f);
 	ps->setRestitution(1.f);
@@ -895,6 +944,8 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 	trng::yarn2 R;
 	trng::uniform_dist<> random_v(-maxRandomV, maxRandomV);
 	trng::normal_dist<> random_p(0, maxDisperseRadius);
+	trng::normal_dist<> random_axis(-1, 1);
+	trng::normal_dist<> random_angle(-180, 180);
 
 	for (int i = 0; i < numParticles; i++)
 	{
@@ -902,106 +953,6 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 		//Indices zill be autogenerated by the indexpool after the loop
 		if (ifDisperse) {
 			newAppParticlePositions[i].x = initPos.x + random_p(R); // 使初始化粒子散开
-			newAppParticlePositions[i].y = initPos.y + random_p(R);
-			newAppParticlePositions[i].z = initPos.z + random_p(R);
-		}
-		else {
-			newAppParticlePositions[i].x = initPos.x; // 初始化粒子在一个点上
-			newAppParticlePositions[i].y = initPos.y;
-			newAppParticlePositions[i].z = initPos.z;
-		}
-
-
-		if (ifRandomV) { // 初始化粒子具有随机速度
-			newAppParticleVelocities[i].x = random_v(R);
-			newAppParticleVelocities[i].y = random_v(R);
-			newAppParticleVelocities[i].z = random_v(R);
-		}
-		else { // 初始化粒子具有指定速度
-			newAppParticleVelocities[i].x = velocity.x;
-			newAppParticleVelocities[i].y = velocity.y;
-			newAppParticleVelocities[i].z = velocity.z;
-		}
-
-		newAppParticleforces[i].x = force.x;
-		newAppParticleforces[i].y = force.y;
-		newAppParticleforces[i].z = force.z;
-	}
-	particleCreationData.numParticles = numParticles;
-	PxU32 numalloc = myindexpool->allocateIndices(numParticles, PxStrideIterator<PxU32>(newAppParticleIndices));
-	particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(newAppParticleIndices);
-	particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(newAppParticlePositions);
-	particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(newAppParticleVelocities);
-	if (particleCreationData.isValid())
-	{
-		if (ps->createParticles(particleCreationData)) {
-			ParticleSystemData* data = new ParticleSystemData;
-			data->hasForce = force.x != 0.f || force.y != 0.f || force.z != 0.f;
-			data->numParticles = numParticles;
-			data->deleteDelaySec = deleteDelaySec;
-			data->createTime = clock();
-			data->fadeDelaySec = fadeDelaySec;
-			renderModel->setParticleSystem(ps);
-			data->renderModel = renderModel;
-			data->newAppParticleforces = newAppParticleforces;
-			data->newAppParticleIndices = newAppParticleIndices;
-			data->indexPool = myindexpool;
-			for (int i = 0; i < numParticles; i++, particleCreationData.indexBuffer++)
-				newAppParticleIndices[i] = *particleCreationData.indexBuffer;
-			ps->userData = (void*)data;
-			cout << "创建粒子成功\n";
-		}
-		else {
-			ps->release();
-			ps = nullptr;
-			delete renderModel;
-			delete newAppParticleforces;
-			delete newAppParticleIndices;
-			cout << "创建粒子失败\n";
-		}
-	}
-
-	if (ps) {
-		gScene->addActor(*ps);
-		physicsParticleSystemList.push_back(ps);
-	}
-	//Cleanup
-	delete newAppParticlePositions;
-	delete newAppParticleVelocities;
-}
-
-void createSmokeParticles(int numParticles, bool perOffset, BaseParticle* renderModel, PxVec3 initPos, bool ifDisperse, double maxDisperseRadius, bool ifRandomV, double maxRandomV, int deleteDelaySec, int fadeDelaySec, PxVec3 velocity, PxVec3 force) {
-
-	PxParticleSystem* ps = gPhysics->createParticleSystem(numParticles, perOffset);;
-
-	// create particle system in PhysX SDK
-	PxParticleExt::IndexPool *myindexpool = PxParticleExt::createIndexPool(1 * numParticles);
-	//Create buffers that are the size of the particles to be addded
-	PxU32 *newAppParticleIndices = new PxU32[numParticles];
-	PxVec3 *newAppParticlePositions = new PxVec3[numParticles];
-	PxVec3 *newAppParticleVelocities = new PxVec3[numParticles];
-	PxVec3 *newAppParticleforces = new PxVec3[numParticles];
-	PxVec4 *axisAndAngle = new PxVec4[numParticles];
-	PxParticleCreationData particleCreationData;
-	ps->setDamping(1.f);
-	ps->setRestitution(1.f);
-	ps->setDynamicFriction(1.f);
-	ps->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
-	ps->setParticleReadDataFlag(PxParticleReadDataFlag::ePOSITION_BUFFER, true);
-
-	trng::yarn2 R(clock());
-	trng::uniform_dist<> random_v(-maxRandomV, maxRandomV);
-	trng::uniform_dist<> random_p(-maxDisperseRadius, maxDisperseRadius);
-	trng::normal_dist<> random_axis(-1, 1);
-	trng::normal_dist<> random_angle(-180, 180);
-	srand(clock());
-
-	for (int i = 0; i < numParticles; i++)
-	{
-		//Only positions and velocities are given an initial value
-		//Indices zill be autogenerated by the indexpool after the loop
-		if (ifDisperse) {
-			newAppParticlePositions[i].x = initPos.x + random_p(R); // 使初始化粒子散开(int(maxDisperseRadius))
 			newAppParticlePositions[i].y = initPos.y + random_p(R);
 			newAppParticlePositions[i].z = initPos.z + random_p(R);
 		}
@@ -1055,9 +1006,11 @@ void createSmokeParticles(int numParticles, bool perOffset, BaseParticle* render
 			for (int i = 0; i < numParticles; i++, particleCreationData.indexBuffer++)
 				newAppParticleIndices[i] = *particleCreationData.indexBuffer;
 			ps->userData = (void*)data;
-			cout << "创建粒子成功\n";
+			ps->setParticleBaseFlag(PxParticleBaseFlag::eCOLLISION_WITH_DYNAMIC_ACTORS, true);
+			ps->setParticleBaseFlag(PxParticleBaseFlag::eCOLLISION_TWOWAY, true);
 			gScene->addActor(*ps);
 			physicsParticleSystemList.push_back(ps);
+			cout << "创建粒子成功\n";
 		}
 		else {
 			myindexpool->freeIndices();
@@ -1076,6 +1029,113 @@ void createSmokeParticles(int numParticles, bool perOffset, BaseParticle* render
 	delete newAppParticlePositions;
 	delete newAppParticleVelocities;
 }
+
+//void createSmokeParticles(int numParticles, bool perOffset, BaseParticle* renderModel, PxVec3 initPos, bool ifDisperse, double maxDisperseRadius, bool ifRandomV, double maxRandomV, int deleteDelaySec, int fadeDelaySec, PxVec3 velocity, PxVec3 force) {
+//
+//	PxParticleSystem* ps = gPhysics->createParticleSystem(numParticles, perOffset);;
+//
+//	// create particle system in PhysX SDK
+//	PxParticleExt::IndexPool *myindexpool = PxParticleExt::createIndexPool(1 * numParticles);
+//	//Create buffers that are the size of the particles to be addded
+//	PxU32 *newAppParticleIndices = new PxU32[numParticles];
+//	PxVec3 *newAppParticlePositions = new PxVec3[numParticles];
+//	PxVec3 *newAppParticleVelocities = new PxVec3[numParticles];
+//	PxVec3 *newAppParticleforces = new PxVec3[numParticles];
+//	PxVec4 *axisAndAngle = new PxVec4[numParticles];
+//	PxParticleCreationData particleCreationData;
+//	ps->setDamping(1.f);
+//	ps->setRestitution(1.f);
+//	ps->setDynamicFriction(1.f);
+//	ps->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
+//	ps->setParticleReadDataFlag(PxParticleReadDataFlag::ePOSITION_BUFFER, true);
+//
+//	trng::yarn2 R(clock());
+//	trng::uniform_dist<> random_v(-maxRandomV, maxRandomV);
+//	trng::uniform_dist<> random_p(-maxDisperseRadius, maxDisperseRadius);
+//	trng::normal_dist<> random_axis(-1, 1);
+//	trng::normal_dist<> random_angle(-180, 180);
+//	srand(clock());
+//
+//	for (int i = 0; i < numParticles; i++)
+//	{
+//		//Only positions and velocities are given an initial value
+//		//Indices zill be autogenerated by the indexpool after the loop
+//		if (ifDisperse) {
+//			newAppParticlePositions[i].x = initPos.x + random_p(R); // 使初始化粒子散开(int(maxDisperseRadius))
+//			newAppParticlePositions[i].y = initPos.y + random_p(R);
+//			newAppParticlePositions[i].z = initPos.z + random_p(R);
+//		}
+//		else {
+//			newAppParticlePositions[i].x = initPos.x; // 初始化粒子在一个点上
+//			newAppParticlePositions[i].y = initPos.y;
+//			newAppParticlePositions[i].z = initPos.z;
+//		}
+//
+//
+//		if (ifRandomV) { // 初始化粒子具有随机速度
+//			newAppParticleVelocities[i].x = random_v(R);
+//			newAppParticleVelocities[i].y = random_v(R);
+//			newAppParticleVelocities[i].z = random_v(R);
+//		}
+//		else { // 初始化粒子具有指定速度
+//			newAppParticleVelocities[i].x = velocity.x;
+//			newAppParticleVelocities[i].y = velocity.y;
+//			newAppParticleVelocities[i].z = velocity.z;
+//		}
+//
+//		newAppParticleforces[i].x = force.x;
+//		newAppParticleforces[i].y = force.y;
+//		newAppParticleforces[i].z = force.z;
+//
+//		axisAndAngle[i].x = random_axis(R);
+//		axisAndAngle[i].y = random_axis(R);
+//		axisAndAngle[i].z = random_axis(R);
+//		axisAndAngle[i].w = random_angle(R);
+//	}
+//	particleCreationData.numParticles = numParticles;
+//	PxU32 numalloc = myindexpool->allocateIndices(numParticles, PxStrideIterator<PxU32>(newAppParticleIndices));
+//	particleCreationData.indexBuffer = PxStrideIterator<const PxU32>(newAppParticleIndices);
+//	particleCreationData.positionBuffer = PxStrideIterator<const PxVec3>(newAppParticlePositions);
+//	particleCreationData.velocityBuffer = PxStrideIterator<const PxVec3>(newAppParticleVelocities);
+//	if (particleCreationData.isValid())
+//	{
+//		if (ps->createParticles(particleCreationData)) {
+//			ParticleSystemData* data = new ParticleSystemData;
+//			data->hasForce = force.x != 0.f || force.y != 0.f || force.z != 0.f;
+//			data->numParticles = numParticles;
+//			data->deleteDelaySec = deleteDelaySec;
+//			data->createTime = clock();
+//			data->fadeDelaySec = fadeDelaySec;
+//			renderModel->setParticleSystem(ps);
+//			data->renderModel = renderModel;
+//			data->newAppParticleforces = newAppParticleforces;
+//			data->newAppParticleIndices = newAppParticleIndices;
+//			data->indexPool = myindexpool;
+//			data->axisAndAngle = axisAndAngle;
+//			for (int i = 0; i < numParticles; i++, particleCreationData.indexBuffer++)
+//				newAppParticleIndices[i] = *particleCreationData.indexBuffer;
+//			ps->userData = (void*)data;
+//			cout << "创建粒子成功\n";
+//			gScene->addActor(*ps);
+//			physicsParticleSystemList.push_back(ps);
+//		}
+//		else {
+//			myindexpool->freeIndices();
+//			myindexpool->release();
+//			ps->release();
+//			ps = nullptr;
+//			delete renderModel;
+//			delete newAppParticleforces;
+//			delete newAppParticleIndices;
+//			delete axisAndAngle;
+//			cout << "创建粒子失败\n";
+//		}
+//	}
+//
+//	//Cleanup
+//	delete newAppParticlePositions;
+//	delete newAppParticleVelocities;
+//}
 
 void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList) {
 

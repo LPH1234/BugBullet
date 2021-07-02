@@ -4,7 +4,7 @@
 
 
 #include "Controller.h"
-
+#include "../Render/UI.h"
 
 
 using namespace physx;
@@ -13,9 +13,6 @@ extern void initPhysics(bool interactive);
 extern void stepPhysics(bool interactive);
 extern void cleanupPhysics(bool interactive);
 
-extern PxRigidDynamic* player_ctl;
-
-extern guntower GunTower;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -24,8 +21,9 @@ void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
 
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+unsigned int SCR_WIDTH = 1920 ;
+unsigned int SCR_HEIGHT = 1080 ;
+
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
@@ -44,13 +42,15 @@ glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
 
 
 SkyBox* skybox;
+HPBarUI* HPBar;
 
 Shader* skyBoxShader;
 Shader* envShader;
 Shader* pointParticleShader;
 Shader* cloudShader;
-Shader* spriteShader;
+Shader* flameShader;
 Shader* smokeShader;
+Shader* HPBarShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
@@ -68,6 +68,7 @@ void renderActors(Shader* shader)
 		Render::renderActors(&actors[0], static_cast<PxU32>(actors.size()), shader, true);
 	}
 }
+
 
 void exitCallback(void)
 {
@@ -123,12 +124,13 @@ int myRenderLoop()
 	glEnable(GL_BLEND);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 
-	skyBoxShader = new Shader("shaders/skyboxShader/skybox.VertexShader", "shaders/skyboxShader/skybox.FragmentShader");
-	envShader = new Shader("shaders/envShader/env.VertexShader", "shaders/envShader/env.FragmentShader");
-	pointParticleShader = new Shader("shaders/pointParticleShader/pointParticle.VertexShader", "shaders/pointParticleShader/pointParticle.FragmentShader");
-	smokeShader = new Shader("shaders/smokeShader/smoke.VertexShader", "shaders/smokeShader/smoke.FragmentShader");
-	spriteShader = new Shader("shaders/spriteShader/sprite.VertexShader", "shaders/spriteShader/sprite.FragmentShader");
-	cloudShader = new Shader("shaders/cloudShader/cloud.VertexShader", "shaders/cloudShader/cloud.FragmentShader");
+	skyBoxShader = new Shader("shaders/skyboxShader/skybox.vs", "shaders/skyboxShader/skybox.fs");
+	envShader = new Shader("shaders/envShader/env.vs", "shaders/envShader/env.fs");
+	pointParticleShader = new Shader("shaders/debrisShader/debris.vs", "shaders/debrisShader/debris.fs");
+	smokeShader = new Shader("shaders/smokeShader/smoke.vs", "shaders/smokeShader/smoke.fs");
+	flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
+	cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
+	HPBarShader = new Shader("shaders/HPBarShader/HPBar.vs","shaders/HPBarShader/HPBar.fs");
 
 	atexit(exitCallback); //6
 	initPhysics(true); //6
@@ -145,19 +147,25 @@ int myRenderLoop()
 
 	// build and compile shaders
 	// -------------------------
-	std::vector<const char*> faces;
-	faces.push_back("images/skyboxes/sky/right.jpg");
-	faces.push_back("images/skyboxes/sky/left.jpg");
-	faces.push_back("images/skyboxes/sky/bottom.jpg");
-	faces.push_back("images/skyboxes/sky/top.jpg");
-	faces.push_back("images/skyboxes/sky/front.jpg");
-	faces.push_back("images/skyboxes/sky/back.jpg");
+	std::vector<string> faces;
+	string dir = "sky2"; string suffix = "png";
+	faces.push_back("images/skyboxes/" + dir + "/right." + suffix);
+	faces.push_back("images/skyboxes/" + dir + "/left." + suffix);
+	faces.push_back("images/skyboxes/" + dir + "/bottom." + suffix);
+	faces.push_back("images/skyboxes/" + dir + "/top." + suffix);
+	faces.push_back("images/skyboxes/" + dir + "/front." + suffix);
+	faces.push_back("images/skyboxes/" + dir + "/back." + suffix);
 	const float skybox_scale = 1000.f;
 	skybox = new SkyBox(camera.getPosition(), glm::vec3(skybox_scale), "", skyBoxShader, faces);
 	faces.clear();
 
-	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), spriteShader);
-	renderParticleClusterList.push_back(flame_cluster);
+	//FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, glm::vec3(0.1f), std::vector<string>(), spriteShader);
+	//renderParticleClusterList.push_back(flame_cluster);
+
+	HPBar = new HPBarUI("images/textures/green.png", HPBarShader);
+
+	ModelManager::initModels();
+
 
 	// render loop
 	// -----------
@@ -223,7 +231,11 @@ int myRenderLoop()
 
 		Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
 
-
+		HPBarShader->use();
+		HPBarShader->setInt("image", 0);
+		//projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
+		HPBarShader->setMat4("projection", projection);
+		HPBar->draw(SCR_WIDTH,SCR_HEIGHT, glm::vec2(-1.4f, -0.8f), glm::vec2(0.7f, 0.12f));
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -298,6 +310,8 @@ void processInput(GLFWwindow *window)
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+	SCR_WIDTH = width;
+	SCR_HEIGHT = height;
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
