@@ -12,6 +12,8 @@ PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 module moduleCallBack;
 AirPlane				*Plane_1;
+AirPlane_AI				*Plane_AI;
+MissileManager			*ManageMissile;
 //第三人称角色位置
 PxTransform born_pos(PxVec3(10, 0, -7));
 
@@ -22,13 +24,14 @@ extern Camera camera;
 extern Shader* envShader;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 vector<Player*>		tankList(4,nullptr);
+//vector<AirPlane_AI*>	AI_airPlaneList;
 //Player* vehicle;
 guntower GunTower;
 bonus Bonus;
 
 vector<glm::vec3>east_island_pos_list = { glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(248.f, 5.5f, 80.0f),glm::vec3(248.0f, 5.5f, -141.0f),
 										glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
-										glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(380.0f, 7.6f, -136.0f),
+										glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(350.0f, 7.6f, -136.0f),
 										glm::vec3(136.5f, 5.4f, -140.0f),glm::vec3(136.5f, 5.4f, 22.0f),glm::vec3(136.5f, 5.4f, 60.0f),
 										glm::vec3(136.5f, 5.4f, -23.0f),glm::vec3(136.5f, 5.4f, -45.0f) };
 	
@@ -41,48 +44,22 @@ vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::ve
 										glm::vec3(-19.7f,7.6f,-256.8f) };
 //初始化坦克，一共四辆
 void initTank() {
-	int index[4][2] = { {8,3},{5,7},{1,6},{12,13} };
-	PxVec3 dir[4] = { PxVec3(-1,0,0),PxVec3(0,0,-1),PxVec3(1,0,0),PxVec3(0,0,-1) };
-	for (int i = 0; i < 4; i++) {
+	int index[4][2] = { {1,6},{12,13},{8,3},{5,7} };
+	PxVec3 dir[4] = { PxVec3(1,0,0),PxVec3(0,0,-1),PxVec3(-1,0,0),PxVec3(0,0,-1) };
+	for (int i = 0; i < 2; i++) {
 		PxVec3 start; glmVec3ToPxVec3 (east_island_pos_list[index[i][0] - 1],start);
 		PxVec3 end; glmVec3ToPxVec3(east_island_pos_list[index[i][1] - 1], end);
 		PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(east_island_pos_list[index[i][0]-1], glm::vec3(1.0f, 1.0f, 1.0f),
 			"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
-		input_tank->setMass(10.f);
-		//input_tank->setMassSpaceInertiaTensor(PxVec3(0.f));
+		//input_tank->setMass(100.f);
 
 		tankList[i] = new Player(input_tank, Plane_1, start, end, dir[i]);
 
 		
 	}
-	PxShape* shape = gPhysics->createShape(PxBoxGeometry(1, 1, 1), *gMaterial);
-	PxRigidDynamic* box1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(300.0f, 7.6f, -140.0f)), *shape, 100);
-	PxRigidDynamic* box2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(305.0f, 7.6f, -140.0f)), *shape, 100);
-	PxRigidDynamic* box3 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(400.0f, 7.6f, -140.0f)), *shape, 100);
-	PxRigidDynamic* box4 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(405.0f, 13.f, -140.0f)), *shape, 100);
-	PxRigidDynamic* box5 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(410.0f, 7.6f, -140.0f)), *shape, 100);
-	PxRigidDynamic* box6 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(415.0f, 7.6f, -140.0f)), *shape, 100);
-	PxRigidDynamic* box7 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(420.0f, 7.6f, -140.0f)), *shape, 100);
-	PxRigidDynamic* box8 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(425.0f, 13.f, -140.0f)), *shape, 100);
-	box1->attachShape(*shape);
-	box2->attachShape(*shape);
-	box3->attachShape(*shape);
-	box4->attachShape(*shape);
-	box5->attachShape(*shape);
-	box6->attachShape(*shape);
-	box7->attachShape(*shape);
-	box8->attachShape(*shape);
-	gScene->addActor(*box1);
-	gScene->addActor(*box2);
-	gScene->addActor(*box3);
-	gScene->addActor(*box4);
-	gScene->addActor(*box5);
-	gScene->addActor(*box6);
-	gScene->addActor(*box7);
-	gScene->addActor(*box8);
 }
 void tankAutoMove() {
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 2; i++) {
 		tankList[i]->automove();
 	}
 }
@@ -160,6 +137,10 @@ void initPhysics(bool interactive)
 	/*for (int i = 0; i < south_island_pos_list.size(); i++) {
 		pos_list.push_back(south_island_pos_list[i]);
 	}*/
+
+	//初始化导弹管理器
+	ManageMissile = new MissileManager();
+
 	//加载炮塔
 	for (int i = 0; i < north_island_pos_list.size(); i++) {
 		pos_list.push_back(north_island_pos_list[i]);
@@ -168,13 +149,25 @@ void initPhysics(bool interactive)
 	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2] };
 	Bonus.initlist(supply_pos_list);
 
-	//加载飞机
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(136.0f, 20.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
+	//加载AI飞机，前部分为原型机，后部分为模型机
+	/*PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
+	PxRigidDynamic* body=PxCreateDynamic(*gPhysics, PxTransform(PxVec3(2, 100, -5)), *shape, 100);
+	body->setName("plane");
+	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+	Plane_AI = new AirPlane_AI(body);*/
+	PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp);
+	Plane_AI = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI);
+
+	//加载飞机
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 10.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
+		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
+	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp, ManageMissile, Plane_AI);
 
 	//加载坦克
 	initTank();
+
 
 	/*PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
 		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));*/
@@ -204,8 +197,9 @@ void initPhysics(bool interactive)
 	}
 
 	//camera.setTarget(player);
-	//camera.setTarget(Plane_1);
-	camera.setTarget(tankList[0]);
+	camera.setTarget(Plane_1);
+	//camera.setTarget(tankList[1]);
+	//camera.setTarget(Plane_AI);
 
 	PxRigidActor* Map = nullptr;
 	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
@@ -289,6 +283,7 @@ void stepPhysics(bool interactive)
 	//vehicle->automove();
 	tankAutoMove();
 	Plane_1->manualControlAirPlane4();
+	Plane_AI->autoFlying();
 	//Plane_1->formcloud();
 	//Plane_1->formmisslecloud();
 	GunTower.runguntower(Plane_1->body);
@@ -299,6 +294,8 @@ void stepPhysics(bool interactive)
 	removeActorInList();
 	updateTankInList();
 	updateGuntowerInList();
+	ManageMissile->trackingAllMissile();
+	ManageMissile->removeMissile();
 	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
 	/*gScene->fetchResults(true);
 	removeActorInList();

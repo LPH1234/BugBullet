@@ -25,6 +25,7 @@ extern Shader* envShader;
 
 extern Shader* smokeShader;
 extern Shader* flameShader;
+extern MissileManager			*ManageMissile;
 
 vector<PxActor*>		removeActorList;
 set<Player*>			updateTankList;
@@ -154,10 +155,10 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 }
 void testTriggerWall() {
 	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 400), *gMaterial);
-	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 350), *gMaterial);
-	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 350), *gMaterial);
-	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 350), *gMaterial);
-	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 350), *gMaterial);
+	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 550), *gMaterial);
+	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 550), *gMaterial);
+	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 550), *gMaterial);
+	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 550), *gMaterial);
 
 	borderPlaneSky->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
 	borderPlaneNorth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
@@ -251,7 +252,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 				continue;
 			}
 			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BLOOD) {
-				cout << "Blood" << endl;
+				//cout << "Blood" << endl;
 			}
 			if ((actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
 				|| actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) && actor_data_0->name == "plane") {
@@ -320,6 +321,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				//printf("ÅÚËþµ¯Ò©£¡\n");
 				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
+			}
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE&& actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
+				//printf("ÅÚËþµ¯Ò©£¡\n");
+				PxRigidActor* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1;
+				ManageMissile->MissileToRemoveList.insert((PxRigidDynamic*)temp1);
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
