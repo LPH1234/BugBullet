@@ -184,6 +184,7 @@ public:
 	PxQuat getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront);
 	void emit();
 	void reset();
+	void crash();
 
 	//ÖØÐ´
 	virtual void getRight(physx::PxVec3& right);

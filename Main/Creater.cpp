@@ -454,27 +454,27 @@ void addBonusInList() {
 		Logger::debug(input);	
 		
 		//cout << input.x << input.y << input.z << endl;
-		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f,10.f,input, std::vector<string>(), flameShader);
+		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f,5.f,input, std::vector<string>(), flameShader);
 		renderParticleClusterList.push_back(flame_cluster);
-		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 34.f, 
+		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 3.4f, 
 			input, std::vector<string>(), smokeShader);
 		renderParticleClusterList.push_back(smoke_cluster);
-		vector<string> paths;
-		for (int i = 1; i <= 18; i++) {
-			paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
-		}
+	//	vector<string> paths;
+	//	for (int i = 1; i <= 18; i++) {
+	//		paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
+	//	}
 
-		createPointParticles(
-			10, false,
-			new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
-			PxVec3(input.x/2,input.y+7.f,input.z/2),
-			true, 2.0, // true是散开
-			true, 20.0, // true是随机速度
-			15, 12, // 消失时间、开始渐隐时间
-			PxVec3(10.f, 5.f, 0.f), //初始速度
-			PxVec3(2.f, 5.f, 0.f)  //力场
-		);
-	}
+	//	createPointParticles(
+	//		10, false,
+	//		new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
+	//		PxVec3(input.x/2,input.y+7.f,input.z/2),
+	//		true, 2.0, // true是散开
+	//		true, 20.0, // true是随机速度
+	//		15, 12, // 消失时间、开始渐隐时间
+	//		PxVec3(10.f, 5.f, 0.f), //初始速度
+	//		PxVec3(2.f, 5.f, 0.f)  //力场
+	//	);
+	 }
 	addBonusList.clear();
 }
 

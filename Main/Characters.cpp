@@ -3,6 +3,8 @@
 
 extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask);
 extern Shader* cloudShader;
+extern Shader* smokeShader;
+extern Shader* flameShader;
 
 AirPlane::AirPlane() :BaseCharacter(nullptr) {
 	initTransform = PxTransform(PxVec3(2, 1, -5));
@@ -589,61 +591,68 @@ void AirPlane::ProcessKeyPress() {
 	//	turningState[4] = false;
 	//}
 
-	//手动控制 W A S D Q E六个按键
-	if (keyToPressState[GLFW_KEY_A]) {
-		turningState2[1] = true;
-	}
-	if (keyToPressState[GLFW_KEY_D]) {
-		turningState2[2] = true;
-	}
-	if (keyToPressState[GLFW_KEY_W]) {
-		turningState2[3] = true;
-	}
-	if (keyToPressState[GLFW_KEY_S]) {
-		turningState2[4] = true;
-	}
-	if (keyToPressState[GLFW_KEY_Q]) {
-		turningState2[5] = true;
-	}
-	if (keyToPressState[GLFW_KEY_E]) {
-		turningState2[6] = true;
-	}
-	//松开时设false
-	if (!keyToPressState[GLFW_KEY_A] && keyToPrePressState[GLFW_KEY_A]) {
-		turningState2[1] = false;
-	}
-	if (!keyToPressState[GLFW_KEY_D] && keyToPrePressState[GLFW_KEY_D]) {
-		turningState2[2] = false;
-	}
-	if (!keyToPressState[GLFW_KEY_W] && keyToPrePressState[GLFW_KEY_W]) {
-		turningState2[3] = false;
-	}
-	if (!keyToPressState[GLFW_KEY_S] && keyToPrePressState[GLFW_KEY_S]) {
-		turningState2[4] = false;
-	}
-	if (!keyToPressState[GLFW_KEY_Q] && keyToPrePressState[GLFW_KEY_Q]) {
-		turningState2[5] = false;
-	}
-	if (!keyToPressState[GLFW_KEY_E] && keyToPrePressState[GLFW_KEY_E]) {
-		turningState2[6] = false;
-	}
-	if (keyToPressState[GLFW_KEY_1]) {
-		activatemissle = false;
-	}
-	if (keyToPressState[GLFW_KEY_2]) {
-		activatemissle = true;
-	}
-	//发射
-	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]&&((!activatemissle&&bullet_ammo>0)||(activatemissle&&missle_ammo>0))) {
-		if (activatemissle) {
-			missle_ammo--;
+
+	if (this->alive) {
+		//手动控制 W A S D Q E六个按键
+		if (keyToPressState[GLFW_KEY_A]) {
+			turningState2[1] = true;
 		}
-		else {
-			bullet_ammo--;
+		if (keyToPressState[GLFW_KEY_D]) {
+			turningState2[2] = true;
 		}
-		emit();
-		cout<<"bullet_ammo: "<<bullet_ammo<<endl;
+		if (keyToPressState[GLFW_KEY_W]) {
+			turningState2[3] = true;
+		}
+		if (keyToPressState[GLFW_KEY_S]) {
+			turningState2[4] = true;
+		}
+		if (keyToPressState[GLFW_KEY_Q]) {
+			turningState2[5] = true;
+		}
+		if (keyToPressState[GLFW_KEY_E]) {
+			turningState2[6] = true;
+		}
+		//松开时设false
+		if (!keyToPressState[GLFW_KEY_A] && keyToPrePressState[GLFW_KEY_A]) {
+			turningState2[1] = false;
+		}
+		if (!keyToPressState[GLFW_KEY_D] && keyToPrePressState[GLFW_KEY_D]) {
+			turningState2[2] = false;
+		}
+		if (!keyToPressState[GLFW_KEY_W] && keyToPrePressState[GLFW_KEY_W]) {
+			turningState2[3] = false;
+		}
+		if (!keyToPressState[GLFW_KEY_S] && keyToPrePressState[GLFW_KEY_S]) {
+			turningState2[4] = false;
+		}
+		if (!keyToPressState[GLFW_KEY_Q] && keyToPrePressState[GLFW_KEY_Q]) {
+			turningState2[5] = false;
+		}
+		if (!keyToPressState[GLFW_KEY_E] && keyToPrePressState[GLFW_KEY_E]) {
+			turningState2[6] = false;
+		}
+		if (keyToPressState[GLFW_KEY_1]) {
+			activatemissle = false;
+		}
+		if (keyToPressState[GLFW_KEY_2]) {
+			activatemissle = true;
+		}
+		//发射
+		if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE] && ((!activatemissle&&bullet_ammo > 0) || (activatemissle&&missle_ammo > 0))) {
+			if (activatemissle) {
+				missle_ammo--;
+			}
+			else {
+				bullet_ammo--;
+			}
+			emit();
+			cout << "bullet_ammo: " << bullet_ammo << endl;
+		}
 	}
+	else {
+		//crash();
+	}
+	
 	//重置
 	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
 		reset();
@@ -674,16 +683,25 @@ void AirPlane::ProcessKeyPress() {
 	}
 };
 void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
-	int damage = int(_type) * 2;
-	if (this->health - damage > 0) {
-		this->health -= damage;
-		cout << "Plane - " << damage << endl;
-	}
-	else if(this->alive==true) {
+	if (_type == DATATYPE::ACTOR_TYPE::MAP) {
 		this->health = 0;
 		this->alive = false;
-		cout << "Plane died" << endl;
+		crash();
+		cout << "crash" << endl;
 	}
+	else {
+		int damage = int(_type) * 2;
+		if (this->health - damage > 0) {
+			this->health -= damage;
+			cout << "Plane - " << damage << endl;
+		}
+		else if (this->alive == true) {
+			this->health = 0;
+			this->alive = false;
+			cout << "Plane died" << endl;
+		}
+	}
+	
 }
 void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 	if (_type == DATATYPE::TRIGGER_TYPE::SUPPLY ) {
@@ -760,6 +778,25 @@ void AirPlane::formmisslecloud() {
 		);
 		renderParticleClusterList.push_back(cloud_cluster);
 	}
+}
+void AirPlane::crash() {
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
+	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
+	body->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+	body->setLinearDamping(PxReal(10000.f));
+	body->setAngularDamping(PxReal(1000.f));
+	PxVec3 p = body->getGlobalPose().p;
+	body->setGlobalPose(PxTransform(p));
+	currentHeadForward = headForward;
+	currentBackForward = backForward;
+	currentSwingForward = swingForward;
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
+	glm::vec3 input(p.x/ 2, p.y - 3.f, p.z / 2);
+	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 5.f, input, std::vector<string>(), flameShader);
+	renderParticleClusterList.push_back(flame_cluster);
+	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 3.f,
+		input, std::vector<string>(), smokeShader);
+	renderParticleClusterList.push_back(smoke_cluster);
 }
 
 

@@ -232,8 +232,8 @@ void stepPhysics(bool interactive)
 	
 	vehicle->automove();
 	Plane_1->manualControlAirPlane4();
-	Plane_1->formcloud();
-	Plane_1->formmisslecloud();
+	//Plane_1->formcloud();
+	//Plane_1->formmisslecloud();
 	GunTower.runguntower(Plane_1->body);
 	Bonus.runsupply();
 	//GunTower.runguntower(vehicle->getRigid());
