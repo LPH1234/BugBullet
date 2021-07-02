@@ -115,7 +115,7 @@ ipch/
 # Visual Studio Trace Files
 *.e2e
 
-# TFS 2012 Local Workspace
+# TFS 2012 Local Workspace e
 $tf/
 
 # Guidance Automation Toolkit
@@ -129,7 +129,7 @@ _ReSharper*/
 # TeamCity is a build add-in
 _TeamCity*
 
-# DotCover is a Code Coverage Tool
+# DotCover is a Code Coverage Toole
 *.dotCover
 
 # AxoCover is a Code Coverage Tool

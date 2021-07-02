@@ -22,6 +22,7 @@ void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
 Game game(GAME_STATE::INIT, 1920 / 2, 1080 / 2, 1920 / 4.0f, 1080 / 4.0f, 0.f, 0.f, true);
+
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
 

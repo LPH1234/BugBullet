@@ -7,9 +7,6 @@
 
 
 
-
-
-
 class ModelManager {
 	//储存程序中反复用到的obj模型路径,提前创建并缓存
 	static std::vector<std::string> modelPathes;
