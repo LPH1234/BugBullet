@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 #include "../Data/Data.h"
+#include "../Data/Consts.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -13,13 +14,13 @@
 #include "RenderUtils.h"
 #include<unordered_map>
 
-enum UIID{
-		MAIN,
-		MENU,
-		GAME_PASS,
-		GAME_OVER,
-		HP_BAR,
-		DANGER_MASK,
+enum UIID {
+	MAIN,
+	MENU,
+	GAME_PASS,
+	GAME_OVER,
+	HP_BAR,
+	DANGER_MASK,
 };
 
 
@@ -47,13 +48,13 @@ class HPBarUI : public BaseUI
 {
 public:
 	// Constructor (inits shaders/shapes)
-	HPBarUI(UIID id,float H ,std::string texture);
+	HPBarUI(UIID id, float H, std::string texture);
 	// Destructor
 	~HPBarUI();
 	// Renders a defined quad textured with given sprite
 	void draw(unsigned int w, unsigned int h);
 	void updateProgress(float progress);
-	void setEnableAnimate(bool enbale);	
+	void setEnableAnimate(bool enbale);
 
 private:
 	// Render state
@@ -103,7 +104,7 @@ public:
 
 };
 
-class ConfigModal  {
+class ConfigModal {
 
 public:
 	static void init(GLFWwindow* window);
@@ -117,7 +118,7 @@ public:
 	static int soundBg;
 };
 
-class RecordModal {
+class HelpModal {
 
 public:
 	static void init(GLFWwindow* window);

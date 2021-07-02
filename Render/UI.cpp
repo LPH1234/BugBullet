@@ -11,7 +11,7 @@ bool ConfigModal::visable = false;
 int ConfigModal::soundEffect = 0;
 int ConfigModal::soundBg = 0;
 
-bool RecordModal::visable = false;
+bool HelpModal::visable = false;
 unordered_map<UIID, BaseUI*> UIManager::idToUI;
 
 void UIManager::addUI(BaseUI* ui) {
@@ -41,7 +41,7 @@ void  UIManager::draw(const float W, const float H) {
 	for (unordered_map<UIID, BaseUI*>::iterator iter = idToUI.begin(); iter != idToUI.end(); iter++) {
 		BaseUI* ui = (*iter).second;
 		if (ui->getVisable()) {
-			ui->draw(W,H);
+			ui->draw(W, H);
 		}
 	}
 }
@@ -49,7 +49,7 @@ void  UIManager::draw(const float W, const float H) {
 void  UIManager::init(const float W, const float H) {
 	////血条
 	HPBarUI* HPBar;
-	HPBar = new HPBarUI(UIID::HP_BAR , H, "images/textures/hpbar-border.png");
+	HPBar = new HPBarUI(UIID::HP_BAR, H, "images/textures/hpbar-border.png");
 	addUI(HPBar);
 
 }
@@ -63,7 +63,7 @@ bool BaseUI::getVisable() {
 	return this->visable;
 }
 void BaseUI::setVisable(bool v) {
-		this->visable = v;
+	this->visable = v;
 }
 UIID BaseUI::getUIID() {
 	return this->id;
@@ -86,7 +86,7 @@ void BaseUI::setSize(glm::vec2 size) {
 }
 
 
-HPBarUI::HPBarUI(UIID id, float H, std::string texture):BaseUI(id)
+HPBarUI::HPBarUI(UIID id, float H, std::string texture) :BaseUI(id)
 {
 	position = glm::vec2(10, H - 18 - 10);
 	size = glm::vec2(170.f, 18.f);
@@ -140,7 +140,7 @@ void HPBarUI::draw(unsigned int w, unsigned int h)
 	else {
 		this->animateProgress = this->progress;
 	}
-	
+
 	/*1：hp填充*/
 	this->HPBarFillShader->use();
 	glm::vec3 position0(position.x + (size.x - FILL_WIDTH) / 2.f, position.y + (size.y - FILL_HEIGHT) / 2.f, 0.f);
@@ -206,6 +206,9 @@ void MainMenu::init(GLFWwindow* window) {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	MainMenu::window = window;
+	//	io.Fonts->AddFontFromFileTTF("resources/fonts/cunia.ttf", 15.0f);
+	//	io.Fonts->AddFontFromFileTTF("resources/fonts/quantum.ttf", 15.0f);
+	io.Fonts->AddFontFromFileTTF("resources/fonts/troika.ttf", 15.0f);
 }
 
 void MainMenu::draw(unsigned int w, unsigned int h) {
@@ -224,37 +227,37 @@ void MainMenu::draw(unsigned int w, unsigned int h) {
 	{
 		static float f = 0.0f;
 		static int counter = 0;
-		ImVec2 window_size(360, 240);
+		ImVec2 window_size(360, 360);
 		ImGui::Begin("hp", NULL, window_flags);                          // Create a window called "Hello, world!" and append into it.
 		ImGui::SetNextWindowBgAlpha(0.f);
 		ImGui::SetWindowSize(window_size);
-		if (ImGui::Button("S t a r t", ImVec2(window_size.x, window_size.y / 4))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
+		if (ImGui::Button("S t a r t", ImVec2(window_size.x, window_size.y / 5))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
 			game.state = GAME_STATE::STARTED;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
-		if (ImGui::Button("R e c o r d", ImVec2(window_size.x, window_size.y / 4))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
-			RecordModal::visable = true;
-		}
-		if (ImGui::Button("C o n f i g", ImVec2(window_size.x, window_size.y / 4))) {   
+		if (ImGui::Button("C o n f i g", ImVec2(window_size.x, window_size.y / 5))) {
 			ConfigModal::visable = true;
 		}
-		if (ImGui::Button("E x i t", ImVec2(window_size.x, window_size.y / 4))) {   
+		if (ImGui::Button("H e l p", ImVec2(window_size.x, window_size.y / 5))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
+			HelpModal::visable = true;
+		}
+		if (ImGui::Button("E x i t", ImVec2(window_size.x, window_size.y / 5))) {
 			glfwSetWindowShouldClose(window, true);
 		}
 
-		ImGui::SetWindowPos(ImVec2(w / 2, h / 2));
+		ImGui::SetWindowPos(ImVec2(w * 2 / 3.f, h / 3.f));
 		ImGui::End();
 	}
-	
+
 
 }
 
 
 
- void CornerTip::init(GLFWwindow* window) {
+void CornerTip::init(GLFWwindow* window) {
 
 }
- void CornerTip::draw(unsigned int w, unsigned int h) {
+void CornerTip::draw(unsigned int w, unsigned int h) {
 	bool* p_open = NULL;
 	const float DISTANCE = 10.0f;
 	static int corner = 0;
@@ -292,57 +295,67 @@ void MainMenu::draw(unsigned int w, unsigned int h) {
 }
 
 
- void ConfigModal::init(GLFWwindow* window) {
+void ConfigModal::init(GLFWwindow* window) {
 
- }
+}
 
- void ConfigModal::draw(unsigned int w, unsigned int h) {
-	 ImGui::OpenPopup("Config");
-	 if (ImGui::BeginPopupModal("Config", NULL, ImGuiWindowFlags_MenuBar))
-	 {
-		 // Testing behavior of widgets stacking their own regular popups over the modal.
-		 static int preSoundEffect = soundEffect;
-		 ImGui::Combo("Sound", &soundEffect, "Enable\0Disable\0\0"); 
-		 if (preSoundEffect != soundEffect) ConfigModal::configSoundEffect();
+void ConfigModal::draw(unsigned int w, unsigned int h) {
+	ImGui::OpenPopup("Config");
+	if (ImGui::BeginPopupModal("Config", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		// Testing behavior of widgets stacking their own regular popups over the modal.
+		static int preSoundEffect = soundEffect;
+		ImGui::Combo("Sound Effect", &soundEffect, "Enable\0Disable\0\0");
+		if (preSoundEffect != soundEffect) ConfigModal::configSoundEffect();
 
-		 static int preSoundBg = soundBg;
-		 ImGui::Combo("Sound", &soundBg, "Enable\0Disable\0\0");
-		 if (preSoundBg != soundBg) ConfigModal::configSoundBg();
+		static int preSoundBg = soundBg;
+		ImGui::Combo("Bg Music", &soundBg, "Enable\0Disable\0\0");
+		if (preSoundBg != soundBg) ConfigModal::configSoundBg();
 
-		 if (ImGui::Button("Add another modal.."))
-			 ImGui::OpenPopup("Stacked 2");
 
-		 // Also demonstrate passing a bool* to BeginPopupModal(), this will create a regular close button which
-		 // will close the popup. Note that the visibility state of popups is owned by imgui, so the input value
-		 // of the bool actually doesn't matter here.
-		 bool unused_open = true;
-		 if (ImGui::BeginPopupModal("Stacked 2", &unused_open))
-		 {
-			 ImGui::Text("Hello from Stacked The Second!");
-			 if (ImGui::Button("Close"))
-				 ImGui::CloseCurrentPopup();
-			 ImGui::EndPopup();
-		 }
-
-		 ImVec2 closeBtnSize(w / 3.f, h / 10.f);
-		 if (ImGui::Button("Close", closeBtnSize)) {
-			 ImGui::CloseCurrentPopup();
-			 ConfigModal::visable = false;
-		 }
-		 ImGui::EndPopup();
-	 }
- }
+		ImVec2 closeBtnSize(360.f, h / 10.f);
+		if (ImGui::Button("Close", closeBtnSize)) {
+			ImGui::CloseCurrentPopup();
+			ConfigModal::visable = false;
+		}
+		ImGui::EndPopup();
+	}
+}
 
 void ConfigModal::configSoundEffect() {
+	if (soundEffect == 0) { //开启
 
+	}
+	else {//关闭
+
+	}
 }
 void ConfigModal::configSoundBg() {
+	if (soundBg == 0) { //开启
 
+	}
+	else {//关闭
+
+	}
 }
 
- void RecordModal::init(GLFWwindow* window) {
+void HelpModal::init(GLFWwindow* window) {
 
- }
- void RecordModal::draw(unsigned int w, unsigned int h) {
+}
+void HelpModal::draw(unsigned int w, unsigned int h) {
+	if (HelpModal::visable) {
+		ImGui::OpenPopup("HELP");
+		bool unused_open = true;
+		if (ImGui::BeginPopupModal("HELP", &unused_open, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text(HETP_TEXT.c_str());
 
- }
+			ImVec2 closeBtnSize(360.f, h / 10.f);
+			if (ImGui::Button("Close", closeBtnSize)) {
+				ImGui::CloseCurrentPopup();
+				HelpModal::visable = false;
+			}
+			ImGui::EndPopup();
+		}
+	}
+}

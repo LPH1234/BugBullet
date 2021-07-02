@@ -21,7 +21,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
-Game game(GAME_STATE::INIT, 1920 / 2, 1080 / 2, 1920 / 4.0f, 1080 / 4.0f,0.f,0.f, true);
+Game game(GAME_STATE::INIT, 1920 / 2, 1080 / 2, 1920 / 4.0f, 1080 / 4.0f, 0.f, 0.f, true);
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
 
@@ -205,7 +205,8 @@ int myRenderLoop()
 		}
 		else if (game.state == GAME_STATE::PAUSE) {
 			MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-		}else if (game.state == GAME_STATE::INIT) {
+		}
+		else if (game.state == GAME_STATE::INIT) {
 			MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 		}
 		else {
@@ -215,9 +216,9 @@ int myRenderLoop()
 			if (game.state == GAME_STATE::MAIN_MENU) {
 				MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 				CornerTip::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-				if(RecordModal::visable)//º«¬º
-					RecordModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-				if(ConfigModal::visable)//≈‰÷√
+				if (HelpModal::visable)//º«¬º
+					HelpModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+				if (ConfigModal::visable)//≈‰÷√
 					ConfigModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			}
 			else if (game.state == GAME_STATE::OVER) {
