@@ -170,6 +170,8 @@ namespace UI {
 
 	class CornerTip {
 		static Camera* camera;
+		static int fadeTime;
+		static int createTime;
 	public:
 		static void init(GLFWwindow* window, Camera* camera);
 		static void draw(unsigned int w, unsigned int h);

@@ -28,19 +28,19 @@
 // Copyright (c) 2008-2018 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
-void hideConsole() {
+void setConsoleVisable(bool v) {
 	HWND hwnd;
 	hwnd = FindWindow("ConsoleWindowClass", NULL);	//处理顶级窗口的类名和窗口名称匹配指定的字符串,不搜索子窗口。
 	if (hwnd)
 	{
-		ShowWindow(hwnd, SW_HIDE);				//设置指定窗口的显示状态
+		ShowWindow(hwnd, v ? SW_SHOW : SW_HIDE);				//设置指定窗口的显示状态
 	}
 }
 
 extern int snippetMyMain(int, const char*const*);
 int main(int argc, char** argv)
 {
-	//hideConsole();
+	setConsoleVisable(true);
 	return snippetMyMain(argc, argv);
 }
 

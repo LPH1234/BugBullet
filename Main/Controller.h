@@ -31,7 +31,8 @@ extern Camera camera;
 void processOtherControlEvents(); // 每次渲染循环会调用这个方法
 void keyPress();
 void mouseMove();
-void mouseClick();
+void mouseClick(); //每次循环都会调用
+void mouseSingleClick(int button, int action); //鼠标单次点击
 
 
 
