@@ -132,6 +132,7 @@ DWORD WINAPI runLoadTextures(LPVOID lpParamter) {
 
 	}
 	delete task;
+	return 0;
 }
 
 void TextureManager::initAnimateTextures() {
