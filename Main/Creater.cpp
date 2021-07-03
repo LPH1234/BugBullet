@@ -27,7 +27,7 @@ extern Shader* smokeShader;
 extern Shader* flameShader;
 extern MissileManager			*ManageMissile;
 
-vector<PxActor*>		removeActorList;
+set<PxActor*>		removeActorList;
 set<Player*>			updateTankList;
 list<PxParticleSystem*> physicsParticleSystemList;
 list<BaseParticleCluster*> renderParticleClusterList;
@@ -44,6 +44,7 @@ vector<PxTransform> addBonusList;
 extern Camera camera;
 extern AirPlane* Plane_1;
 extern guntower GunTower;
+extern vector<AirPlane_AI*>	AI_PlaneList;
 
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
@@ -243,12 +244,12 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			&&actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
 			PxRigidActor* temp = (actor_data_0->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
 				? actor_0 : actor_1);
-			removeActorList.push_back(temp);
+			removeActorList.insert(temp);
 			continue;
 		}*/
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
 			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
-				removeActorList.push_back(actor_0);
+				removeActorList.insert(actor_0);
 				continue;
 			}
 			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BLOOD) {
@@ -267,14 +268,14 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 				}
 				else if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION) {
 					actor_data_0->basecha->oncontact(DATATYPE::TRIGGER_TYPE::COLLECTION);
-					removeActorList.push_back(actor_1);
+					removeActorList.insert(actor_1);
 				}
 			}
 		}
 		//if (pairs[i].otherActor != Plane_1->getRigid())
 		//{
 		//	//printf("onTrigger!\n");
-		//	removeActorList.push_back(pairs[i].otherActor);
+		//	removeActorList.insert(pairs[i].otherActor);
 		//}
 		
 	}
@@ -307,7 +308,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) 
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				printf("飞机弹药！\n");
-				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET|| 
+				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
 				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
@@ -320,28 +321,36 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				//printf("炮塔弹药！\n");
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
+				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE&& actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
-				//printf("炮塔弹药！\n");
+				//printf("导弹打飞机！\n");
 				PxRigidActor* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1;
+				UserData* planeData= (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) ? actor_data_0 : actor_data_1;
+				if (AI_PlaneList[planeData->id]!=nullptr) {
+					removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_0 : actor_1));
+					AI_PlaneList[planeData->id]->alive = false;
+					//Logger::debug(to_string(planeData->id));
+					//AI_PlaneList[planeData->id] = nullptr;
+					//AI_PlaneList[planeData->id] = nullptr;
+				}
 				ManageMissile->MissileToRemoveList.insert((PxRigidDynamic*)temp1);
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				//printf("tank弹药！\n");
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
+				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
 			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
+				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TANK_BULLET);
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
-				removeActorList.push_back((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
+				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
 				/*UserData* temp = reinterpret_cast<UserData*>(Plane_1->getRigid()->userData);*/
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TOWER_BULLET);
@@ -350,7 +359,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
-				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK ? actor_data_0 : actor_data_1);
 				UserData* temp2 = ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
@@ -361,7 +370,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
-				removeActorList.push_back(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
+				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER ? actor_data_0 : actor_data_1);
 				UserData* temp2 = ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
@@ -386,14 +395,21 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 //删除removeActorList里面的actor
 void removeActorInList() {
 	int n = removeActorList.size();
-	for (int i = 0; i < n; i++) {
-		if (airPlaneBullet.find((PxRigidDynamic*)removeActorList[i]) != airPlaneBullet.end()) {
-			airPlaneBullet.erase((PxRigidDynamic*)removeActorList[i]);
+	for (auto i = removeActorList.begin(); i != removeActorList.end(); i++) {
+		if (airPlaneBullet.find((PxRigidDynamic*)(*i)) != airPlaneBullet.end()) {
+			airPlaneBullet.erase((PxRigidDynamic*)(*i));
 			//cout << "erase!\n";
 		}
-		gScene->removeActor(*removeActorList[i]);
+		gScene->removeActor(*(*i));
 	}
 	removeActorList.clear();
+	//for (int i = 0; i < n; i++) {
+	//	if (airPlaneBullet.find((PxRigidDynamic*)removeActorList[i]) != airPlaneBullet.end()) {
+	//		airPlaneBullet.erase((PxRigidDynamic*)removeActorList[i]);
+	//		//cout << "erase!\n";
+	//	}
+	//	gScene->removeActor(*removeActorList[i]);
+	//}
 }
 
 //更新坦克血条

@@ -24,6 +24,9 @@
 
 
 class Player;
+class AirPlane;
+class MissileManager;
+class AirPlane_AI;
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
 extern bool mouseButtonPressState[3];
@@ -35,10 +38,8 @@ extern PxTransform born_pos;
 extern const float velocity;
 extern std::set<PxRigidDynamic*> airPlaneBullet;
 extern set<Player*>				updateTankList;
-class Player;
-class AirPlane;
-class MissileManager;
-class AirPlane_AI;
+extern vector<AirPlane_AI*>		tempList;
+extern vector<AirPlane_AI*>		AI_PlaneList;
 //extern MissileManager			*ManageMissile;
 
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
@@ -154,7 +155,8 @@ class AirPlane : public BaseCharacter {
 public:
 	PxRigidDynamic*			body;//飞机刚体
 	MissileManager*			myMissileManager;//导弹管理器
-	AirPlane_AI*			targetPlane;//目标AI飞机
+	//AirPlane_AI*			targetPlane;//目标AI飞机
+	vector<AirPlane_AI*>	AI_PlaneList;
 	PxTransform				initTransform;//飞机初始位置与姿态
 	PxTransform				emitTransform;//炮弹发射口相对于飞机位置
 	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
@@ -184,7 +186,7 @@ public:
 
 	AirPlane();
 	~AirPlane();
-	AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _myMissileManager, AirPlane_AI*	_targetPlane);
+	AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _myMissileManager, vector<AirPlane_AI*>	&_AI_PlaneList);
 	void controlAirPlane();
 	void manualControlAirPlane();
 	void manualControlAirPlane2();
@@ -258,7 +260,7 @@ public:
 	set<PxRigidDynamic*>		MissileList;
 	set<PxRigidDynamic*>			MissileToRemoveList;
 	int							count = 0;
-	float						missileSpeed = 50.f;
+	float						missileSpeed = 30.f;
 	MissileManager();
 	PxRigidDynamic* emitMissile(PxVec3 &emitPos, PxVec3 &direction, BaseCharacter* target);
 	void trackingAllMissile();

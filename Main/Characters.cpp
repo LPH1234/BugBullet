@@ -57,9 +57,14 @@ AirPlane::~AirPlane() {
 	user_data = nullptr;
 }
 AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body,
-	MissileManager* _myMissileManager, AirPlane_AI*	_targetPlane) :BaseCharacter(_body) {
+	MissileManager* _myMissileManager, vector<AirPlane_AI*>	&_AI_PlaneList) :BaseCharacter(_body) {
 	this->myMissileManager = _myMissileManager;
-	this->targetPlane = _targetPlane;
+	this->AI_PlaneList = _AI_PlaneList;
+	for (int k = 0; k < this->AI_PlaneList.size(); k++) {
+		if (!this->AI_PlaneList[k]) {
+			cout << k << "AI为nullptr！--构造函数\n";
+		}
+	}
 	currentHeadForward = headForward = head;
 	currentBackForward = backForward = back;
 	currentSwingForward = swingForward = swing;
@@ -653,9 +658,23 @@ void AirPlane::ProcessKeyPress() {
 		}
 		//发射追踪型导弹
 		if (!keyToPressState[GLFW_KEY_M] && keyToPrePressState[GLFW_KEY_M]) {
-			PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
-			myMissileManager->emitMissile(emitPos, currentHeadForward, this->targetPlane);
-			leftOrRight *= -1;
+			for (int k = 0; k < AI_PlaneList.size(); k++) {
+				if (AI_PlaneList[k]->alive) {
+					PxVec3 targetDir = AI_PlaneList[k]->body->getGlobalPose().p - this->body->getGlobalPose().p;
+					double cosine = targetDir.getNormalized().dot(this->currentHeadForward.getNormalized());
+					double radiusAng = acos(cosine);
+					double ang = radiusAng * 180 / PxPi;
+					Logger::debug(to_string(ang));
+					if (ang < 15) {
+						PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
+						myMissileManager->emitMissile(emitPos, currentHeadForward, AI_PlaneList[k]);
+						leftOrRight *= -1;
+						break;
+					}
+					
+				}
+				else cout << "AI_PlaneList " << k << " 为nullptr！\n";
+			}
 		}
 	}
 	else {
@@ -1202,7 +1221,7 @@ AirPlane_AI::AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic*
 	body->setName("plane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	body->userData = new UserData(this, 1, "plane", DATATYPE::ACTOR_TYPE::PLANE);
+	body->userData = new UserData(this, 0, "plane", DATATYPE::ACTOR_TYPE::PLANE);
 	//setupFiltering(body, FilterGroup::ePlayer, FilterGroup::eMISILE);
 	turningState.resize(5);
 	turningState[0] = true;
@@ -1210,6 +1229,7 @@ AirPlane_AI::AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic*
 }
 
 void AirPlane_AI::autoFlying() {
+	if (!this->alive)return;
 	//计时
 	currentTime++;
 
@@ -1602,12 +1622,8 @@ PxRigidDynamic* MissileManager::emitMissile(PxVec3 &emitPos, PxVec3 &direction, 
 	double cosAngle = PxVec3(1, 0, 0).dot(direction.getNormalized());
 	double radiusAngle = acos(cosAngle);
 	PxQuat rot(radiusAngle, rotAxis.getNormalized());
-	cout << "Line1605--\n";
 	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos,rot), PxCapsuleGeometry(0.04, 0.2), *gMaterial, 0.1f);
-	cout << "Line1607--\n";
 
-	MissileList.insert(dynamic);
-	count++;
 
 	//设置刚体名称
 	dynamic->setName("bullet");
@@ -1618,7 +1634,8 @@ PxRigidDynamic* MissileManager::emitMissile(PxVec3 &emitPos, PxVec3 &direction, 
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	dynamic->userData = new UserData(target,1, "missile", DATATYPE::ACTOR_TYPE::PLANE_MISSLE);
 	dynamic->setLinearVelocity(missileSpeed*direction.getNormalized());
-	cout << "Line1621--\n";
+	MissileList.insert(dynamic);
+	count++;
 	return dynamic;
 }
 
@@ -1627,11 +1644,10 @@ void MissileManager::trackingAllMissile() {
 		PxRigidDynamic* currentMissile = (*i);
 		UserData* temp = reinterpret_cast<UserData*>(currentMissile->userData);
 		temp->id += 1;
-		if (temp->id < 100) {
+		if (temp->id < 60) {
 			continue;
 		}
 		else {
-			//cout << "Line1634--\n";
 			PxVec3 currentVelocity = currentMissile->getLinearVelocity().getNormalized();
 			PxVec3 targetPos = temp->basecha->getRigid()->getGlobalPose().p;
 			PxVec3 targetDir = (targetPos - currentMissile->getGlobalPose().p).getNormalized();
@@ -1641,22 +1657,30 @@ void MissileManager::trackingAllMissile() {
 			double radiusAngle = acos(cosAngle);
 			double angle = radiusAngle * 180 / PxPi;
 			PxQuat rot(radiusAngle, rotAxis.getNormalized());
-			if(!rot.isSane())cout << "1644\t";
+			if (!rot.isSane()) {
+				continue;
+				string temp1 = "currentVelocity";
+				Logger::debug(temp1, currentVelocity);
+				temp1 = "targetDir:";
+				Logger::debug(temp1, targetDir);
+				cout << "1644\t";
+				cout << "rotAxis:" << rotAxis.x << "\t" << rotAxis.y << "\t" << rotAxis.z << "\tcosAngle:" << cosAngle << "\tradiusAngle:" << radiusAngle
+					<< "\trot:" << rot.x*rot.x + rot.y*rot.y + rot.z*rot.z + rot.w*rot.w << "\n";
+			}
 			PxQuat rot2(PxPi / 180 * (1), rotAxis.getNormalized());
-			if(!rot2.isSane())cout  << "1646\t";
+			if(!rot2.isSane())cout  << "1646\n";
 			if (angle < 3) {
 				PxQuat next = currentMissile->getGlobalPose().q;
-				if(!next.isSane())cout << "1649\t";
+				if(!next.isSane())cout << "1649\n";
 				next = rot * next;
 				currentMissile->setGlobalPose(PxTransform(currentMissile->getGlobalPose().p, next));
 				PxVec3 flyingTo = next.rotate(PxVec3(1, 0, 0)).getNormalized();
 				currentMissile->setLinearVelocity(missileSpeed*flyingTo);
-				//cout << "Line1652--\n";
 			}
 			else {
 				PxQuat next = currentMissile->getGlobalPose().q;
 				next = rot2 * next;
-				if(!next.isSane())cout  << "1659\t";
+				if(!next.isSane())cout  << "1659\n";
 				currentMissile->setGlobalPose(PxTransform(currentMissile->getGlobalPose().p, next));
 				PxVec3 flyingTo = next.rotate(PxVec3(1, 0, 0)).getNormalized();
 				currentMissile->setLinearVelocity(missileSpeed*flyingTo);

@@ -24,6 +24,9 @@ extern Camera camera;
 extern Shader* envShader;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
 vector<Player*>		tankList(4,nullptr);
+//AI飞机链表
+vector<AirPlane_AI*>	AI_PlaneList(4, nullptr);
+vector<AirPlane_AI*>	tempList(1, nullptr);
 //vector<AirPlane_AI*>	AI_airPlaneList;
 //Player* vehicle;
 guntower GunTower;
@@ -63,6 +66,29 @@ void tankAutoMove() {
 		tankList[i]->automove();
 	}
 }
+
+//初始化AI飞机，4架
+vector<AirPlane_AI*> initAI_Plane() {
+	glm::vec3 posList[4] = { glm::vec3(0.f,80.f,-10.f),glm::vec3(80.f,80.f,20.f),glm::vec3(-80.f,100.f,-80.f),glm::vec3(0.f,100.f,30.f) };
+	for (int i = 0; i < 4; i++) {
+		cout << "initAI_Plane!\n";
+		//if (AI_PlaneList[i]==nullptr) {
+			PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(posList[i], glm::vec3(0.3f, 0.3f, 0.3f),
+				"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
+			AI_PlaneList[i] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI);
+			UserData* tempData = reinterpret_cast<UserData*>(AI_PlaneList[i]->body->userData);
+			tempData->id = i;
+			//cout << tempData->id << "AI初始化完成！\n";
+		//}
+	}
+	return AI_PlaneList;
+}
+void AI_PlaneAutoFly() {
+	for (int i = 0; i < 4; i++) {
+		if(AI_PlaneList[i]!=nullptr)AI_PlaneList[i]->autoFlying();
+	}
+}
+
 void initPhysics(bool interactive)
 {
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
@@ -149,21 +175,19 @@ void initPhysics(bool interactive)
 	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2] };
 	Bonus.initlist(supply_pos_list);
 
-	//加载AI飞机，前部分为原型机，后部分为模型机
-	/*PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.2, 0.2), *gMaterial);
-	PxRigidDynamic* body=PxCreateDynamic(*gPhysics, PxTransform(PxVec3(2, 100, -5)), *shape, 100);
-	body->setName("plane");
-	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
-	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	Plane_AI = new AirPlane_AI(body);*/
-	PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
+	//加载AI飞机
+	/*PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	Plane_AI = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI);
-
+	Plane_AI = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI);*/
+	//加载4架AI飞机
+	initAI_Plane();
+	/*PxRigidDynamic* tempAI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
+		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
+	tempList[0] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), tempAI);*/
 	//加载飞机
 	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 10.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp, ManageMissile, Plane_AI);
+	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp, ManageMissile, AI_PlaneList);
 
 	//加载坦克
 	initTank();
@@ -282,8 +306,10 @@ void stepPhysics(bool interactive)
 	gScene->fetchResults(true);
 	//vehicle->automove();
 	tankAutoMove();
+	AI_PlaneAutoFly();
+	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
 	Plane_1->manualControlAirPlane4();
-	Plane_AI->autoFlying();
+	//Plane_AI->autoFlying();
 	//Plane_1->formcloud();
 	//Plane_1->formmisslecloud();
 	GunTower.runguntower(Plane_1->body);
