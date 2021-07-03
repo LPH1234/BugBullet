@@ -10,12 +10,12 @@ using namespace physx;
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
 module moduleCallBack;
-AirPlane				*Plane_1;
-AirPlane_AI				*Plane_AI;
-MissileManager			*ManageMissile;
+AirPlane				*Plane_1;					//玩家飞机
+AirPlane_AI				*Plane_AI;					//用于测试单个AI飞机
+MissileManager			*ManageMissile;				//导弹管理器
 //第三人称角色位置
 PxTransform born_pos(PxVec3(10, 0, -7));
-Media MediaPlayer;
+Media MediaPlayer;									//声音播放器
 
 void createModel(std::string path, int scale, PxVec3& offset) {}
 
@@ -23,10 +23,9 @@ PxReal					stackZ = 3.0f;
 extern Camera camera;
 extern Shader* envShader;
 clock_t					lockFrame_last = 0, lockFrame_current = 0;
-vector<Player*>		tankList(4,nullptr);
-//AI飞机链表
-vector<AirPlane_AI*>	AI_PlaneList(4, nullptr);
-vector<AirPlane_AI*>	tempList(1, nullptr);
+vector<Player*>		tankList(4,nullptr);			//坦克链表
+vector<AirPlane_AI*>	AI_PlaneList(4, nullptr);	//AI飞机链表
+vector<AirPlane_AI*>	tempList(1, nullptr);		//测试
 //vector<AirPlane_AI*>	AI_airPlaneList;
 //Player* vehicle;
 guntower GunTower;
@@ -75,7 +74,7 @@ vector<AirPlane_AI*> initAI_Plane() {
 		//if (AI_PlaneList[i]==nullptr) {
 			PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(posList[i], glm::vec3(0.3f, 0.3f, 0.3f),
 				"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-			AI_PlaneList[i] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI);
+			AI_PlaneList[i] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI, ManageMissile,Plane_1);
 			UserData* tempData = reinterpret_cast<UserData*>(AI_PlaneList[i]->body->userData);
 			tempData->id = i;
 			//cout << tempData->id << "AI初始化完成！\n";
@@ -85,7 +84,7 @@ vector<AirPlane_AI*> initAI_Plane() {
 }
 void AI_PlaneAutoFly() {
 	for (int i = 0; i < 4; i++) {
-		if(AI_PlaneList[i]!=nullptr)AI_PlaneList[i]->autoFlying();
+		if(AI_PlaneList[i]->alive)AI_PlaneList[i]->autoFlying();
 	}
 }
 
@@ -127,12 +126,15 @@ void initPhysics(bool interactive)
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	PxRigidStatic* groundPlaneMap = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
 	groundPlane->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	groundPlaneMap->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
 	PxShape* treasureShape;
 	groundPlane->getShapes(&treasureShape, 1);
 	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
 	gScene->addActor(*groundPlane);
+	gScene->addActor(*groundPlaneMap);
 
 	//for (PxU32 i = 0; i < 3; i++)
 		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
@@ -179,15 +181,18 @@ void initPhysics(bool interactive)
 	/*PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	Plane_AI = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI);*/
+
+	//加载飞机
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 10.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
+		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
+	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp, ManageMissile, AI_PlaneList);
+
 	//加载4架AI飞机
 	initAI_Plane();
 	/*PxRigidDynamic* tempAI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
 		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
 	tempList[0] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), tempAI);*/
-	//加载飞机
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 10.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
-		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp, ManageMissile, AI_PlaneList);
+
 
 	//加载坦克
 	initTank();

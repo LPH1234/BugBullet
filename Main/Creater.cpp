@@ -304,6 +304,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 		UserData* actor_data_0 = reinterpret_cast<UserData*>(actor_0->userData);
 		UserData* actor_data_1 = reinterpret_cast<UserData*>(actor_1->userData);
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
+			//销毁与地图相撞的飞机子弹
 			if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
@@ -314,42 +315,49 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
 					/*cout << pairHeader.pairs->contactImpulses << "\n";*/
 			}
+			//飞机撞地图
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::MAP);
 			}
+			//销毁撞地图的炮塔子弹
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				//printf("炮塔弹药！\n");
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
 			}
+			//导弹打中飞机
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE&& actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
 				//printf("导弹打飞机！\n");
-				PxRigidActor* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1;
-				UserData* planeData= (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) ? actor_data_0 : actor_data_1;
-				if (AI_PlaneList[planeData->id]!=nullptr) {
-					removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_0 : actor_1));
-					AI_PlaneList[planeData->id]->alive = false;
-					//Logger::debug(to_string(planeData->id));
-					//AI_PlaneList[planeData->id] = nullptr;
-					//AI_PlaneList[planeData->id] = nullptr;
-				}
-				ManageMissile->MissileToRemoveList.insert((PxRigidDynamic*)temp1);
+				PxRigidActor* tempMissile = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1;
+				ManageMissile->MissileToRemoveList.insert((PxRigidDynamic*)tempMissile);
+				//UserData* planeData= (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) ? actor_data_0 : actor_data_1;
+				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
+				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::PLANE_MISSLE);
+				//if (AI_PlaneList[planeData->id]!=nullptr) {
+				//	//removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_0 : actor_1));
+				//	//AI_PlaneList[planeData->id]->alive = false;
+				//	//Logger::debug(to_string(planeData->id));
+				//	//AI_PlaneList[planeData->id] = nullptr;
+				//	//AI_PlaneList[planeData->id] = nullptr;
+				//}
 			}
-
+			//销毁撞地图的坦克子弹
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				//printf("tank弹药！\n");
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
+			//坦克打中飞机
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TANK_BULLET);
 			}
+			//炮塔打中飞机
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
@@ -357,6 +365,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TOWER_BULLET);
 			}
+			//飞机弹药打中坦克
 			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
@@ -368,6 +377,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(temp2->type);
 			}
+			//飞机弹药打中炮塔
 			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)

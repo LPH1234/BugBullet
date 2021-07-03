@@ -59,9 +59,9 @@ AirPlane::~AirPlane() {
 AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body,
 	MissileManager* _myMissileManager, vector<AirPlane_AI*>	&_AI_PlaneList) :BaseCharacter(_body) {
 	this->myMissileManager = _myMissileManager;
-	this->AI_PlaneList = _AI_PlaneList;
-	for (int k = 0; k < this->AI_PlaneList.size(); k++) {
-		if (!this->AI_PlaneList[k]) {
+	this->AI_PlaneList_this = _AI_PlaneList;
+	for (int k = 0; k < this->AI_PlaneList_this.size(); k++) {
+		if (!this->AI_PlaneList_this[k]) {
 			cout << k << "AI为nullptr！--构造函数\n";
 		}
 	}
@@ -75,7 +75,7 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	body->setName("airPlane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	body->userData = new UserData(this ,1, "plane", DATATYPE::ACTOR_TYPE::PLANE);
+	body->userData = new UserData(this ,0, "myPlane", DATATYPE::ACTOR_TYPE::PLANE);
 	setupFiltering(body, FilterGroup::ePlayer, FilterGroup::eMISILE);
 	turningState.resize(5, false);
 	turningState[2] = true;
@@ -557,53 +557,6 @@ void AirPlane::getFront(physx::PxVec3& front) { front = currentHeadForward; };
 void AirPlane::getUp(physx::PxVec3& up) { up = currentBackForward; };
 
 void AirPlane::ProcessKeyPress() {
-	//半自动飞行
-	/*if (keyToPressState[GLFW_KEY_LEFT]&& turningState[2]) {
-		turningState[0] = true;
-		turningState[2] = false;
-	}
-	if (keyToPressState[GLFW_KEY_RIGHT] && turningState[2]) {
-		turningState[1] = true;
-		turningState[2] = false;
-	}
-	if (keyToPressState[GLFW_KEY_UP] && turningState[2]) {
-		turningState[3] = true;
-		turningState[2] = false;
-	}
-	if (keyToPressState[GLFW_KEY_DOWN] && turningState[2]) {
-		turningState[4] = true;
-		turningState[2] = false;
-	}*/
-
-	//手动飞行
-	//上下左右键
-	//按下时设true
-	//if (keyToPressState[GLFW_KEY_LEFT]) {
-	//	turningState[0] = true;
-	//}
-	//if (keyToPressState[GLFW_KEY_RIGHT]) {
-	//	turningState[1] = true;
-	//}
-	//if (keyToPressState[GLFW_KEY_UP]) {
-	//	turningState[3] = true;
-	//}
-	//if (keyToPressState[GLFW_KEY_DOWN]) {
-	//	turningState[4] = true;
-	//}
-	////松开时设false
-	//if (!keyToPressState[GLFW_KEY_LEFT] && keyToPrePressState[GLFW_KEY_LEFT]) {
-	//	turningState[0] = false;
-	//}
-	//if (!keyToPressState[GLFW_KEY_RIGHT] && keyToPrePressState[GLFW_KEY_RIGHT]) {
-	//	turningState[1] = false;
-	//}
-	//if (!keyToPressState[GLFW_KEY_UP] && keyToPrePressState[GLFW_KEY_UP]) {
-	//	turningState[3] = false;
-	//}
-	//if (!keyToPressState[GLFW_KEY_DOWN] && keyToPrePressState[GLFW_KEY_DOWN]) {
-	//	turningState[4] = false;
-	//}
-
 
 	//if (this->alive) {
 		//手动控制 W A S D Q E六个按键
@@ -664,12 +617,12 @@ void AirPlane::ProcessKeyPress() {
 		//发射追踪型导弹
 		if (!keyToPressState[GLFW_KEY_M] && keyToPrePressState[GLFW_KEY_M]) {
 			for (int k = 0; k < AI_PlaneList.size(); k++) {
-				if (AI_PlaneList[k]->alive) {
+				if (AI_PlaneList[k]!=nullptr&&AI_PlaneList[k]->alive) {
 					PxVec3 targetDir = AI_PlaneList[k]->body->getGlobalPose().p - this->body->getGlobalPose().p;
 					double cosine = targetDir.getNormalized().dot(this->currentHeadForward.getNormalized());
 					double radiusAng = acos(cosine);
 					double ang = radiusAng * 180 / PxPi;
-					Logger::debug(to_string(ang));
+					//Logger::debug(to_string(ang));
 					if (ang < 15) {
 						PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
 						myMissileManager->emitMissile(emitPos, currentHeadForward, AI_PlaneList[k]);
@@ -1233,19 +1186,24 @@ AirPlane_AI::~AirPlane_AI() {
 	body = nullptr;
 }
 
-AirPlane_AI::AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body) :BaseCharacter(_body) {
+AirPlane_AI::AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, 
+	MissileManager* _AI_MissileManager, AirPlane* _targetPlane) :BaseCharacter(_body) {
 	currentHeadForward = headForward = head;
 	currentBackForward = backForward = back;
 	currentSwingForward = swingForward = swing;
 	this->body = _body;
+	this->AI_MissileManager = _AI_MissileManager;
+	this->targetPlane = _targetPlane;
 	//setupFiltering(this->body, FilterGroup::eAIRPLANE, FilterGroup::eMAP | FilterGroup::ePLAYERBULLET);
 	body->setName("plane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	body->userData = new UserData(this, 0, "plane", DATATYPE::ACTOR_TYPE::PLANE);
+	body->userData = new UserData(this, 0, "AI_Plane", DATATYPE::ACTOR_TYPE::PLANE);
 	//setupFiltering(body, FilterGroup::ePlayer, FilterGroup::eMISILE);
 	turningState.resize(5);
 	turningState[0] = true;
+	srand(clock());
+	currentTime = rand() % 150;
 	initTransform = PxTransform(PxVec3(0, 0, 0));
 }
 
@@ -1253,7 +1211,10 @@ void AirPlane_AI::autoFlying() {
 	if (!this->alive)return;
 	//计时
 	currentTime++;
-
+	//导弹冷却后时刻准备发射导弹
+	if (currentTime - lastEmit > 500) {
+		autoEmit(currentTime);
+	}
 	//直行中
 	if (turningState[0]) {
 		body->setLinearVelocity(veclocity * currentHeadForward);
@@ -1304,7 +1265,7 @@ void AirPlane_AI::autoFlying() {
 			currentBackForward = (rot2*rot1).rotate(backForward);
 			currentSwingForward = (rot2*rot1).rotate(swingForward);
 			body->setLinearVelocity(veclocity * currentHeadForward);
-			cout << "左转结束\n";
+			//cout << "左转结束\n";
 		}
 
 	}
@@ -1351,7 +1312,7 @@ void AirPlane_AI::autoFlying() {
 			currentBackForward = (rot2*rot1).rotate(backForward);
 			currentSwingForward = (rot2*rot1).rotate(swingForward);
 			body->setLinearVelocity(veclocity * currentHeadForward);
-			cout << "右转结束\n";
+			//cout << "右转结束\n";
 		}
 
 	}
@@ -1387,7 +1348,7 @@ void AirPlane_AI::autoFlying() {
 			currentBackForward = (rot2*rot1).rotate(backForward);
 			currentSwingForward = (rot2*rot1).rotate(swingForward);
 			body->setLinearVelocity(veclocity * currentHeadForward);
-			cout << "上仰结束\n";
+			//cout << "上仰结束\n";
 		}
 	}
 	//俯冲
@@ -1422,7 +1383,7 @@ void AirPlane_AI::autoFlying() {
 			currentBackForward = (rot2*rot1).rotate(backForward);
 			currentSwingForward = (rot2*rot1).rotate(swingForward);
 			body->setLinearVelocity(veclocity * currentHeadForward);
-			cout << "俯冲结束\n";
+			//cout << "俯冲结束\n";
 		}
 	}
 	else{}
@@ -1475,7 +1436,7 @@ void AirPlane_AI::FSM(int currentState) {
 			turningState[2] = false;
 			turningState[3] = false;
 			turningState[4] = false;
-			srand((unsigned int)(time(NULL)));
+			srand(clock());
 			int a = rand() % 5;
 			turningState[a] = true;
 		}
@@ -1521,7 +1482,7 @@ void AirPlane_AI::FSM(int currentState) {
 			turningState[2] = false;
 			turningState[3] = false;
 			turningState[4] = false;
-			srand((unsigned int)(time(NULL)));
+			srand(clock());
 			//小于3则反向转弯，否则直行
 			int a = rand() % 10;
 			turningState[0] = (a < 3 ? false : true);
@@ -1569,7 +1530,7 @@ void AirPlane_AI::FSM(int currentState) {
 			turningState[2] = false;
 			turningState[3] = false;
 			turningState[4] = false;
-			srand((unsigned int)(time(NULL)));
+			srand(clock());
 			//小于3则反向转弯，否则直行
 			int a = rand() % 10;
 			turningState[0] = (a < 3 ? false : true);
@@ -1592,7 +1553,7 @@ void AirPlane_AI::FSM(int currentState) {
 			turningState[2] = false;
 			turningState[3] = false;
 			turningState[4] = false;
-			srand((unsigned int)(time(NULL)));
+			srand(clock());
 			//小于3则反向转弯，否则直行
 			int a = rand() % 10;
 			turningState[0] = (a < 2 ? false : true);
@@ -1615,7 +1576,7 @@ void AirPlane_AI::FSM(int currentState) {
 			turningState[2] = false;
 			turningState[3] = false;
 			turningState[4] = false;
-			srand((unsigned int)(time(NULL)));
+			srand(clock());
 			//小于3则反向转弯，否则直行
 			int a = rand() % 10;
 			turningState[0] = (a < 2 ? false : true);
@@ -1628,11 +1589,72 @@ void AirPlane_AI::FSM(int currentState) {
 	}
 }
 
+void AirPlane_AI::autoEmit(int time) {
+	if (this->targetPlane->alive) {
+		PxVec3 targetDir = this->targetPlane->body->getGlobalPose().p - this->body->getGlobalPose().p;
+		double cosine = targetDir.getNormalized().dot(this->currentHeadForward.getNormalized());
+		double radiusAng = acos(cosine);
+		double ang = radiusAng * 180 / PxPi;
+		//Logger::debug(to_string(ang));
+		if (ang < 20) {
+			PxVec3 emitPos = this->body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
+			this->AI_MissileManager->emitMissile(emitPos, currentHeadForward, this->targetPlane);
+			lastEmit = time;
+		}
+
+	}
+	return;
+}
+
+void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
+	if (_type == DATATYPE::ACTOR_TYPE::MAP) {
+		this->health = 0;
+		this->alive = false;
+		crash();
+	}
+	else {
+		int damage = int(_type) * 2;
+		if (this->health - damage > 0) {
+			this->health -= damage;
+		}
+		else if (this->alive == true) {
+			this->health = 0;
+			this->alive = false;
+			crash();
+		}
+	}
+
+}
+
+void AirPlane_AI::crash() {
+	//body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
+	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
+	body->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+	body->setLinearDamping(PxReal(50.f));
+	body->setAngularDamping(PxReal(50.f));
+	body->addForce(PxVec3(0.f, 1000.f, 0.f));
+	PxVec3 p = body->getGlobalPose().p;
+	//body->setGlobalPose(PxTransform(p));
+	/*currentHeadForward = headForward;
+	currentBackForward = backForward;
+	currentSwingForward = swingForward;*/
+	//body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
+	glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
+	MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
+	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
+	renderParticleClusterList.push_back(flame_cluster);
+	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
+		input, std::vector<string>(), smokeShader);
+	renderParticleClusterList.push_back(smoke_cluster);
+}
+
 void AirPlane_AI::getRight(physx::PxVec3& right) { right = currentSwingForward; }
 
 void AirPlane_AI::getFront(physx::PxVec3& front) { front = currentHeadForward; }
 
 void AirPlane_AI::getUp(physx::PxVec3& up) { up = currentBackForward; }
+
+
 
 
 
@@ -1704,7 +1726,7 @@ void MissileManager::trackingAllMissile() {
 				if(!next.isSane())cout  << "1659\n";
 				currentMissile->setGlobalPose(PxTransform(currentMissile->getGlobalPose().p, next));
 				PxVec3 flyingTo = next.rotate(PxVec3(1, 0, 0)).getNormalized();
-				currentMissile->setLinearVelocity(missileSpeed*flyingTo);
+				currentMissile->setLinearVelocity(missileSpeed*flyingTo * 2);
 			}
 		}
 	}
