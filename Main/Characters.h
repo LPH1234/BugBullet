@@ -24,6 +24,9 @@
 #include "Media.h"
 
 class Player;
+class AirPlane;
+class MissileManager;
+class AirPlane_AI;
 extern std::unordered_map<int, bool> keyToPressState;
 extern std::unordered_map<int, bool> keyToPrePressState;
 extern bool mouseButtonPressState[3];
@@ -34,7 +37,10 @@ extern Camera camera;
 extern PxTransform born_pos;
 extern const float velocity;
 extern std::set<PxRigidDynamic*> airPlaneBullet;
-extern set<Player*>		updateTankList;
+extern set<Player*>				updateTankList;
+extern vector<AirPlane_AI*>		tempList;
+extern vector<AirPlane_AI*>		AI_PlaneList;
+//extern MissileManager			*ManageMissile;
 extern Media MediaPlayer;
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 
@@ -103,7 +109,6 @@ public:
 	}
 };
 
-class AirPlane;
 
 class Player : public BaseCharacter {
 public:
@@ -146,10 +151,12 @@ public:
 };
 
 
-
 class AirPlane : public BaseCharacter {
 public:
 	PxRigidDynamic*			body;//飞机刚体
+	MissileManager*			myMissileManager;//导弹管理器
+	//AirPlane_AI*			targetPlane;//目标AI飞机
+	vector<AirPlane_AI*>	AI_PlaneList;
 	PxTransform				initTransform;//飞机初始位置与姿态
 	PxTransform				emitTransform;//炮弹发射口相对于飞机位置
 	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
@@ -163,7 +170,7 @@ public:
 	int						currentAngel_x = 0;//当前姿态在水平面转过的角度
 	int						currentAngel_z = 0;//当前姿态在垂直面转过的角度 
 	int						emitBulletTime = 0;//发射间隔计时器
-	float					veclocity = 15.0f;//默认飞行速度
+	float					veclocity = 16.0f;//默认飞行速度
 	float					emitVeclocity = 64.0f;//默认炮弹飞行速度
 	float					turningSpeed = 6.0f;//转向速度
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
@@ -179,7 +186,7 @@ public:
 
 	AirPlane();
 	~AirPlane();
-	AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body);
+	AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _myMissileManager, vector<AirPlane_AI*>	&_AI_PlaneList);
 	void controlAirPlane();
 	void manualControlAirPlane();
 	void manualControlAirPlane2();
@@ -203,4 +210,60 @@ public:
 	void oncontact(DATATYPE::TRIGGER_TYPE _type);
 	void formcloud();
 	void formmisslecloud();
+};
+
+class AirPlane_AI : public BaseCharacter {
+public:
+	PxRigidDynamic*			body;//飞机刚体
+	PxTransform				initTransform;//飞机初始位置与姿态
+	PxTransform				emitTransform;//炮弹发射口相对于飞机位置
+	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
+	PxVec3					backForward, currentBackForward;//初始机背朝向、当前机背朝向
+	PxVec3					swingForward, currentSwingForward;//初始机翼朝向、当前机翼朝向
+	vector<bool>			turningState;//飞机转向的5个状态，直行、左转、右转、上仰、俯冲
+
+	int						rollingAngle = 0;//滚转角
+	int						pitchingAngle = 0;//俯仰角
+	int						yawingAngle = 0;//偏航角
+	int						currentRollAngle = 0;//当前转过的滚转角
+	int						currentPitchAngle = 0;//当前转过的俯仰角
+	int						currentYawAngle = 0;//当前转过的偏航角
+	int						emitBulletTime = 0;//发射间隔计时器
+	int						currentTime = 0;//计时器，用于状态机切换
+
+	float					veclocity = 10.0f;//默认飞行速度
+	float					emitVeclocity = 64.0f;//默认炮弹飞行速度
+	float					turningSpeed = 6.0f;//转向速度
+
+	int						health = 100;//飞机生命值
+	bool					alive = true;//是否存活
+
+	AirPlane_AI(PxRigidDynamic*	_body);
+	~AirPlane_AI();
+	AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body);
+	void autoFlying();
+	void FSM(int currentState);
+
+	//重写
+	virtual void getRight(physx::PxVec3& right);
+	virtual void getFront(physx::PxVec3& front);
+	virtual void getUp(physx::PxVec3& up);
+	virtual void ProcessKeyPress() {};
+	virtual void ProcessMouseMove() {};
+	virtual void ProcessMouseClick() {};
+};
+
+
+
+
+class MissileManager {
+public:
+	set<PxRigidDynamic*>		MissileList;
+	set<PxRigidDynamic*>			MissileToRemoveList;
+	int							count = 0;
+	float						missileSpeed = 30.f;
+	MissileManager();
+	PxRigidDynamic* emitMissile(PxVec3 &emitPos, PxVec3 &direction, BaseCharacter* target);
+	void trackingAllMissile();
+	void removeMissile();
 };
