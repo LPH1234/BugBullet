@@ -221,6 +221,8 @@ int myRenderLoop()
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			if (game.deltaTime < 0.016f)
+				Sleep((int)(0.016f - game.deltaTime) * 1000);
 		}
 
 
@@ -335,6 +337,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 	mouseButtonPressState[button] = action == GLFW_PRESS;
+	mouseSingleClick(button, action);
 	// button: GLFW_MOUSE_BUTTON_LEFT\GLFW_MOUSE_BUTTON_MIDDLE\GLFW_MOUSE_BUTTON_RIGHT
 }
 

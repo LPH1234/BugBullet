@@ -8,7 +8,7 @@
 #include<vector>
 #include <math.h>
 #include <thread>
-
+#include <unordered_map>
 
 class mc {
 public:
@@ -30,8 +30,15 @@ void replace(std::string& str, char oldChar, char newChar) {
 }
 
 using namespace std;
+
+unordered_map<int, mc*> map1;
+
 int main() {
 	std::string dir = "images/dir1/dir2/";
 	replace(dir, '/', '\\');
 	std::cout << dir << "\n";
+
+	mc* c1 = map1[0];
+	cout << (c1 == nullptr);
+
 }

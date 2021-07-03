@@ -20,6 +20,7 @@ Orientation of Fighter, Press Space Key To Emit Missile.\n\
 ";
 
 const std::string CUBE_TEXTURE_PATH = "images/textures/w200Bullet.png";
+const std::string BLOOD_TEXTURE_PATH = "images/textures/blood.png";
 
 
 const std::string GRAY_CLOUD_TEXTURE_PATH = "images/textures/smoke/gray-cloud.png";
