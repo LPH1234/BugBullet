@@ -3,7 +3,7 @@
 #include<string>
 #include<iostream>
 #include <fstream>
-#include<stdio.h>
+#include <stdio.h>
 #include<Windows.h>
 #include<io.h>
 #include<string>
@@ -49,6 +49,7 @@ class StringUtils
 {
 public:
 	static void split(std::string& str, std::string delimiter, std::vector<std::string>& v);
+	static void replaceChar(std::string& str, char oldChar, char newChar);
 };
 
 

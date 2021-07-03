@@ -34,7 +34,7 @@ void keyPress() {
 	Plane_1->ProcessKeyPress();
 	//mouseClick();
 //}
-	
+
 
 }
 
@@ -117,7 +117,6 @@ void mouseClick() {
 
 		//std::vector<std::string> ts;
 		////ts.push_back("images/textures/smoke/smoke-white-1.png");
-		////ts.push_back("images/textures/smoke/smoke-gray.png");
 		//for (int i = 1; i <= 4; i++)
 		//	ts.push_back("images/textures/smoke/smoke-gray-" + std::to_string(i) + ".png");
 		//	createSmokeParticles(

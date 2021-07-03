@@ -39,6 +39,8 @@
 #include "PsMutex.h"
 #include "PsAllocator.h"
 #include "extensions/PxDefaultAllocator.h"
+#include<filesystem>
+namespace fs = std::experimental::filesystem;
 
 
 BOOL SetConsoleColor(WORD wAttributes)
@@ -102,31 +104,18 @@ int PointerUtils::getPtrIntValue(void* ptr) {
 	sprintf_s(str, 13, "%d", ptr);
 	return fabs(atoi(str));
 }
-//计算文件夹的个数
+//计算文件的个数
 int FileUtils::getFilesCount(std::string path)
 {
-	//文件句柄  
-	long   hFile = 0;
-	//文件信息  
-	struct _finddata_t fileinfo;
-	int result = 0;
-	std::string p;
-	if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
-	{
-		do
-		{
-			if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
-				if ((fileinfo.attrib &  _A_SUBDIR)) {
-				}
-				else {
-					result++;
-				}
-			}
-		} while (_findnext(hFile, &fileinfo) == 0);
-		_findclose(hFile);
-	}
-	return result;
+	int rt = 0;
+	for (const auto & entry : fs::directory_iterator(path))
+		rt++;
+	return rt;
+
 }
+
+
+
 
 /*得到文件夹内的文件*/
 void FileUtils::getFiles(std::string path, std::vector<std::string>& files)
@@ -193,6 +182,14 @@ void StringUtils::split(std::string& s, std::string c, std::vector<std::string>&
 	}
 	if (pos1 != s.length())
 		v.push_back(s.substr(pos1));
+}
+
+void StringUtils::replaceChar(std::string& str, char oldChar, char newChar) {
+	for (int i = 0; i < str.size(); i++)
+	{
+		if (str[i] == oldChar)
+			str[i] = newChar;
+	}
 }
 
 // compiler文件夹所在的目录

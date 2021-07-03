@@ -28,7 +28,7 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 	{
 		glm::vec3 scale(2 * h.box().halfExtents.x, 2 * h.box().halfExtents.y, 2 * h.box().halfExtents.z);
 		if (cube == nullptr) {
-			cube = new Cube(pos, scale, "", shader, "images/textures/w200Bullet.png");
+			cube = new Cube(pos, scale, "", shader, CUBE_TEXTURE_PATH);
 		}
 		cube->setPosition(pos);
 		cube->setScaleValue(scale);
@@ -213,7 +213,7 @@ namespace Render
 	}
 
 	void renderUI(const float W, const float H) {
-		UIManager::draw(W, H);
+		UI::UIManager::draw(W, H);
 	}
 
 
