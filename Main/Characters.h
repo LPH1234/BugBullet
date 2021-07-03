@@ -43,6 +43,8 @@ extern vector<AirPlane_AI*>		AI_PlaneList;
 //extern MissileManager			*ManageMissile;
 extern Media MediaPlayer;
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
+extern unordered_map<int, BaseModel*> idToRenderModel;
+
 
 class BaseCharacter {
 protected:
@@ -94,19 +96,7 @@ public:
 	void setTransform(physx::PxTransform& t) {
 		this->rigid->setGlobalPose(t);
 	}
-	//生成血条,参数为：被绑定的物体、血条长度、血条位置、joint相对于物体的位置以及joint相对于血条的位置
-	PxRigidDynamic* createAndShowBlood(PxRigidDynamic* _body, float _healthLength, PxTransform _healthPos, PxTransform t0, PxTransform t1) {
-		PxShape* healthShape = gPhysics->createShape(PxBoxGeometry(_healthLength / 2, 0.1f, 0.1f), *gMaterial, true);
-		PxRigidDynamic* bloodDynamic = PxCreateDynamic(*gPhysics, _healthPos, *healthShape, 0.0001);
-		bloodDynamic->setName("blood");
-		bloodDynamic->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
-		healthShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-		healthShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
-		bloodDynamic->attachShape(*healthShape);
-		bloodDynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
-		PxFixedJointCreate(*gPhysics, _body, t0, bloodDynamic, t1);
-		return bloodDynamic;
-	}
+
 };
 
 
@@ -138,7 +128,7 @@ public:
 	int						fireTime = 0;//发射间隔计时器
 
 
-	Player(physx::PxRigidDynamic* target, AirPlane*	airplane, PxVec3 _startPos,PxVec3 _endPos, PxVec3 _startDir);
+	Player(physx::PxRigidDynamic* target, AirPlane*	airplane, PxVec3 _startPos, PxVec3 _endPos, PxVec3 _startDir);
 	void ProcessKeyPress();
 	void fire(const PxTransform& t, const PxVec3& velocity);
 	PxQuat getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront);
@@ -147,7 +137,7 @@ public:
 	void automove();
 	void autoEmit();
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
-	
+
 };
 
 
