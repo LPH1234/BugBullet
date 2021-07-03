@@ -21,7 +21,7 @@
 #include "../Data/Consts.h"
 #include "Creater.h"
 #include <set>
-
+#include "Media.h"
 
 class Player;
 class AirPlane;
@@ -41,7 +41,7 @@ extern set<Player*>				updateTankList;
 extern vector<AirPlane_AI*>		tempList;
 extern vector<AirPlane_AI*>		AI_PlaneList;
 //extern MissileManager			*ManageMissile;
-
+extern Media MediaPlayer;
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 
 class BaseCharacter {
@@ -196,6 +196,7 @@ public:
 	void emit();
 	void reset();
 	void crash();
+	void shotdown();
 
 	//ÖØÐ´
 	virtual void getRight(physx::PxVec3& right);

@@ -1,7 +1,6 @@
 ﻿#include <ctype.h>
 #include <iostream>
 #include <ctime>
-
 #include "Creater.h"
 #include "Characters.h"
 #define PI 3.1415926
@@ -16,6 +15,7 @@ AirPlane_AI				*Plane_AI;
 MissileManager			*ManageMissile;
 //第三人称角色位置
 PxTransform born_pos(PxVec3(10, 0, -7));
+Media MediaPlayer;
 
 void createModel(std::string path, int scale, PxVec3& offset) {}
 
@@ -283,7 +283,8 @@ void beforeStepPhysics() {
 
 void stepPhysics(bool interactive)
 {
-	PX_UNUSED(interactive);
+	if (!interactive)
+		return;
 
 	beforeStepPhysics();
 

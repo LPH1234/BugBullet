@@ -75,6 +75,8 @@ void guntower::fire(const PxTransform& t, const PxVec3& velocity) {
 	//cout << temp->id << endl;
 	//cout << a << endl;
 	gScene->addActor(*dynamic);
+	//MediaPlayer.PlayMedia2D(Media::MediaType::TOWERSHOOT);
+	MediaPlayer.PlayMedia3D(vec3df(velocity.x/5, velocity.y/5, velocity.z/5), Media::MediaType::TOWERSHOOT);
 }
 void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos) {
 	PxVec3 target_pos = target->getGlobalPose().p;
@@ -121,6 +123,9 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 		PxRigidActor* temp = reinterpret_cast<PxRigidActor*>(this->tower_list[id]);
 		bonus::generate_bonus_pos(temp->getGlobalPose());
 		cout << "Tower died" << endl;
+		//MediaPlayer.PlayMedia2D(Media::MediaType::EXPLODE);
+		MediaPlayer.PlayMedia3D(vec3df(15.f,15.f,15.f),Media::MediaType::EXPLODE);
+
 	}
 }
 

@@ -14,7 +14,7 @@ class ModelManager {
 	static std::unordered_set<std::string> modelPathSet;
 
 public:
-	static void initModels();
+	static void init();
 	static Model* getModel(std::string modelPath);
 
 
@@ -28,4 +28,5 @@ class TextureManager {
 public:
 	static void initTextures();
 	static unsigned int getTextureID(std::string texturePath);
+	static void getSkyBoxTextures(std::vector<string>& faces);
 };

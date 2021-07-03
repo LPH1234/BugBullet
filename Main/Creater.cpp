@@ -36,7 +36,7 @@ long long				angelAirPlane = 0.0;
 PxVec3					headForward(1, 0, 0);//机头朝向
 PxVec3					backForward(0, 1, 0);//机背朝向
 PxVec3					swingForward(0, 0, 1);//机翼朝向
-vector<bool>			turningState(5,false);//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
+vector<bool>			turningState(5, false);//飞机转向的3个状态，左翻滚、右翻滚、直行中、上仰、下俯
 long long				rollingAngel = 0, pitchingAngel = 0;//滚转角、俯仰角
 
 vector<PxTransform> addBonusList;
@@ -120,9 +120,9 @@ PxFilterFlags testCCDFilterShader2(
 	| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
 	| PxPairFlag::eNOTIFY_CONTACT_POINTS;*/
 	// generate contacts for all that were not filtered above
-	pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND|
+	pairFlags |= PxPairFlag::eCONTACT_DEFAULT | PxPairFlag::eNOTIFY_TOUCH_FOUND |
 		PxPairFlag::eNOTIFY_CONTACT_POINTS;
-	
+
 	// trigger the contact callback for pairs (A,B) where 
 	// the filtermask of A contains the ID of B and vice versa.
 	/*cout << "Data0.word0:" << filterData0.word0 << " Data1.word1:" << filterData1.word1
@@ -155,11 +155,11 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 	free(shapes);
 }
 void testTriggerWall() {
-	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 400), *gMaterial);
-	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 550), *gMaterial);
-	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 550), *gMaterial);
-	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 550), *gMaterial);
-	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 550), *gMaterial);
+	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 700), *gMaterial);
+	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 750), *gMaterial);
+	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 750), *gMaterial);
+	PxRigidStatic* borderPlaneWest = PxCreatePlane(*gPhysics, PxPlane(1, 0, 0, 750), *gMaterial);
+	PxRigidStatic* borderPlaneEast = PxCreatePlane(*gPhysics, PxPlane(-1, 0, 0, 750), *gMaterial);
 
 	borderPlaneSky->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
 	borderPlaneNorth->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
@@ -192,7 +192,7 @@ void testTriggerWall() {
 	gScene->addActor(*borderPlaneEast);
 }
 void testTriggerCollection() {
-	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial); 
+	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
 	PxShape* collectionContactShape = gPhysics->createShape(PxBoxGeometry(1.f, 1.f, 1.f), *gMaterial);
 	PxTransform pos(PxVec3(130.f, 20.f, 20.f));
 	PxRigidDynamic* collection = gPhysics->createRigidDynamic(pos);
@@ -207,7 +207,7 @@ void testTriggerCollection() {
 	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
 
 }
-PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type,bool movable) {
+PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type, bool movable) {
 	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
 	PxRigidDynamic* collection = gPhysics->createRigidDynamic(tran);
 	collection->userData = new UserData(1, "collection", _type);
@@ -217,9 +217,9 @@ PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type
 	collection->attachShape(*collectionShape);
 	gScene->addActor(*collection);
 	if (movable) {
-       collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
+		collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
 	}
-	
+
 	collection->setAngularVelocity(PxVec3(0.f, 1.f, 0.f)*1.5);
 	return collection;
 }
@@ -247,6 +247,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 			removeActorList.insert(temp);
 			continue;
 		}*/
+
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
 			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
 				removeActorList.insert(actor_0);
@@ -277,7 +278,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 		//	//printf("onTrigger!\n");
 		//	removeActorList.insert(pairs[i].otherActor);
 		//}
-		
+
 	}
 }
 
@@ -303,15 +304,15 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 		UserData* actor_data_0 = reinterpret_cast<UserData*>(actor_0->userData);
 		UserData* actor_data_1 = reinterpret_cast<UserData*>(actor_1->userData);
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
-			if ((actor_data_0->type== DATATYPE::ACTOR_TYPE::PLANE_BULLET|| actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) 
+			if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
-				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) 
+				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				printf("飞机弹药！\n");
 				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
-			/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
-				/*cout << pairHeader.pairs->contactImpulses << "\n";*/
+				/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
+					/*cout << pairHeader.pairs->contactImpulses << "\n";*/
 			}
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
@@ -337,12 +338,13 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				}
 				ManageMissile->MissileToRemoveList.insert((PxRigidDynamic*)temp1);
 			}
+
 			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				//printf("tank弹药！\n");
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
-			else if (actor_data_0->type== DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET &&actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE
 				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE) {
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
@@ -356,7 +358,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::TOWER_BULLET);
 			}
 			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
-				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
+				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
 				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
@@ -367,7 +369,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				temp1->basecha->oncontact(temp2->type);
 			}
 			else if ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
-				&&actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
+				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
 				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
@@ -375,7 +377,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER ? actor_data_0 : actor_data_1);
 				UserData* temp2 = ((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_data_0 : actor_data_1);
-				temp1->basesce->oncontact(temp1->id,temp2->type);
+				temp1->basesce->oncontact(temp1->id, temp2->type);
 				PxU32 num = pairs[i].contactCount;
 				cout << "num: " << num << endl;
 				if (num > 0) {
@@ -383,7 +385,7 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 					pairs[i].extractContacts(&contactPoints[0], num);
 					cout << contactPoints[0].position.x << endl;
 				}
-				
+
 			}
 			else {}
 		}
@@ -429,8 +431,8 @@ void updateTankInList() {
 			free(shapes);
 		}
 		else {
-			if((*i)->healthBody)
-			gScene->removeActor(*(*i)->healthBody);
+			if ((*i)->healthBody)
+				gScene->removeActor(*(*i)->healthBody);
 			(*i)->healthBody = nullptr;
 		}
 	}
@@ -465,39 +467,40 @@ void updateGuntowerInList() {
 void addBonusInList() {
 	int n = addBonusList.size();
 	for (int i = 0; i < n; i++) {
-		PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(addBonusList[i], DATATYPE::TRIGGER_TYPE::COLLECTION,true));
+		PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(addBonusList[i], DATATYPE::TRIGGER_TYPE::COLLECTION, true));
 		bonus->userData = new UserData(0, "BONUS", DATATYPE::TRIGGER_TYPE::COLLECTION);
 		bonus->setName("BONUS");
 		gScene->addActor(*bonus);
 		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
 
 		//cout << addBonusList[i].p.x <<"\t"<< addBonusList[i].p.y << addBonusList[i].p.z << endl;
-		glm::vec3 input(addBonusList[i].p.x/2, addBonusList[i].p.y-2.f, addBonusList[i].p.z/2);
+		glm::vec3 input(addBonusList[i].p.x / 2, addBonusList[i].p.y - 2.f, addBonusList[i].p.z / 2);
 		//glm::vec3 input(64.996f, 3.19607f, 27.6939f);
-		Logger::debug(input);	
-		
+		Logger::debug(input);
+
 		//cout << input.x << input.y << input.z << endl;
-		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f,5.f,input, std::vector<string>(), flameShader);
+
+		FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 5.f, input, std::vector<string>(), flameShader);
 		renderParticleClusterList.push_back(flame_cluster);
-		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 3.4f, 
+		SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 3.4f,
 			input, std::vector<string>(), smokeShader);
 		renderParticleClusterList.push_back(smoke_cluster);
-	//	vector<string> paths;
-	//	for (int i = 1; i <= 18; i++) {
-	//		paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
-	//	}
+		//	vector<string> paths;
+		//	for (int i = 1; i <= 18; i++) {
+		//		paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
+		//	}
 
-	//	createPointParticles(
-	//		10, false,
-	//		new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
-	//		PxVec3(input.x/2,input.y+7.f,input.z/2),
-	//		true, 2.0, // true是散开
-	//		true, 20.0, // true是随机速度
-	//		15, 12, // 消失时间、开始渐隐时间
-	//		PxVec3(10.f, 5.f, 0.f), //初始速度
-	//		PxVec3(2.f, 5.f, 0.f)  //力场
-	//	);
-	 }
+		//	createPointParticles(
+		//		10, false,
+		//		new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
+		//		PxVec3(input.x/2,input.y+7.f,input.z/2),
+		//		true, 2.0, // true是散开
+		//		true, 20.0, // true是随机速度
+		//		15, 12, // 消失时间、开始渐隐时间
+		//		PxVec3(10.f, 5.f, 0.f), //初始速度
+		//		PxVec3(2.f, 5.f, 0.f)  //力场
+		//	);
+	}
 	addBonusList.clear();
 }
 
@@ -523,7 +526,7 @@ PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, 
 	(data).health = 10;
 	cout << data.id << endl;*/
 
-	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+	dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_BULLET);
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	//cout << temp->id << endl;
 	//cout << a << endl;
@@ -538,9 +541,9 @@ void testFilter() {
 	PxRigidDynamic* body1 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(-2.f, 2.0f, 0.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
 	cout << "创造body1\n";
 	//PxRigidDynamic* body2 = PxCreateDynamic(*gPhysics, PxTransform(PxVec3(131.f, 1.0f, 24.0f)), PxBoxGeometry(1, 1, 1), *gMaterial, 10.0f);
-	PxShape* shape = gPhysics->createShape(PxBoxGeometry(1, 1, 1), *gMaterial,true);
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(1, 1, 1), *gMaterial, true);
 	cout << "创造shape\n";
-	PxRigidStatic* body3 = PxCreateStatic(*gPhysics, PxTransform(PxVec3(2.f, 2.0f, 0.0f)),*shape);
+	PxRigidStatic* body3 = PxCreateStatic(*gPhysics, PxTransform(PxVec3(2.f, 2.0f, 0.0f)), *shape);
 	cout << "创造body3\n";
 
 	setupFiltering(body1, FilterGroup::eTANK, FilterGroup::eMISILE);
