@@ -13,6 +13,7 @@ using namespace std;
 
 unsigned int TextureFromFile(const char *path, const string &directory);
 void loadTexture(char const* path, unsigned int* textureID);
+void loadTexture(char const* path, unsigned char* data, unsigned int* textureID, int width, int height, int nrComponents);
 void loadTextureRGBA(char const* path, unsigned int* textureID);
 GLuint loadCubeMapTexture(std::vector<std::string> picFilePathVec,
 	GLint internalFormat = GL_RGB,

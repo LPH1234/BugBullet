@@ -735,7 +735,7 @@ void AirPlane::formcloud() {
 	vector<string>textures;
 	
 	//textures.push_back("images/textures/smoke/smoke-white-1.png");
-	textures.push_back("images/textures/smoke/smoke-gray-0.png");
+	textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
 	PxVec3 pos1 = body->getGlobalPose().p + (-1)*currentHeadForward+ 2*currentSwingForward;
 	CloudParticleCluster* cloud_cluster1 = new CloudParticleCluster(
 			70, 0.05f,  //云密度、云团的半径
@@ -756,8 +756,6 @@ void AirPlane::formcloud() {
 		textures, // 纹理路径列表
 		cloudShader //渲染此烟雾的shader
 	);
-	//textures.clear();
-	//textures.push_back("images/textures/smoke/smoke-gray-0.png");
 	PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward ;
 	CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
 		10, 0.005f,  //云密度、云团的半径
@@ -776,8 +774,7 @@ void AirPlane::formmisslecloud() {
 	for (auto i = airPlaneBullet.begin(); i != airPlaneBullet.end(); i++) {
 		PxVec3 pos = (*i)->getGlobalPose().p ;
 		vector<string>textures;
-		//textures.push_back("images/textures/smoke/smoke-white-1.png");
-		textures.push_back("images/textures/smoke/smoke-gray-0.png");
+		textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
 		CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
 			10, 0.05f,  //云密度、云团的半径
 			0.1f, 4.0f, // 云在y方向的速度、云在y方向上最大能上升的距离

@@ -2,11 +2,8 @@
 
 #ifdef RENDER_SNIPPET
 
-
 #include "Controller.h"
 #include "../Render/UI.h"
-
-
 
 using namespace physx;
 
@@ -28,7 +25,6 @@ Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
 
 //light
 glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-//model position
 glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
 
 
@@ -45,10 +41,8 @@ std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
 bool mouseButtonPressState[3];
 
-bool gameStarted = true;
 
-void exitCallback(void)
-{
+void exitCallback(void) {
 	cleanupPhysics(true);
 }
 
@@ -67,32 +61,22 @@ int myRenderLoop()
 	// glfw window creation
 	// -------------------- 
 	GLFWwindow* window = glfwCreateWindow(game.SCR_WIDTH, game.SCR_HEIGHT, WINDOW_TITLE.c_str(), NULL, NULL);
-	if (window == NULL)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
+	if (window == NULL) {
+		Logger::error("Failed to create GLFW window!");
 		glfwTerminate();
 		return -1;
 	}
-	GLFWimage icons[1];
-	icons[0].pixels = SOIL_load_image(ICON_PATH.c_str(), &icons[0].width, &icons[0].height, 0, SOIL_LOAD_RGBA);
-	glfwSetWindowIcon(window, 1, icons);
-	SOIL_free_image_data(icons[0].pixels);
-
+	UI::initIcon(window);
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	// tell GLFW to capture our mouse
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR);
-
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		Logger::error("Failed to initialize GLAD!");
 		return -1;
 	}
 
@@ -102,42 +86,10 @@ int myRenderLoop()
 	glEnable(GL_BLEND);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 
-	skyBoxShader = new Shader("shaders/skyboxShader/skybox.vs", "shaders/skyboxShader/skybox.fs");
-	envShader = new Shader("shaders/envShader/env.vs", "shaders/envShader/env.fs");
-	pointParticleShader = new Shader("shaders/debrisShader/debris.vs", "shaders/debrisShader/debris.fs");
-	smokeShader = new Shader("shaders/smokeShader/smoke.vs", "shaders/smokeShader/smoke.fs");
-	flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
-	cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
-
-	atexit(exitCallback); //6
-	initPhysics(true); //6
-
-	// var init
-	// -----------------------------
-	for (int i = 0; i <= 348; i++) {
-		keyToPressState[i] = false;
-		keyToPrePressState[i] = false;
-	}
-	mouseButtonPressState[0] = false;
-	mouseButtonPressState[1] = false;
-	mouseButtonPressState[2] = false;
-
-	// build and compile shaders
-	// -------------------------
-	std::vector<string> faces;
-	TextureManager::getSkyBoxTextures(faces);
-	skybox = new SkyBox(camera.getPosition(), glm::vec3(1000.f), "", skyBoxShader, faces);
-	faces.clear();
-
-	/*FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 1.f, 5.1f, 10, glm::vec3(0.1f), std::vector<string>(), flameShader);
-	renderParticleClusterList.push_back(flame_cluster);*/
-
-	ModelManager::init();
-	UIManager::init(game.SCR_WIDTH, game.SCR_HEIGHT);
-	MainMenu::init(window);
-
-
-	game.state = GAME_STATE::MAIN_MENU;
+	TextureManager::init();
+	//TextureManager::initAnimateTextures(); // 开启动画，执行此函数会开始加载动画帧。
+	UI::UIManager::init(game.SCR_WIDTH, game.SCR_HEIGHT);
+	game.state = GAME_STATE::INIT; // 将游戏的初始状态设置为INIT状态，游戏状态是一个有限状态机
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -147,12 +99,10 @@ int myRenderLoop()
 		float currentFrame = glfwGetTime();
 		game.deltaTime = currentFrame - game.lastFrame;
 		game.lastFrame = currentFrame;
-		// 渲染
-			//---------------------------
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (game.state == GAME_STATE::STARTED) {
+		if (game.state == GAME_STATE::STARTED || game.state == GAME_STATE::PAUSE || game.state == GAME_STATE::OVER) { // 游戏画面及其附加状态
 
 			// input
 			// -----
@@ -197,37 +147,82 @@ int myRenderLoop()
 			envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
 			envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-
 			Render::renderActors(envShader);// 渲染场景内的物体
 
 			Render::renderParticles(physicsParticleSystemList, renderParticleClusterList, view, projection); // 渲染场景内的粒子
 
+			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, true);
+			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, false);
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
-		}
-		else if (game.state == GAME_STATE::PAUSE) {
-			MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-		}
-		else if (game.state == GAME_STATE::INIT) {
-			MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-		}
-		else {
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
-			if (game.state == GAME_STATE::MAIN_MENU) {
-				MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-				CornerTip::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-				if (HelpModal::visable)//记录
-					HelpModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-				if (ConfigModal::visable)//配置
-					ConfigModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-			}
-			else if (game.state == GAME_STATE::OVER) {
-			}
-			// Rendering
-			ImGui::Render();
+			UI::CornerTip::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::PlayerStatus::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::PauseMenu::visable = game.state == GAME_STATE::PAUSE;
+			UI::PauseMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::OverModal::visable = game.state == GAME_STATE::OVER;
+			UI::OverModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
+		else if (game.state == GAME_STATE::INIT) { // 初始状态，初始化及渲染初始帧
+			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, false);
+			UI::UIManager::setEnableAnimate(UI::UIID::MAIN_ANIMATION, false);
+			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, true); // 以上两行为了渲染动画的默认帧
+			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+			if (!game.isInit) { //如果没有进行过初始化
+				atexit(exitCallback);
+				// build and compile shaders
+				// -------------------------
+				skyBoxShader = new Shader("shaders/skyboxShader/skybox.vs", "shaders/skyboxShader/skybox.fs");
+				envShader = new Shader("shaders/envShader/env.vs", "shaders/envShader/env.fs");
+				pointParticleShader = new Shader("shaders/debrisShader/debris.vs", "shaders/debrisShader/debris.fs");
+				smokeShader = new Shader("shaders/smokeShader/smoke.vs", "shaders/smokeShader/smoke.fs");
+				flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
+				cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
+				ModelManager::init();
+				UI::initImgUI(window);
+				UI::MainMenu::init(window);
+				UI::ConfigModal::init(window);
+				UI::HelpModal::init(window);
+				UI::CornerTip::init(window, &camera);
+				UI::PlayerStatus::init(window);
+				UI::PauseMenu::init(window);
+				UI::TextModal::init(window);
+				UI::OverModal::init(window);
+				// var init
+				// -----------------------------
+				for (int i = 0; i <= 348; i++)
+					keyToPrePressState[i] = keyToPressState[i] = false;
+				for (int i = 0; i < 3; i++)
+					mouseButtonPressState[i] = false;
+				std::vector<string> faces;
+				TextureManager::getSkyBoxTextures(faces);
+				skybox = new SkyBox(camera.getPosition(), glm::vec3(1000.f), "", skyBoxShader, faces);
+				faces.clear();
+				initPhysics(true);
+				game.state = GAME_STATE::MAIN_MENU;
+				game.isInit = true;
+			}
+		}
+		else if (game.state == GAME_STATE::MAIN_MENU) { // 主菜单界面
+			// resetPhysicsObjState();
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+			UI::UIManager::setEnableAnimate(UI::UIID::MAIN_ANIMATION, TextureManager::getAnimationLoadProgress() == 1);
+			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, true);
+			//	std::cout << "tex loadTexProgress:" << TextureManager::loadTexProgress << "   " << TextureManager::getAnimationLoadProgress() << "\n";
+			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, false);
+			UI::MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::HelpModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::ConfigModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+			ImGui::Render();// 渲染ImgUI界面
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		}
+
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -245,17 +240,21 @@ int myRenderLoop()
 
 }
 
-
-bool last_key = 0;
 //按键时，窗口的处理逻辑
 void windowProcessInput(GLFWwindow *window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE && last_key) {
-		//
-		CookThread::shutdown();
-		game.state = GAME_STATE::MAIN_MENU;
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	if (keyToPressState[GLFW_KEY_ESCAPE] && !keyToPrePressState[GLFW_KEY_ESCAPE]) {
+		if (game.state == GAME_STATE::STARTED) { //请求暂停
+			game.state = GAME_STATE::PAUSE;
+			game.pause = true;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else if (game.state == GAME_STATE::PAUSE) { //继续游戏
+			game.state = GAME_STATE::STARTED;
+			game.pause = false;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+
 	}
-	last_key = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
 }
 
 //按键时，相机的处理逻辑
@@ -293,10 +292,10 @@ void processInput(GLFWwindow *window)
 {
 	updateKeyState(window, keyToPressState);
 	windowProcessInput(window);
-	cameraProcessInput(window);
-
-	keyPress();
-
+	if (game.state == GAME_STATE::STARTED) {
+		cameraProcessInput(window);
+		keyPress();
+	}
 	updateKeyState(window, keyToPrePressState);
 }
 
@@ -327,14 +326,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 	game.lastX = xpos;
 	game.lastY = ypos;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
-	mouseMove();
+	if (game.state == GAME_STATE::STARTED) {
+		camera.ProcessMouseMovement(xoffset, yoffset);
+		mouseMove();
+	}
 }
 
 
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 	mouseButtonPressState[button] = action == GLFW_PRESS;
 	// button: GLFW_MOUSE_BUTTON_LEFT\GLFW_MOUSE_BUTTON_MIDDLE\GLFW_MOUSE_BUTTON_RIGHT
 }
@@ -343,7 +342,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	if (game.state == GAME_STATE::STARTED)
+		camera.ProcessMouseScroll(yoffset);
 }
 
 
