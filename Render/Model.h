@@ -200,10 +200,7 @@ private:
 			if (!skip)
 			{   // if texture hasn't been loaded already, load it
 				Texture texture;
-
-				cout << "准备加载Texture："<<"\t"<< str.C_Str() << "\t" << this->directory << endl;
 				texture.id = TextureFromFile(str.C_Str(), this->directory);
-				cout << "Texture加载完成"<< endl; 
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);

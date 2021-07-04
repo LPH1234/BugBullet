@@ -35,11 +35,33 @@ void keyPress() {
 	//mouseClick();
 //}
 
+
 }
 
 
 void mouseMove() {
 
+}
+
+void mouseSingleClick(int button, int action) { //鼠标单次点击
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) { //左键按下
+
+	}
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) { //左键抬起
+
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) { //右键按下
+
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) { //右键抬起
+
+	}
+	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS) { //中键按下
+
+	}
+	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE) { //中键抬起
+
+	}
 }
 
 void mouseClick() {
@@ -116,7 +138,6 @@ void mouseClick() {
 
 		//std::vector<std::string> ts;
 		////ts.push_back("images/textures/smoke/smoke-white-1.png");
-		////ts.push_back("images/textures/smoke/smoke-gray.png");
 		//for (int i = 1; i <= 4; i++)
 		//	ts.push_back("images/textures/smoke/smoke-gray-" + std::to_string(i) + ".png");
 		//	createSmokeParticles(

@@ -8,7 +8,7 @@
 #include<vector>
 #include <math.h>
 #include <thread>
-
+#include <unordered_map>
 
 class mc {
 public:
@@ -21,23 +21,24 @@ public:
 
 std::vector<mc*> arr;
 
+void replace(std::string& str, char oldChar, char newChar) {
+	for (int i = 0; i < str.size(); i++)
+	{
+		if (str[i] == oldChar)
+			str[i] = newChar;
+	}
+}
 
 using namespace std;
-int main() {
-	mc * ptr = new mc(1);
-	char* str = new char[12];
-	sprintf_s(str, 12, "%d", ptr);
-	std::cout << str << "  int value:---" << atoi(str) << "---\n";
 
-	srand(12312);
-	for (size_t i = 0; i < 5; i++)
-	{
-		cout << rand() << " ";
-	}
-	cout << "\n";
-	srand(12312);
-	for (size_t i = 0; i < 5; i++)
-	{
-		cout << rand() << " ";
-	}
+unordered_map<int, mc*> map1;
+
+int main() {
+	std::string dir = "images/dir1/dir2/";
+	replace(dir, '/', '\\');
+	std::cout << dir << "\n";
+
+	mc* c1 = map1[0];
+	cout << (c1 == nullptr);
+
 }

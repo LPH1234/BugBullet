@@ -33,8 +33,8 @@ void main(void)
 	if(yFactor <= 0)
 		yFactor = 0.1;
 	float new_maxY = maxY * yFactor;
-    while(new_dy > new_maxY){
-		new_dy -= new_maxY;
+    if(new_dy > new_maxY){
+		new_dy -= floor(new_dy/new_maxY) * new_maxY;
 	}
 
 	vNewPosition.y += new_dy; //设置新的位置的y值要加上new_dy

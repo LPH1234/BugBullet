@@ -10,13 +10,14 @@ using namespace physx;
 #define MAX_NUM_MESH_VEC3S  21474836
 static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
 extern PxScene* gScene;
-
+extern unordered_map<int, BaseModel*> idToRenderModel;
 
 Cube* cube = nullptr;
+Cube* hpBar = nullptr;
 Sphere* sphere = nullptr;
 PlainModel* bullet = nullptr;
 
-void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shader)
+void renderGeometry(PxRigidActor* actor, PxShape* shape, const PxGeometryHolder& h, Shader* shader)
 {
 	PxTransform& t = actor->getGlobalPose();
 	glm::vec3& pos = pxVec3ToGlmVec3(t.p);
@@ -26,15 +27,23 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 	{
 	case PxGeometryType::eBOX:
 	{
+		void* userDataPtr = shape->userData;
 		glm::vec3 scale(2 * h.box().halfExtents.x, 2 * h.box().halfExtents.y, 2 * h.box().halfExtents.z);
-		if (cube == nullptr) {
-			cube = new Cube(pos, scale, "", shader, "images/textures/w200Bullet.png");
+		BaseModel* modelToDraw = nullptr;
+		if (userDataPtr != nullptr) {
+			UserData* ud = reinterpret_cast<UserData*>(userDataPtr);
+			modelToDraw = idToRenderModel[ud->id];
 		}
-		cube->setPosition(pos);
-		cube->setScaleValue(scale);
-		cube->setRotate(t.q);
-		cube->updateShaderModel();
-		cube->draw();
+		if (modelToDraw == nullptr || userDataPtr == nullptr) {
+			if (cube == nullptr)
+				cube = new Cube(pos, scale, "", shader, CUBE_TEXTURE_PATH);
+			modelToDraw = cube;
+		}
+		modelToDraw->setPosition(pos);
+		modelToDraw->setScaleValue(scale);
+		modelToDraw->setRotate(t.q);
+		modelToDraw->updateShaderModel();
+		modelToDraw->draw();
 	}
 	break;
 	case PxGeometryType::eSPHERE:
@@ -53,17 +62,23 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 	break;
 	case PxGeometryType::eCAPSULE:
 	{
-		if (std::strcmp(actor->getName(), ACTOR_NAME_PLAYER_BULLET.c_str()) == 0) //子弹
-		{
-			glm::vec3 scale(h.capsule().halfHeight * 2, h.capsule().radius * 2, h.capsule().radius * 2);
+		glm::vec3 scale(h.capsule().halfHeight * 2, h.capsule().radius * 2, h.capsule().radius * 2);
+		void* userDataPtr = shape->userData;
+		BaseModel* modelToDraw = nullptr;
+		if (userDataPtr != nullptr) {
+			UserData* ud = reinterpret_cast<UserData*>(userDataPtr);
+			modelToDraw = idToRenderModel[ud->id];
+		}
+		if (modelToDraw == nullptr || userDataPtr == nullptr) {
 			if (bullet == nullptr)
 				bullet = new PlainModel(pos, scale, "model/bullet/bullet3/bullet.obj", shader);
-			bullet->setPosition(pos);
-			bullet->setScaleValue(scale);
-			bullet->setRotate(t.q);
-			bullet->updateShaderModel();
-			bullet->draw();
+			modelToDraw = bullet;
 		}
+		modelToDraw->setPosition(pos);
+		modelToDraw->setScaleValue(scale);
+		modelToDraw->setRotate(t.q);
+		modelToDraw->updateShaderModel();
+		modelToDraw->draw();
 	}
 	break;
 	case PxGeometryType::eCONVEXMESH:
@@ -97,8 +112,18 @@ void renderGeometry(PxRigidActor* actor, const PxGeometryHolder& h, Shader* shad
 namespace Render
 {
 
-	void renderActors(PxRigidActor** actors, const PxU32 numActors, Shader* shader, bool shadows, const PxVec3 & color)
+	void renderActors(Shader* shader)
 	{
+		PxScene* scene;
+		PxGetPhysics().getScenes(&scene, 1);
+		PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+		if (!nbActors) return;
+		std::vector<PxRigidActor*> actors1(nbActors);
+		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors1[0]), nbActors);
+		PxRigidActor** actors = &actors1[0];
+		const PxU32 numActors = static_cast<PxU32>(actors1.size());
+		bool shadows = true;
+
 		PxShape* shapes[MAX_NUM_ACTOR_SHAPES];
 		for (PxU32 i = 0; i < numActors; i++)
 		{
@@ -111,13 +136,13 @@ namespace Render
 				const PxMat44 shapePose(PxShapeExt::getGlobalPose(*shapes[j], *actors[i]));
 				PxGeometryHolder h = shapes[j]->getGeometry();
 
-				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE){
+				if (shapes[j]->getFlags() & PxShapeFlag::eTRIGGER_SHAPE) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
-				// render object
+					// render object
 
 				}
 				//if (sleeping) {}
-				renderGeometry(actors[i], h, shader);
+				renderGeometry(actors[i], shapes[j], h, shader);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				//if (shadows) {}
 			}
@@ -200,6 +225,10 @@ namespace Render
 		}
 
 
+	}
+
+	void renderUI(const float W, const float H) {
+		UI::UIManager::draw(W, H);
 	}
 
 

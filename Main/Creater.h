@@ -29,6 +29,9 @@ extern PxPvd*                  gPvd;
 extern list<PxParticleSystem*> physicsParticleSystemList; //储存粒子系统的链表
 extern list<BaseParticleCluster*> renderParticleClusterList; //储存粒子系统的链表
 
+extern unordered_map<int, BaseModel*> idToRenderModel;
+extern unordered_map<std::string, Cube*> texToCubeModel;
+extern unordered_map<std::string, BaseModel*> modelPathToCapsuleModel;
 
 extern physx::PxRigidDynamic*	airPlane;
 extern PlainModel *street;
@@ -61,10 +64,10 @@ struct FilterGroup
 		eMAP = (1 << 6),		//地图
 		eAIRPLANE = (1 << 7),	//飞机
 		eTANK = (1 << 8),		//坦克
-		eTower=(1<<9),
-		ePlayer=(1<<10),
-		eTowerBullet = (1<<11),
-		eBONUS = (1<<12)
+		eTower = (1 << 9),
+		ePlayer = (1 << 10),
+		eTowerBullet = (1 << 11),
+		eBONUS = (1 << 12)
 
 	};
 };
@@ -105,7 +108,7 @@ void createBreakableWall();
 void testTriggerWall();
 void testTriggerCollection();
 
-PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type,bool movable);
+PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type, bool movable);
 
 
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent);
@@ -127,22 +130,11 @@ void createPointParticles( //创建普通粒子系统
 	PxVec3 force = PxVec3(0.f, 0.f, 0.f)//粒子系统受到的力
 );
 
-//void createSmokeParticles( //创建普通粒子系统
-//	int numParticles, //粒子数量
-//	bool perOffset,  //创建粒子系统的参数，一般是false
-//	BaseParticle* renderModel, //粒子的渲染模型
-//	PxVec3 initPos, //粒子初始位置
-//	bool ifDisperse,//粒子初始化是否散开
-//	double maxDisperseRadius,//粒子散开的最大半径
-//	bool ifRandomV, //粒子是否需要随机速度
-//	double maxRandomV, //粒子最大随机速度（ifRandomV为true时生效）
-//	int deleteDelaySec = -1, //粒子从产生到被删除的时间（秒）
-//	int fadeDelaySec = 0, //粒子从产生到开始渐隐的时间（秒）(当deleteDelaySec != -1时生效)
-//	PxVec3 velocity = PxVec3(0.f, 0.f, 0.f),//粒子的初始速度（hasInitV为true时生效）
-//	PxVec3 force = PxVec3(0.f, 0.f, 0.f)//粒子系统受到的力
-//);
 
 void addForceToPartivleSystem(list<PxParticleSystem*>& particleSystemList);
 
 float* createUniformRandomFloatArray(int num, float bottom, float up); //得到长度为num的符合随机分布的随机数数组
 float* createNormalRandomFloatArray(int num, float arg1, float arg2);  //得到长度为num的符合正态分布的随机数数组
+
+BaseModel* getCube(std::string texturePath); // 根据纹理产生或返回现有的cube模型
+BaseModel* getCapsule(std::string modelPath);// 根据模型路径产生或返回现有的capsule模型

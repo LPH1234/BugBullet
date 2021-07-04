@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DF91286C-A048-0858-C381-C4106C184C0B}</ProjectGuid>
     <RootNamespace>SnippetHelloWorld</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>Main</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -237,7 +237,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/INCREMENTAL:NO /LIBPATH:../../../Lib/vc15win64 PhysX3Common_x64.lib PhysX3_x64.lib PhysX3Cooking_x64.lib PhysX3CharacterKinematic_x64.lib PhysX3Extensions.lib PhysX3Vehicle.lib PxTask_x64.lib PxFoundation_x64.lib PsFastXml_x64.lib PxPvdSDK_x64.lib /LIBPATH:../../lib/vc15win64 Utils.lib</AdditionalOptions>
-      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;Render.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;trng4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Winmm.lib;OpenGL32.lib;Render.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;soil2.lib;trng4.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>./../../../Common/lib/vc15win64;./../../lib/vc15win64;./../../../../PxShared/lib/vc15win64;./../../Graphics/lib;./../../Common/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>

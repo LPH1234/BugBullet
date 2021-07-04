@@ -4,10 +4,39 @@
 
 
 #include<string>
+
+enum GAME_STATE
+{
+	INIT,
+	MAIN_MENU,
+	STARTED,
+	PAUSE,
+	OVER
+};
+
+struct Game
+{
+	Game(GAME_STATE state, float w, float h, float lx, float ly, float dt, float lt, bool firstMouse) {
+		this->state = state; this->SCR_WIDTH = w; this->SCR_HEIGHT = h; this->lastX = lx; this->lastY = ly; this->deltaTime = dt; this->lastFrame = lt; this->firstMouse = firstMouse;
+		this->pause = false; this->isInit = false;
+	}
+	GAME_STATE state;
+	float SCR_WIDTH;
+	float SCR_HEIGHT;
+	float lastX;
+	float lastY;
+	float deltaTime;
+	float lastFrame;
+	bool firstMouse;
+	bool pause;
+	bool isInit;
+};
+
+
 struct DATATYPE {
 	enum ACTOR_TYPE {
-		MAP,TOWER, PLANE,TANK,TANK_BULLET,TOWER_BULLET,PLANE_BULLET,PLANE_MISSLE = (20)
-};	
+		MAP, TOWER, PLANE, TANK, TANK_BULLET, TOWER_BULLET, PLANE_BULLET, PLANE_MISSLE = (20)
+	};
 	enum TRIGGER_TYPE {
 		BORDER,
 		COLLECTION,
@@ -25,7 +54,7 @@ struct UserData
 	DATATYPE::TRIGGER_TYPE type2;
 	BaseCharacter* basecha = nullptr;
 	BaseSceneObject* basesce = nullptr;
-	UserData(BaseCharacter* _basecha,int input, std::string a, DATATYPE::ACTOR_TYPE _type) {
+	UserData(BaseCharacter* _basecha, int input, std::string a, DATATYPE::ACTOR_TYPE _type) {
 		basecha = _basecha;
 		id = input;
 		name = a;
