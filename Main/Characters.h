@@ -241,6 +241,7 @@ public:
 	void autoEmit(int time);		//自动发射导弹攻击玩家飞机
 	void oncontact(DATATYPE::ACTOR_TYPE _type);//被击中扣血
 	void crash();					//被击毁
+	void shotdown();                //被击落
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);

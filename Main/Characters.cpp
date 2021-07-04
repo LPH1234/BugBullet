@@ -646,6 +646,7 @@ void AirPlane::ProcessKeyPress() {
 					PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
 					myMissileManager->emitMissile(emitPos, currentHeadForward, AI_PlaneList[k]);
 					leftOrRight *= -1;
+					MediaPlayer.PlayMedia3D(vec3df(0.1f, 0.1f, 0.1f), Media::MediaType::AIMED);
 					break;
 				}
 			}
@@ -752,7 +753,6 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 }
 void AirPlane::formcloud() {
 	vector<string>textures;
-
 	//textures.push_back("images/textures/smoke/smoke-white-1.png");
 	textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
 	PxVec3 pos1 = body->getGlobalPose().p + (-1)*currentHeadForward + 2 * currentSwingForward;
@@ -786,8 +786,8 @@ void AirPlane::formcloud() {
 		cloudShader //äÖÈ¾´ËÑÌÎíµÄshader
 	);
 	renderParticleClusterList.push_back(cloud_cluster1);
-	renderParticleClusterList.push_back(cloud_cluster2);
-	renderParticleClusterList.push_back(cloud_cluster3);
+	//renderParticleClusterList.push_back(cloud_cluster2);
+	//renderParticleClusterList.push_back(cloud_cluster3);
 }
 void AirPlane::formmisslecloud() {
 	for (auto i = airPlaneBullet.begin(); i != airPlaneBullet.end(); i++) {
@@ -830,7 +830,8 @@ void AirPlane::crash() {
 void AirPlane::shotdown() {
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION,true);
 	PxVec3 p = body->getGlobalPose().p;
-	body->setGlobalPose(PxTransform(p, PxQuat(-90.0f, swingForward)));
+	PxQuat rot = PxQuat(PxPi / 2 * (-1), swingForward);
+	body->setGlobalPose(PxTransform(p, rot));
 	currentHeadForward = headForward;
 	currentBackForward = backForward;
 	currentSwingForward = swingForward;
@@ -1685,7 +1686,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		else if (this->alive == true) {
 			this->health = 0;
 			this->alive = false;
-			crash();
+			shotdown(); 
 		}
 	}
 
@@ -1711,6 +1712,14 @@ void AirPlane_AI::crash() {
 	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
 		input, std::vector<string>(), smokeShader);
 	renderParticleClusterList.push_back(smoke_cluster);
+}
+void AirPlane_AI::shotdown() {
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
+	PxVec3 p = body->getGlobalPose().p;
+	PxQuat rot = PxQuat(PxPi / 2 * (-1), swingForward);
+	body->setGlobalPose(PxTransform(p,rot));
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
+	body->setLinearVelocity(veclocity * 5 * PxVec3(0.f,-1.f,0.f));
 }
 
 void AirPlane_AI::getRight(physx::PxVec3& right) { right = currentSwingForward; }
