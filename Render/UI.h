@@ -20,7 +20,7 @@ namespace UI {
 
 	void initIcon(GLFWwindow* window);
 	void initImgUI(GLFWwindow* window);
-
+	void backToMain();
 	enum UIID {
 		MAIN,
 		MAIN_ANIMATION,
@@ -29,6 +29,7 @@ namespace UI {
 		GAME_OVER,
 		HP_BAR,
 		BORDER_MASK,
+		RETICLE,
 	};
 
 
@@ -85,6 +86,26 @@ namespace UI {
 		float length;
 	};
 
+	class ReticleUI : public BaseUI {
+		bool ableTrack = false;
+		unsigned int textureID;
+		unsigned int currAngle;
+	public:
+		// Constructor (inits shaders/shapes)
+		ReticleUI(UIID id, float W, float H, std::string texture);
+		// Destructor
+		~ReticleUI();
+		// Renders a defined quad textured with given sprite
+		void draw(unsigned int w, unsigned int h);
+		void updateTargetPosition(glm::vec3& pos);
+		void enableTrack(bool enable);
+
+	private:
+		// Render state
+		Shader* shader;
+		GLuint VAO;
+	};
+
 	class BorderMaskUI : public BaseUI {
 		GLuint VAO;
 		unsigned int textureID;
@@ -106,7 +127,7 @@ namespace UI {
 		void draw(unsigned int w, unsigned int h);
 		// 指定闪动次数并展示
 		void show(int blingTimes = -1);
-		void close();
+		void close(bool immediately = false);
 	};
 
 

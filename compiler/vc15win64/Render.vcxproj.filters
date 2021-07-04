@@ -105,6 +105,9 @@
     <Filter Include="资源文件\shader\borderMaskShader">
       <UniqueIdentifier>{1a98636c-1dc9-4a86-aa2f-a5e1666b6411}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shader\normalImg">
+      <UniqueIdentifier>{054e6052-3554-4619-89a8-cacfd10bb999}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Render\Render.cpp">
@@ -207,6 +210,12 @@
     </None>
     <None Include="shaders\borderMaskShader\borderMask.vs">
       <Filter>资源文件\shader\borderMaskShader</Filter>
+    </None>
+    <None Include="shaders\normalImgShader\normalImg.fs">
+      <Filter>资源文件\shader\normalImg</Filter>
+    </None>
+    <None Include="shaders\normalImgShader\normalImg.vs">
+      <Filter>资源文件\shader\normalImg</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

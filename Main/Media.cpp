@@ -94,6 +94,10 @@ void Media::PlayMedia3D(vec3df pos, Media::MediaType _type) {
 		Sound = SoundEngine->play3D("audio/load.wav", pos / 5, false, false, true, ESM_AUTO_DETECT, true);
 		Sound->setVolume(0.5);
 	}
+	else if (_type == Media::MediaType::AIMED) {
+		Sound = SoundEngine->play3D("audio/aimed.mp3", pos / 5, false, false, true, ESM_AUTO_DETECT, true);
+		Sound->setVolume(0.5);
+	}
 	else if (_type == Media::MediaType::TANKSHOOT) {
 		Sound = SoundEngine->play3D("audio/tankfire.mp3", pos/5, false, false, true, ESM_AUTO_DETECT,true);
 		//Sound->setVolume(70.f);

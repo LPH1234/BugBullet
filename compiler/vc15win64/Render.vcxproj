@@ -71,6 +71,8 @@
     <None Include="shaders\HPBarShader\HPBarBorder.fs" />
     <None Include="shaders\HPBarShader\HPBar.vs" />
     <None Include="shaders\HPBarShader\HPBarFill.fs" />
+    <None Include="shaders\normalImgShader\normalImg.fs" />
+    <None Include="shaders\normalImgShader\normalImg.vs" />
     <None Include="shaders\skyboxShader\skybox.fs" />
     <None Include="shaders\skyboxShader\skybox.vs" />
     <None Include="shaders\smokeShader\smoke.fs" />

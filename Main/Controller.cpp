@@ -66,6 +66,7 @@ void mouseSingleClick(int button, int action) { //鼠标单次点击
 }
 
 void mouseClick() {
+	Plane_1->ProcessMouseClick();
 	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_LEFT]) {
 		return;
 		PxTransform px;
