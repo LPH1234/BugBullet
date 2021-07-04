@@ -2,6 +2,11 @@
 extern void resetLevel();
 extern Game game;
 namespace UI {
+	ImFont* zhFont = nullptr;
+
+	unordered_map<UIID, BaseUI*> UIManager::idToUI;
+	GLFWwindow* UIManager::window;
+
 	GLFWwindow* MainMenu::window = nullptr;
 	bool MainMenu::visable = false;
 
@@ -18,8 +23,6 @@ namespace UI {
 
 	bool HelpModal::visable = false;
 
-	unordered_map<UIID, BaseUI*> UIManager::idToUI;
-
 	bool CornerTip::visable = false;
 	Camera* CornerTip::camera = nullptr;
 
@@ -28,8 +31,16 @@ namespace UI {
 	int PlayerStatus::Ammo = 26;
 	int PlayerStatus::Missile = 5;
 
-	std::string TextModal::text = "";
-	bool TextModal::visable = false;
+	std::string CenterText::text = "";
+	bool CenterText::visable = false;
+	unsigned int CenterText::fadeTime = 0U; //开始消失的时间：ms
+	unsigned int CenterText::timeToLeave = 0U;//完全消失的时间：ms
+	unsigned int CenterText::showTime = 0U;//开始显示的时间：ms
+	float CenterText::currAlpha = 1.f;
+	bool CenterText::isBling = false;
+	int  CenterText::blingTimes = 0;
+	float  CenterText::blingValue = 0.f;
+	bool CenterText::blingDown = false;
 
 	std::string OverModal::text = "";
 	bool OverModal::visable = false;
@@ -50,9 +61,8 @@ namespace UI {
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init(glsl_version);
-		//	io.Fonts->AddFontFromFileTTF("resources/fonts/cunia.ttf", 15.0f);
-		//	io.Fonts->AddFontFromFileTTF("resources/fonts/quantum.ttf", 15.0f);
-		io.Fonts->AddFontFromFileTTF("resources/fonts/troika.ttf", 20.0f);
+		io.Fonts->AddFontFromFileTTF(EN_FONT_PATH.c_str(), EN_FONT_SIZE); // 英文字体
+		zhFont = io.Fonts->AddFontFromFileTTF(ZH_CN_FONT_PATH.c_str(), ZH_CN_FONT_SIZE, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon()); //中文字体
 	}
 
 	void UIManager::addUI(BaseUI* ui) {
@@ -94,7 +104,8 @@ namespace UI {
 		}
 	}
 
-	void  UIManager::init(const float W, const float H) {
+	void  UIManager::init(GLFWwindow* window, const float W, const float H) {
+		UIManager::window = window;
 		////血条
 		HPBarUI* HPBar;
 		HPBar = new HPBarUI(UIID::HP_BAR, H, HPBAR_TEXTURE_PATH);
@@ -102,6 +113,13 @@ namespace UI {
 		/////动画
 		AnimationUI* Animation = new AnimationUI(UIID::MAIN_ANIMATION, W, H, &TextureManager::animateTextureIDs, ANIMATE_START_FRAME);
 		addUI(Animation);
+
+		BorderMaskUI* borderMask = new BorderMaskUI(UIID::BORDER_MASK, W, H, TextureManager::getTextureID(BORDER_MASK_UI_TEX_PATH), BORDER_MASK_UI_CLOSE_DELAY);
+		addUI(borderMask);
+	}
+
+	void UIManager::setCursorVisable(bool v) {
+		glfwSetInputMode(UIManager::window, GLFW_CURSOR, v ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 
 	BaseUI::BaseUI(UIID id) {
@@ -183,6 +201,7 @@ namespace UI {
 		glm::mat4 model = glm::mat4(1.0f);
 		const float FILL_WIDTH = 148.f;
 		const float FILL_HEIGHT = 14.f;
+		updateProgress(UI::PlayerStatus::HP);
 		glDepthFunc(GL_ALWAYS);
 		if (enableAnimate) {
 			if (this->animateProgress < this->progress)
@@ -193,7 +212,6 @@ namespace UI {
 		else {
 			this->animateProgress = this->progress;
 		}
-
 		/*1：hp填充*/
 		this->HPBarFillShader->use();
 		glm::vec3 position0(position.x + (size.x - FILL_WIDTH) / 2.f, position.y + (size.y - FILL_HEIGHT) / 2.f, 0.f);
@@ -240,6 +258,93 @@ namespace UI {
 
 
 
+	BorderMaskUI::BorderMaskUI(UIID id, float W, float H, unsigned int textureID, float closeDelay) : BaseUI(id) {
+		position = glm::vec2(0, 0);
+		size = glm::vec2(W, H);
+		this->textureID = textureID;
+		this->closeDelay = closeDelay * 1000;
+		this->visable = false;
+		borderMaskShader = new Shader("shaders/borderMaskShader/borderMask.vs", "shaders/borderMaskShader/borderMask.fs");
+		// Configure VAO/VBO
+		GLuint VBO;
+		GLfloat vertices[] = {
+			// Pos      // Tex
+			0.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f,
+
+			0.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, 0.0f, 1.0f, 0.0f
+		};
+		glGenVertexArrays(1, &this->VAO);
+		glGenBuffers(1, &VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBindVertexArray(this->VAO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	BorderMaskUI::~BorderMaskUI() {
+		delete this->borderMaskShader;
+	}
+	void BorderMaskUI::draw(unsigned int w, unsigned int h) {
+		if (this->shouldClose) {
+			if (closeDelay <= 0)
+				alpha = 0.f;
+			else
+				alpha = 1 - (clock() - startCloseTime) * 1.f / closeDelay;
+			alpha = alpha < 0.f ? 0.f : alpha;
+		}
+		else {
+			blingValue += blingDown ? -BORDER_MASK_UI_BLING_VELOCITY : BORDER_MASK_UI_BLING_VELOCITY;
+			if (blingValue >= 1.f) {
+				blingDown = true; blingValue = 1.f;
+			}
+			if (blingValue <= 0.f) {
+				blingDown = false; blingValue = 0.f;
+				if (blingTimes > 0 && ++currBlingTimes >= blingTimes) this->close();
+			}
+		}
+		glm::mat4 projection = glm::ortho(0.0f, w*1.f, h*1.f, 0.0f, -1.0f, 1.0f);
+		glm::mat4 model(1.0f);
+		size.x = w; size.y = h;
+		this->borderMaskShader->use();
+		model = glm::translate(model, glm::vec3(position.x, position.y, 0.f));  // First translate (transformations are: scale happens first, then rotation and then finall translation happens; reversed order)
+		model = glm::scale(model, glm::vec3(size, 1.0f)); // Last scale
+		this->borderMaskShader->setMat4("model", model);
+		this->borderMaskShader->setMat4("projection", projection);
+		this->borderMaskShader->setFloat("alpha", alpha);
+		this->borderMaskShader->setFloat("blingValue", blingValue);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glBindVertexArray(this->VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDepthFunc(GL_LESS);
+		if (alpha == 0.f) {
+			UI::UIManager::setUIVisable(this->getUIID(), false);
+		}
+	}
+
+	void BorderMaskUI::show(int blingTimes) {
+		blingValue = 1.f; //当前闪动值，0~1
+		blingDown = true; //当前闪动值是否减小方向
+		shouldClose = false;
+		alpha = 1.f;
+		this->blingTimes = blingTimes; //默认参数-1:一直闪动(当blingTimes《=0时一直闪动)
+		currBlingTimes = 0;
+		UI::UIManager::setUIVisable(this->getUIID(), true);
+	}
+	void BorderMaskUI::close() {
+		if (shouldClose) return;
+		shouldClose = true;
+		startCloseTime = clock();
+	}
 
 	// Constructor (inits shaders/shapes)
 	AnimationUI::AnimationUI(UIID id, float W, float H, std::vector<unsigned int>* textureIDs, unsigned int startFrameIndex) : BaseUI(id) {
@@ -337,7 +442,7 @@ namespace UI {
 			ImGui::SetWindowSize(window_size);
 			if (ImGui::Button("S t a r t", ImVec2(window_size.x, window_size.y / 5))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
 				game.state = GAME_STATE::STARTED;
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				UI::UIManager::setCursorVisable(false);
 			}
 			if (ImGui::Button("C o n f i g", ImVec2(window_size.x, window_size.y / 5))) {
 				ConfigModal::visable = true;
@@ -387,7 +492,7 @@ namespace UI {
 					PauseMenu::visable = false;
 					game.state = GAME_STATE::STARTED;
 					game.pause = false;
-					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					UI::UIManager::setCursorVisable(false);
 				}
 
 				if (ImGui::Button("Back To Main", BtnSize)) {
@@ -514,7 +619,6 @@ namespace UI {
 				ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(CONNER_TIP_FPS_ICON), ImVec2(imgh, imgh));
 				ImGui::SameLine();
 				ImGui::Text(CONNER_TIP_FPS_TEXT.c_str(), 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
 			}
 			ImGui::End();
 		}
@@ -553,32 +657,65 @@ namespace UI {
 	}
 
 
-	void TextModal::init(GLFWwindow* window) {
-		TextModal::visable = false;
+
+	void CenterText::init(GLFWwindow* window) {
+		CenterText::visable = false;
 	}
-	void TextModal::draw(unsigned int w, unsigned int h) {
-		if (TextModal::visable) {
-			const float X_DISTANCE = 10.0f;
-			const float Y_DISTANCE = 40.0f;
-			static int corner = 2;
+	void CenterText::draw(unsigned int w, unsigned int h) {
+		if (CenterText::visable) {
+			if (CenterText::isBling && blingTimes < CENTER_TEXT_MAX_BLING_TIMES) {
+				blingValue += blingDown ? -CENTER_TEXT_BLING_VELOCITY : CENTER_TEXT_BLING_VELOCITY;
+				if (blingValue >= 1.f) {
+					blingDown = true; blingTimes++; blingValue = 1.f;
+				}
+				if (blingValue <= 0.f) {
+					blingDown = false; blingValue = 0.f;
+				}
+			}
+			clock_t now = clock();
+			if (int(now - showTime - fadeTime) > 0) {
+				currAlpha = 1.f - ((now - showTime - fadeTime) * 1.f / (timeToLeave - fadeTime));
+			}
+			ImVec4 textColor(1.f, blingValue, blingValue, currAlpha);
+
+
 			ImGuiIO& io = ImGui::GetIO();
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 			window_flags |= ImGuiWindowFlags_NoMove;
-			ImVec2 window_pos = ImVec2(X_DISTANCE, io.DisplaySize.y - Y_DISTANCE);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f));
-			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-			if (ImGui::Begin("Player Status", NULL, window_flags))
+			ImVec2 textWinSize = ImVec2(io.DisplaySize.x, CENTER_TEXT_HEIGHT);
+			ImGui::SetNextWindowPos(ImVec2(0.0f, CENTER_TEXT_Y_OFFSET));
+			ImGui::SetNextWindowSize(textWinSize);
+			ImGui::SetNextWindowBgAlpha(0.f); // Transparent background
+			if (ImGui::Begin("Text Window", NULL, window_flags))
 			{
-				ImGui::Text("Simple overlay\n" "in the corner of the screen.\n" "(right-click to change position)");
-				ImGui::Separator();
-				if (ImGui::IsMousePosValid())
-					ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
-				else
-					ImGui::Text("Mouse Position: <invalid>");
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+				auto windowWidth = ImGui::GetWindowSize().x;
+				auto textWidth = ImGui::CalcTextSize(CenterText::text.c_str()).x;
+				ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+				ImGui::PushFont(zhFont);
+				ImGui::TextColored(textColor, StringUtils::stringToUTF8(CenterText::text).c_str());
+				ImGui::PopFont();
+				ImGui::End();
 			}
-			ImGui::End();
+
+			if (currAlpha <= 0.f || clock() - showTime >= timeToLeave) {
+				CenterText::visable = false;
+			}
+
 		}
+	}
+
+	void CenterText::show(std::string& text, unsigned int timeToLeave, unsigned int fadeTime, bool isBling) {
+		CenterText::currAlpha = 1.f;
+		CenterText::isBling = isBling;
+		CenterText::text = text;
+		CenterText::fadeTime = fadeTime * 1000; //储存毫秒
+		CenterText::timeToLeave = timeToLeave * 1000; //储存毫秒
+		CenterText::showTime = clock();
+		CenterText::blingTimes = 0;
+		CenterText::blingValue = 1.f;
+		CenterText::blingDown = true;
+		if (timeToLeave != 0)
+			CenterText::visable = true;
 	}
 
 

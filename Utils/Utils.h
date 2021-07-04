@@ -50,6 +50,8 @@ class StringUtils
 public:
 	static void split(std::string& str, std::string delimiter, std::vector<std::string>& v);
 	static void replaceChar(std::string& str, char oldChar, char newChar);
+	static std::string stringToUTF8(const std::string & str);
+
 };
 
 

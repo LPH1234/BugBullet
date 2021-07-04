@@ -88,7 +88,7 @@ int myRenderLoop()
 
 	TextureManager::init();
 	TextureManager::initAnimateTextures(); // 开启动画，执行此函数会开始加载动画帧。
-	UI::UIManager::init(game.SCR_WIDTH, game.SCR_HEIGHT);
+	UI::UIManager::init(window, game.SCR_WIDTH, game.SCR_HEIGHT);
 	game.state = GAME_STATE::INIT; // 将游戏的初始状态设置为INIT状态，游戏状态是一个有限状态机
 	// render loop
 	// -----------
@@ -154,6 +154,7 @@ int myRenderLoop()
 			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, true);
 			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, false);
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
@@ -163,6 +164,7 @@ int myRenderLoop()
 			UI::PauseMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::OverModal::visable = game.state == GAME_STATE::OVER;
 			UI::OverModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::CenterText::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
@@ -189,8 +191,9 @@ int myRenderLoop()
 				UI::CornerTip::init(window, &camera);
 				UI::PlayerStatus::init(window);
 				UI::PauseMenu::init(window);
-				UI::TextModal::init(window);
+				UI::CenterText::init(window);
 				UI::OverModal::init(window);
+
 				// var init
 				// -----------------------------
 				for (int i = 0; i <= 348; i++)
@@ -222,7 +225,7 @@ int myRenderLoop()
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			if (game.deltaTime < 0.016f)
-				Sleep((int)(0.016f - game.deltaTime) * 1000);
+				Sleep((int)((0.016f - game.deltaTime) * 1000)); //最高每秒60帧
 		}
 
 
@@ -248,12 +251,13 @@ void windowProcessInput(GLFWwindow *window) {
 		if (game.state == GAME_STATE::STARTED) { //请求暂停
 			game.state = GAME_STATE::PAUSE;
 			game.pause = true;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			UI::UIManager::setCursorVisable(true);
+
 		}
 		else if (game.state == GAME_STATE::PAUSE) { //继续游戏
 			game.state = GAME_STATE::STARTED;
 			game.pause = false;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			UI::UIManager::setCursorVisable(false);
 		}
 
 	}
