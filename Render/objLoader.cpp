@@ -40,17 +40,17 @@ ObjLoader::ObjLoader(BaseModel* renderModel, MESH_TYPE type) {
 	if (is_need_load_obj_file) {// 对应mesh的cooking文件不存在,需要重新加载obj文件
 		parseObjFile();
 	}
-	Logger::info("开始创建Mesh");
+	//Logger::info("开始创建Mesh");
 	if (type == MESH_TYPE::TRIANGLE) {
 		genTriangleMesh(this->scale);
 	}
 	if (type == MESH_TYPE::CONVEX) {
 		genConvexMesh(this->scale);
 	}
-	Logger::info("Mesh加载完成");
+	//Logger::info("Mesh加载完成");
 
 	if (is_need_load_obj_file) {// 需要将mesh数据写出到cooking文件
-		Logger::debug("准备开启线程cook");
+		//Logger::debug("准备开启线程cook");
 		CookThread::CookTask cookTask;
 		cookTask.tm = this->triangle_mesh_desc;
 		cookTask.cm = this->convex_mesh_desc;
@@ -73,7 +73,7 @@ void ObjLoader::free_memory() {
 physx::PxTriangleMesh* ObjLoader::genTriangleMesh(physx::PxVec3 scale) {
 	if (this->is_triangle_cooked) {//从cooking中读取
 		this->triangle_mesh = readTriangleMeshFromCookingFile();
-		Logger::debug("存在cooking文件");
+		//Logger::debug("存在cooking文件");
 	}
 	else {
 		Logger::debug("不存在cooking文件");
@@ -128,7 +128,7 @@ PxRigidActor* ObjLoader::createStaticActorAndAddToScene() {
 	PxRigidStatic* TriangleMesh = gPhysics->createRigidStatic(PxTransform(initPos));
 	/*PxRigidDynamic* TriangleMesh = gPhysics->createRigidDynamic(PxTransform(initPos));
 	TriangleMesh->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);*/
-	
+
 
 	// 创建三角网格形状 *gMaterial
 	PxShape* shape = gPhysics->createShape(geom, *gMaterial, true);
@@ -207,7 +207,7 @@ physx::PxTriangleMesh* ObjLoader::readTriangleMeshFromCookingFile() {
 	}
 	int rsize = 0;
 	fread(&rsize, sizeof(unsigned int), 1, filefd);
-	Logger::info(this->triangle_cooking_file_path + ":cooking file read size:" + to_string(rsize));
+	//Logger::info(this->triangle_cooking_file_path + ":cooking file read size:" + to_string(rsize));
 	PxU8 *filebuff = new PxU8[rsize + 1];
 	fread(filebuff, sizeof(PxU8), rsize, filefd);
 
@@ -226,7 +226,7 @@ physx::PxTriangleMesh* ObjLoader::readTriangleMeshFromCookingFile() {
 physx::PxConvexMesh* ObjLoader::genConvexMesh(physx::PxVec3  scale) {
 	if (this->is_convex_cooked) {//从cooking中读取
 		this->convex_mesh = readConvexMeshFromCookingFile();
-		Logger::debug("存在cooking");
+		//Logger::debug("存在cooking");
 	}
 	else {
 		Logger::debug("不存在cooking");
@@ -349,7 +349,7 @@ physx::PxConvexMesh* ObjLoader::readConvexMeshFromCookingFile() {
 	}
 	int rsize = 0;
 	fread(&rsize, sizeof(unsigned int), 1, filefd);
-	Logger::info(this->convex_cooking_file_path + ":cooking file read size:" + to_string(rsize));
+	//Logger::info(this->convex_cooking_file_path + ":cooking file read size:" + to_string(rsize));
 	PxU8 *filebuff = new PxU8[rsize + 1];
 	fread(filebuff, sizeof(PxU8), rsize, filefd);
 
@@ -382,7 +382,7 @@ DWORD WINAPI run(LPVOID lpParamter) {
 			continue;
 		}
 		continuous_sleep_times = 0;
-		Logger::debug("consume task");
+		//Logger::debug("consume task");
 		queue_mutex.lock();
 		CookThread::CookTask task = tasks->front();
 		tasks->pop_front();
@@ -406,10 +406,10 @@ DWORD WINAPI run(LPVOID lpParamter) {
 
 void ObjLoader::parseObjFile() {
 	//开始解析obj
-	Logger::debug("打开模型文件：" + name);
+	//Logger::debug("打开模型文件：" + name);
 	ifstream obj_file(obj_file_path);
 	string line;
-	Logger::debug("开始加载物理模型：" + name);
+	//	Logger::debug("开始加载物理模型：" + name);
 	while (getline(obj_file, line))
 	{
 
@@ -459,5 +459,5 @@ void ObjLoader::parseObjFile() {
 	}
 	obj_file.close(); //关闭obj文件
 
-	Logger::info("顶点数:" + std::to_string(v.size()) + "   三角面片数:" + std::to_string(f.size()));
+	//Logger::info("顶点数:" + std::to_string(v.size()) + "   三角面片数:" + std::to_string(f.size()));
 }

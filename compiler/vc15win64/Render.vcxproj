@@ -58,6 +58,8 @@
     <ClCompile Include="..\..\Render\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\borderMaskShader\borderMask.fs" />
+    <None Include="shaders\borderMaskShader\borderMask.vs" />
     <None Include="shaders\cloudShader\cloud.fs" />
     <None Include="shaders\cloudShader\cloud.vs" />
     <None Include="shaders\debrisShader\debris.fs" />

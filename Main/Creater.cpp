@@ -63,7 +63,7 @@ PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath,
 			ObjLoader loader(model, MESH_TYPE::CONVEX);
 			rigid = loader.createDynamicActorAndAddToScene(); // 动态刚体
 		}
-		Logger::debug("创建完成");
+		//Logger::debug("创建完成");
 	}
 	else {
 		Logger::error("文件不存在：" + modelPath);

@@ -71,6 +71,8 @@ void TextureManager::init() {
 	//×óÉÏ½Ç×´Ì¬À¸
 	texturePathes.push_back(CONNER_TIP_ORIENTATION_ICON);
 	texturePathes.push_back(CONNER_TIP_POSITION_ICON);
+	//Î£ÏÕ±ßÔµÕÚÕÖ
+	texturePathes.push_back(BORDER_MASK_UI_TEX_PATH);
 
 	texturePathes.push_back(CUBE_TEXTURE_PATH);
 	texturePathes.push_back(HPBAR_TEXTURE_PATH);
