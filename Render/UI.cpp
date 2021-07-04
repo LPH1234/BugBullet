@@ -1,6 +1,7 @@
 #include "UI.h"
-
+extern void resetLevel();
 extern Game game;
+extern Media MediaPlayer;
 namespace UI {
 	ImFont* zhFont = nullptr;
 
@@ -515,16 +516,23 @@ namespace UI {
 			ImGui::SetWindowSize(window_size);
 			if (ImGui::Button("S t a r t", ImVec2(window_size.x, window_size.y / 5))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
 				game.state = GAME_STATE::STARTED;
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
+				MediaPlayer.StopBackground();
+				//MediaPlayer.PlayBackground(Media::MediaType::FLYING);
 				UI::UIManager::setCursorVisable(false);
 			}
 			if (ImGui::Button("C o n f i g", ImVec2(window_size.x, window_size.y / 5))) {
 				ConfigModal::visable = true;
+				MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
 			}
 			if (ImGui::Button("H e l p", ImVec2(window_size.x, window_size.y / 5))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
 				HelpModal::visable = true;
+				MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
 			}
 			if (ImGui::Button("E x i t", ImVec2(window_size.x, window_size.y / 5))) {
 				glfwSetWindowShouldClose(window, true);
+				MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
 				CookThread::shutdown();
 			}
 
@@ -565,7 +573,12 @@ namespace UI {
 					PauseMenu::visable = false;
 					game.state = GAME_STATE::STARTED;
 					game.pause = false;
+
+					MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
+					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 					UI::UIManager::setCursorVisable(false);
+
 				}
 
 				if (ImGui::Button("Back To Main", BtnSize)) {
@@ -573,6 +586,13 @@ namespace UI {
 					PauseMenu::visable = false;
 					game.state = GAME_STATE::MAIN_MENU;
 					game.pause = false;
+
+					MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
+					MediaPlayer.StopBackground();
+					MediaPlayer.PlayBackground(Media::MediaType::START);
+
+					resetLevel();
+
 				}
 				ImGui::EndPopup();
 			}
@@ -597,6 +617,7 @@ namespace UI {
 				ConfigModal::createSoundCombo();
 				ImVec2 closeBtnSize(ImGui::GetColumnWidth(), h / 10.f);
 				if (ImGui::Button("Close", closeBtnSize)) {
+					MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
 					ImGui::CloseCurrentPopup();
 					ConfigModal::visable = false;
 				}
@@ -633,10 +654,12 @@ namespace UI {
 	}
 	void ConfigModal::configSoundBg() {
 		if (soundBg == 0) { //¿ªÆô
-			std::cout << "¿ª±³¾°ÒôÀÖ";
+			std::cout << "¿ª±³¾°ÒôÀÖ\n";
+			MediaPlayer.ResumeBG();
 		}
 		else {//¹Ø±Õ
-			std::cout << "¹Ø±³¾°ÒôÀÖ";
+			std::cout << "¹Ø±³¾°ÒôÀÖ\n";
+		    MediaPlayer.PauseBackground();
 		}
 	}
 
@@ -654,6 +677,7 @@ namespace UI {
 				ImGui::Text(HETP_TEXT.c_str());
 				ImVec2 closeBtnSize(ImGui::GetColumnWidth(), h / 10.f);
 				if (ImGui::Button("Close", closeBtnSize)) {
+					MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
 					ImGui::CloseCurrentPopup();
 					HelpModal::visable = false;
 				}
@@ -820,6 +844,7 @@ namespace UI {
 					OverModal::visable = false;
 					game.state = GAME_STATE::MAIN_MENU;
 					game.pause = false;
+					MediaPlayer.PlayBackground(Media::MediaType::START);
 				}
 				ImGui::EndPopup();
 			}

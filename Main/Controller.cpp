@@ -9,7 +9,6 @@ extern vector<bool>	turningState;
 extern AirPlane* Plane_1;
 extern PxRigidDynamic* player;
 extern Player* vehicle;
-extern PxTransform born_pos;
 
 extern Shader* envShader;
 extern Shader* pointParticleShader;

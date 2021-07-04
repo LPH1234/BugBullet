@@ -49,6 +49,7 @@ extern Camera camera;
 extern AirPlane* Plane_1;
 extern guntower GunTower;
 extern vector<AirPlane_AI*>	AI_PlaneList;
+extern set<PxRigidActor*>	exsitBonusList;
 
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
@@ -159,6 +160,18 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 	free(shapes);
 }
 void testTriggerWall() {
+	//地面碰撞以及trigger
+	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	PxRigidStatic* groundPlaneMap = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	groundPlane->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	groundPlaneMap->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
+	PxShape* treasureShape;
+	groundPlane->getShapes(&treasureShape, 1);
+	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	gScene->addActor(*groundPlane);
+	gScene->addActor(*groundPlaneMap);
+	//前后左右上的trigger墙
 	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 700), *gMaterial);
 	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 750), *gMaterial);
 	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 750), *gMaterial);
@@ -253,7 +266,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 		}*/
 
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
-			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->name != "plane") {
+			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&& actor_data_0->type!=DATATYPE::ACTOR_TYPE::PLANE) {
 				removeActorList.insert(actor_0);
 				continue;
 			}
@@ -261,7 +274,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 				//cout << "Blood" << endl;
 			}
 			if ((actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::COLLECTION
-				|| actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) && actor_data_0->name == "plane") {
+				|| actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) && actor_data_0->name == "myPlane") {
 
 				//飞机拾取道具的回调
 				if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::SUPPLY) {
@@ -325,10 +338,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::MAP);
 			}
-			//销毁撞地图的炮塔子弹
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				//printf("炮塔弹药！\n");
+			//销毁撞地图和炮塔的炮塔子弹
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && (actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER ||
+				actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET)
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER||
+				actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP|| actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET)) {
+				printf("炮塔弹药！\n");
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
 			}
 			//导弹打中飞机
@@ -349,8 +364,10 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				//}
 			}
 			//销毁撞地图的坦克子弹
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && (actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP||
+				actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET)
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && (actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP || 
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET)) {
 				//printf("tank弹药！\n");
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}
@@ -485,6 +502,7 @@ void addBonusInList() {
 		bonus->userData = new UserData(0, "BONUS", DATATYPE::TRIGGER_TYPE::COLLECTION);
 		bonus->setName("BONUS");
 		gScene->addActor(*bonus);
+		exsitBonusList.insert(bonus);
 		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
 
 		//cout << addBonusList[i].p.x <<"\t"<< addBonusList[i].p.y << addBonusList[i].p.z << endl;

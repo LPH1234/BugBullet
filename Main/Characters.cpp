@@ -661,6 +661,9 @@ void AirPlane::ProcessKeyPress() {
 	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
 		reset();
 	}
+	if (!keyToPressState[GLFW_KEY_H] && keyToPrePressState[GLFW_KEY_H]) {
+		shotdown();
+	}
 	//静止/启动
 	if (!keyToPressState[GLFW_KEY_C] && keyToPrePressState[GLFW_KEY_C]) {
 		if (turningState2[0]) {
@@ -711,7 +714,7 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 				reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show(1);
 		}
 		else if (this->alive) {
-			this->health = 0;
+			this->health = 0;	
 			this->alive = false;
 			shotdown();
 			game.state = GAME_STATE::OVER;
@@ -825,8 +828,14 @@ void AirPlane::crash() {
 	renderParticleClusterList.push_back(smoke_cluster);
 }
 void AirPlane::shotdown() {
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION,true);
 	PxVec3 p = body->getGlobalPose().p;
-
+	body->setGlobalPose(PxTransform(p, PxQuat(-90.0f, swingForward)));
+	currentHeadForward = headForward;
+	currentBackForward = backForward;
+	currentSwingForward = swingForward;
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
+	body->setLinearVelocity(veclocity*5* currentHeadForward);
 }
 
 void AirPlane::updateUI() {
@@ -1024,7 +1033,7 @@ void Player::automove() {
 	fireTime++;
 	this->body->addForce(PxVec3(0, -10, 0), PxForceMode::eFORCE);
 	if (fireTime % 200 == 0) {
-		//autoEmit();
+		autoEmit();
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);
@@ -1173,6 +1182,21 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		//MediaPlayer.PlayMedia2D(Media::MediaType::EXPLODE);
 		MediaPlayer.PlayMedia3D(vec3df(tankToPlane.x + 10.f, tankToPlane.y + 10.f, tankToPlane.z + 10.f), Media::MediaType::EXPLODE);
 	}
+}
+void Player::reset() {
+	currentheadforward = headforward;
+	currentbackforward = backforward;
+	PxVec3 startPos;//路线起点
+	PxVec3 endPos;//路线终点
+	PxVec3 startDir;//起始方向
+	bool autoshooting;//射击机制
+	last = 0;
+	health = 100;//坦克生命值
+	alive = true;
+	turnningState.resize(2,false);//转向状态，分别是直行中、转向中
+	currentAngle = 0;//当前已经转过的角度
+	velocity = 8.0f;//默认速度
+	fireTime = 0;//发射间隔计时器
 }
 
 

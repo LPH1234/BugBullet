@@ -13,14 +13,21 @@ enum GAME_STATE
 	PAUSE,
 	OVER
 };
-
+enum MEDIA_STATE {
+	init,
+    mainmenu,
+	pause,
+	started,
+	over
+};
 struct Game
 {
-	Game(GAME_STATE state, float w, float h, float lx, float ly, float dt, float lt, bool firstMouse) {
-		this->state = state; this->SCR_WIDTH = w; this->SCR_HEIGHT = h; this->lastX = lx; this->lastY = ly; this->deltaTime = dt; this->lastFrame = lt; this->firstMouse = firstMouse;
+	Game(GAME_STATE state,MEDIA_STATE _mediastate, float w, float h, float lx, float ly, float dt, float lt, bool firstMouse) {
+		this->state = state; this->MediaState = _mediastate; this->SCR_WIDTH = w; this->SCR_HEIGHT = h; this->lastX = lx; this->lastY = ly; this->deltaTime = dt; this->lastFrame = lt; this->firstMouse = firstMouse;
 		this->pause = false; this->isInit = false;
 	}
 	GAME_STATE state;
+	MEDIA_STATE MediaState;
 	float SCR_WIDTH;
 	float SCR_HEIGHT;
 	float lastX;
