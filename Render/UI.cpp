@@ -4,6 +4,9 @@ extern Game game;
 namespace UI {
 	ImFont* zhFont = nullptr;
 
+	unordered_map<UIID, BaseUI*> UIManager::idToUI;
+	GLFWwindow* UIManager::window;
+
 	GLFWwindow* MainMenu::window = nullptr;
 	bool MainMenu::visable = false;
 
@@ -19,8 +22,6 @@ namespace UI {
 	ImGuiStyle*  ConfigModal::style = nullptr;
 
 	bool HelpModal::visable = false;
-
-	unordered_map<UIID, BaseUI*> UIManager::idToUI;
 
 	bool CornerTip::visable = false;
 	Camera* CornerTip::camera = nullptr;
@@ -103,7 +104,8 @@ namespace UI {
 		}
 	}
 
-	void  UIManager::init(const float W, const float H) {
+	void  UIManager::init(GLFWwindow* window, const float W, const float H) {
+		UIManager::window = window;
 		////血条
 		HPBarUI* HPBar;
 		HPBar = new HPBarUI(UIID::HP_BAR, H, HPBAR_TEXTURE_PATH);
@@ -114,6 +116,10 @@ namespace UI {
 
 		BorderMaskUI* borderMask = new BorderMaskUI(UIID::BORDER_MASK, W, H, TextureManager::getTextureID(BORDER_MASK_UI_TEX_PATH), BORDER_MASK_UI_CLOSE_DELAY);
 		addUI(borderMask);
+	}
+
+	void UIManager::setCursorVisable(bool v) {
+		glfwSetInputMode(UIManager::window, GLFW_CURSOR, v ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 
 	BaseUI::BaseUI(UIID id) {
@@ -195,6 +201,7 @@ namespace UI {
 		glm::mat4 model = glm::mat4(1.0f);
 		const float FILL_WIDTH = 148.f;
 		const float FILL_HEIGHT = 14.f;
+		updateProgress(UI::PlayerStatus::HP);
 		glDepthFunc(GL_ALWAYS);
 		if (enableAnimate) {
 			if (this->animateProgress < this->progress)
@@ -205,7 +212,6 @@ namespace UI {
 		else {
 			this->animateProgress = this->progress;
 		}
-
 		/*1：hp填充*/
 		this->HPBarFillShader->use();
 		glm::vec3 position0(position.x + (size.x - FILL_WIDTH) / 2.f, position.y + (size.y - FILL_HEIGHT) / 2.f, 0.f);
@@ -257,6 +263,7 @@ namespace UI {
 		size = glm::vec2(W, H);
 		this->textureID = textureID;
 		this->closeDelay = closeDelay * 1000;
+		this->visable = false;
 		reset();
 		borderMaskShader = new Shader("shaders/borderMaskShader/borderMask.vs", "shaders/borderMaskShader/borderMask.fs");
 		// Configure VAO/VBO
@@ -290,6 +297,7 @@ namespace UI {
 				alpha = 0.f;
 			else
 				alpha = 1 - (clock() - startCloseTime) * 1.f / closeDelay;
+			alpha = alpha < 0.f ? 0.f : alpha;
 		}
 		else {
 			blingValue += blingDown ? -BORDER_MASK_UI_BLING_VELOCITY : BORDER_MASK_UI_BLING_VELOCITY;
@@ -298,6 +306,7 @@ namespace UI {
 			}
 			if (blingValue <= 0.f) {
 				blingDown = false; blingValue = 0.f;
+				if (blingTimes > 0 && ++currBlingTimes >= blingTimes) this->close();
 			}
 		}
 		glm::mat4 projection = glm::ortho(0.0f, w*1.f, h*1.f, 0.0f, -1.0f, 1.0f);
@@ -318,17 +327,21 @@ namespace UI {
 		glBindVertexArray(0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDepthFunc(GL_LESS);
-		if (alpha == 0.f)
+		if (alpha == 0.f) {
 			UI::UIManager::setUIVisable(this->getUIID(), false);
+		}
 	}
 
-	void BorderMaskUI::reset() {
-		alpha = 1.f;
-		shouldClose = false;
+	void BorderMaskUI::reset(int blingTimes) {
 		blingValue = 1.f; //当前闪动值，0~1
 		blingDown = true; //当前闪动值是否减小方向
+		shouldClose = false;
+		alpha = 1.f;
+		this->blingTimes = blingTimes; //默认参数-1:一直闪动(当blingTimes《=0时一直闪动)
+		currBlingTimes = 0;
 	}
 	void BorderMaskUI::close() {
+		if (shouldClose) return;
 		shouldClose = true;
 		startCloseTime = clock();
 	}
@@ -429,7 +442,7 @@ namespace UI {
 			ImGui::SetWindowSize(window_size);
 			if (ImGui::Button("S t a r t", ImVec2(window_size.x, window_size.y / 5))) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
 				game.state = GAME_STATE::STARTED;
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				UI::UIManager::setCursorVisable(false);
 			}
 			if (ImGui::Button("C o n f i g", ImVec2(window_size.x, window_size.y / 5))) {
 				ConfigModal::visable = true;
@@ -479,7 +492,7 @@ namespace UI {
 					PauseMenu::visable = false;
 					game.state = GAME_STATE::STARTED;
 					game.pause = false;
-					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					UI::UIManager::setCursorVisable(false);
 				}
 
 				if (ImGui::Button("Back To Main", BtnSize)) {
@@ -641,6 +654,7 @@ namespace UI {
 			ImGui::End();
 		}
 	}
+
 
 
 	void CenterText::init(GLFWwindow* window) {

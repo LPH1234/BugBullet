@@ -88,7 +88,7 @@ int myRenderLoop()
 
 	TextureManager::init();
 	TextureManager::initAnimateTextures(); // 开启动画，执行此函数会开始加载动画帧。
-	UI::UIManager::init(game.SCR_WIDTH, game.SCR_HEIGHT);
+	UI::UIManager::init(window, game.SCR_WIDTH, game.SCR_HEIGHT);
 	game.state = GAME_STATE::INIT; // 将游戏的初始状态设置为INIT状态，游戏状态是一个有限状态机
 	// render loop
 	// -----------
@@ -153,7 +153,6 @@ int myRenderLoop()
 
 			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, true);
 			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, false);
-			UI::UIManager::setUIVisable(UI::UIID::BORDER_MASK, true);
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
 
 			ImGui_ImplOpenGL3_NewFrame();
@@ -194,6 +193,7 @@ int myRenderLoop()
 				UI::PauseMenu::init(window);
 				UI::CenterText::init(window);
 				UI::OverModal::init(window);
+
 				// var init
 				// -----------------------------
 				for (int i = 0; i <= 348; i++)
@@ -251,12 +251,13 @@ void windowProcessInput(GLFWwindow *window) {
 		if (game.state == GAME_STATE::STARTED) { //请求暂停
 			game.state = GAME_STATE::PAUSE;
 			game.pause = true;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			UI::UIManager::setCursorVisable(true);
+
 		}
 		else if (game.state == GAME_STATE::PAUSE) { //继续游戏
 			game.state = GAME_STATE::STARTED;
 			game.pause = false;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			UI::UIManager::setCursorVisable(false);
 		}
 
 	}

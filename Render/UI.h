@@ -91,6 +91,8 @@ namespace UI {
 		Shader* borderMaskShader;
 		float alpha;
 		bool shouldClose; //应该关闭
+		int currBlingTimes; //当前已经闪动次数
+		int blingTimes; //当前已经闪动次数
 		float blingValue; //当前闪动值，0~1
 		bool blingDown; //当前闪动值是否减小方向
 		unsigned int closeDelay;
@@ -102,7 +104,7 @@ namespace UI {
 		~BorderMaskUI();
 		// Renders a defined quad textured with given sprite
 		void draw(unsigned int w, unsigned int h);
-		void reset();
+		void reset(int blingTimes = -1);
 		void close();
 	};
 
@@ -129,16 +131,17 @@ namespace UI {
 	};
 
 	class UIManager {
-
+		static GLFWwindow* window;
 		static unordered_map<UIID, BaseUI*> idToUI;
 		static void addUI(BaseUI*);
 	public:
+		static void init(GLFWwindow* window, const float W, const  float H);
 		static BaseUI* getUI(UIID id);
 		static void setUIVisable(UIID id, bool v);
 		static bool getUIVisable(UIID id);
 		static void setEnableAnimate(UIID id, bool enable);
-		static void init(const float W, const  float H);
 		static void draw(const float W, const float H);
+		static void setCursorVisable(bool v);
 	};
 
 
