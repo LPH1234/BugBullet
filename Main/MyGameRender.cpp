@@ -153,6 +153,7 @@ int myRenderLoop()
 
 			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, true);
 			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, false);
+			UI::UIManager::setUIVisable(UI::UIID::RETICLE, mouseButtonPressState[1]); //按下右键出现准心
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
 
 			ImGui_ImplOpenGL3_NewFrame();

@@ -29,6 +29,7 @@ namespace UI {
 		GAME_OVER,
 		HP_BAR,
 		BORDER_MASK,
+		RETICLE,
 	};
 
 
@@ -83,6 +84,26 @@ namespace UI {
 		const float animateVelocity = 0.5f;
 		float progress = 100.f;
 		float length;
+	};
+
+	class ReticleUI : public BaseUI {
+		bool ableTrack = false;
+		unsigned int textureID;
+		unsigned int currAngle;
+	public:
+		// Constructor (inits shaders/shapes)
+		ReticleUI(UIID id, float W, float H, std::string texture);
+		// Destructor
+		~ReticleUI();
+		// Renders a defined quad textured with given sprite
+		void draw(unsigned int w, unsigned int h);
+		void updateTargetPosition(glm::vec3& pos);
+		void enableTrack(bool enable);
+
+	private:
+		// Render state
+		Shader* shader;
+		GLuint VAO;
 	};
 
 	class BorderMaskUI : public BaseUI {
