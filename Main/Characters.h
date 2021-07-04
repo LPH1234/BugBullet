@@ -43,7 +43,7 @@ extern vector<AirPlane_AI*>		AI_PlaneList;
 extern Media MediaPlayer;
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 extern unordered_map<int, BaseModel*> idToRenderModel;
-
+extern vector<PxTransform> addCrashList;
 
 class BaseCharacter {
 protected:
@@ -163,6 +163,8 @@ public:
 	float					emitVeclocity = 64.0f;//默认炮弹飞行速度
 	float					turningSpeed = 6.0f;//转向速度
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
+
+	bool track_mode = false;
 
 	bool activatemissle = false;
 	int health = 10000;//飞机生命值
