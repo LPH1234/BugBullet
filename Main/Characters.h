@@ -67,7 +67,7 @@ public:
 	virtual void getUp(physx::PxVec3& up) {};
 	virtual void ProcessKeyPress() {};
 	virtual void ProcessMouseMove() {};
-	virtual void ProcessMouseClick() {};
+	virtual void ProcessMouseClick(int button, int action) {};
 
 	virtual void oncontact(DATATYPE::ACTOR_TYPE _type) {};
 	virtual void oncontact(DATATYPE::TRIGGER_TYPE _type) {};
@@ -196,7 +196,7 @@ public:
 	virtual void getUp(physx::PxVec3& up);
 	virtual void ProcessKeyPress();
 	virtual void ProcessMouseMove() {};
-	virtual void ProcessMouseClick() {};
+	virtual void ProcessMouseClick(int button, int action);
 
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
 	void oncontact(DATATYPE::TRIGGER_TYPE _type);
@@ -248,7 +248,7 @@ public:
 	virtual void getUp(physx::PxVec3& up);
 	virtual void ProcessKeyPress() {};
 	virtual void ProcessMouseMove() {};
-	virtual void ProcessMouseClick() {};
+	//virtual void ProcessMouseClick() {};
 };
 
 

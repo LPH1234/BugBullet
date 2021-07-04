@@ -240,7 +240,7 @@ void initPhysics(bool interactive)
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	//当前为Level0
-	Level[0] = true;
+	Level[2] = true;
 	//地面和trigger墙
 	testTriggerWall();
 
@@ -265,7 +265,7 @@ void initPhysics(bool interactive)
 	initBonus();
 
 	//加载4架AI飞机
-	//initAI_Plane();
+	initAI_Plane();
 
 }
 
