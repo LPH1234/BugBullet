@@ -17,7 +17,7 @@ AirPlane								*Plane_1 = nullptr;			//玩家飞机
 AirPlane_AI								*Plane_AI = nullptr;		//用于测试单个AI飞机
 MissileManager							*ManageMissile = nullptr;	//导弹管理器
 Media									MediaPlayer;				//声音播放器
-vector<Player*>							tankList(4,nullptr);		//坦克链表
+vector<Player*>							tankList(4, nullptr);		//坦克链表
 vector<AirPlane_AI*>					AI_PlaneList(4, nullptr);	//AI飞机链表
 vector<AirPlane_AI*>					tempList(1, nullptr);		//测试
 //Player*								  vehicle;
@@ -31,12 +31,13 @@ void createModel(std::string path, int scale, PxVec3& offset) {}
 
 extern Camera camera;
 extern Shader* envShader;
+
 vector<glm::vec3>east_island_pos_list = { glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(248.f, 5.5f, 80.0f),glm::vec3(248.0f, 5.5f, -141.0f),
 										glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
 										glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(350.0f, 7.6f, -136.0f),
 										glm::vec3(136.5f, 5.4f, -140.0f),glm::vec3(136.5f, 5.4f, 22.0f),glm::vec3(136.5f, 5.4f, 60.0f),
 										glm::vec3(136.5f, 5.4f, -23.0f),glm::vec3(136.5f, 5.4f, -45.0f) };
-	
+
 vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),
 										glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
 										 glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),
@@ -82,15 +83,15 @@ void initTank() {
 	int index[4][2] = { {1,6},{12,13},{8,3},{5,7} };
 	PxVec3 dir[4] = { PxVec3(1,0,0),PxVec3(0,0,-1),PxVec3(-1,0,0),PxVec3(0,0,-1) };
 	for (int i = 0; i < 2; i++) {
-		PxVec3 start; glmVec3ToPxVec3 (east_island_pos_list[index[i][0] - 1],start);
+		PxVec3 start; glmVec3ToPxVec3(east_island_pos_list[index[i][0] - 1], start);
 		PxVec3 end; glmVec3ToPxVec3(east_island_pos_list[index[i][1] - 1], end);
-		PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(east_island_pos_list[index[i][0]-1], glm::vec3(1.0f, 1.0f, 1.0f),
+		PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(east_island_pos_list[index[i][0] - 1], glm::vec3(1.0f, 1.0f, 1.0f),
 			"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));
 		//input_tank->setMass(100.f);
 
 		tankList[i] = new Player(input_tank, Plane_1, start, end, dir[i]);
 
-		
+
 	}
 }
 //坦克移动
@@ -106,20 +107,20 @@ vector<AirPlane_AI*> initAI_Plane() {
 	for (int i = 0; i < 4; i++) {
 		cout << "initAI_Plane!\n";
 		//if (AI_PlaneList[i]==nullptr) {
-			PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(posList[i], glm::vec3(0.3f, 0.3f, 0.3f),
-				"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-			AI_PlaneList[i] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI, ManageMissile,Plane_1);
-			UserData* tempData = reinterpret_cast<UserData*>(AI_PlaneList[i]->body->userData);
-			tempData->id = i;
-			//cout << tempData->id << "AI初始化完成！\n";
-		//}
+		PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(posList[i], glm::vec3(0.3f, 0.3f, 0.3f),
+			"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
+		AI_PlaneList[i] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI, ManageMissile, Plane_1);
+		UserData* tempData = reinterpret_cast<UserData*>(AI_PlaneList[i]->body->userData);
+		tempData->id = i;
+		//cout << tempData->id << "AI初始化完成！\n";
+	//}
 	}
 	return AI_PlaneList;
 }
 //AI飞机飞行
 void AI_PlaneAutoFly() {
 	for (int i = 0; i < 4; i++) {
-		if(AI_PlaneList[i]->alive)AI_PlaneList[i]->autoFlying();
+		if (AI_PlaneList[i]->alive)AI_PlaneList[i]->autoFlying();
 	}
 }
 
@@ -169,7 +170,7 @@ void initPhysics3() {
 void resetLevel() {
 	//销毁坦克内容
 	for (int i = 0; i < 2; i++) {
-		if(tankList[i]->alive)gScene->removeActor(*tankList[i]->healthBody);
+		if (tankList[i]->alive)gScene->removeActor(*tankList[i]->healthBody);
 		gScene->removeActor(*tankList[i]->body);
 		//free(tankList[i]);
 		//tankList[i] = nullptr;
@@ -181,7 +182,7 @@ void resetLevel() {
 	GunTower.reset();
 	//销毁AI飞机内容
 	for (int i = 0; i < 4; i++) {
-		if(AI_PlaneList[i]!=nullptr)
+		if (AI_PlaneList[i] != nullptr)
 			gScene->removeActor(*AI_PlaneList[i]->body);
 		//free(AI_PlaneList[i]);
 		AI_PlaneList[i] = nullptr;
@@ -189,7 +190,7 @@ void resetLevel() {
 	//销毁道具
 	Bonus.reset();
 	//销毁玩家飞机
-	if(Plane_1!=nullptr)
+	if (Plane_1 != nullptr)
 		gScene->removeActor(*Plane_1->body);
 	//free(Plane_1);
 	Plane_1 = nullptr;
@@ -244,11 +245,13 @@ void initPhysics(bool interactive)
 	//地面和trigger墙
 	testTriggerWall();
 
+
 	//加载地图
 	initMap();
 
 	//初始化导弹管理器
 	ManageMissile = new MissileManager();
+
 
 	//加载玩家飞机
 	initMyAirPlane();
@@ -258,6 +261,7 @@ void initPhysics(bool interactive)
 	camera.setTarget(Plane_1);
 	//camera.setTarget(tankList[1]);
 	//camera.setTarget(Plane_AI);
+
 
 	//加载坦克
 	initTank();
@@ -338,7 +342,8 @@ void stepPhysics(bool interactive)
 		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 
 	}*/
-	
+
+
 }
 
 void cleanupPhysics(bool interactive)

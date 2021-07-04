@@ -184,7 +184,8 @@ class FlameParticle : public BaseSpriteParticle {
 	float alpha;
 public:
 	FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, int timeToLeave, std::string texturePath, Shader* shader);
-	void draw(); 
+	~FlameParticle();
+	void draw();
 
 };
 
@@ -195,6 +196,7 @@ class SmokeParticle : public BaseSpriteParticle {
 	float maxY;
 public:
 	SmokeParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, float vy, float maxY, std::string texturePath, Shader* shader);
+	~SmokeParticle();
 	void draw();
 
 };
@@ -304,7 +306,10 @@ public:
 
 	}
 
-	~Cube() {}
+	~Cube() {
+		glDeleteBuffers(1, &this->VBO);
+		glDeleteVertexArrays(1, &this->cubeVAO);
+	}
 
 	//绘制模型
 	void draw() {
@@ -402,7 +407,10 @@ public:
 
 	}
 
-	~Sphere() {}
+	~Sphere() {
+		glDeleteBuffers(1, &this->VBO);
+		glDeleteVertexArrays(1, &this->VAO);
+	}
 
 	//绘制模型
 	void draw() {
@@ -503,7 +511,10 @@ public:
 
 	}
 
-	~SkyBox() {}
+	~SkyBox() {
+		glDeleteBuffers(1, &this->skyBoxVBOId);
+		glDeleteVertexArrays(1, &this->skyBoxVAOId);
+	}
 
 	void draw() {
 		/*glEnable(GL_DEPTH_TEST);
