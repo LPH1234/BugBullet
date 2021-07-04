@@ -117,6 +117,9 @@ namespace UI {
 
 		BorderMaskUI* borderMask = new BorderMaskUI(UIID::BORDER_MASK, W, H, TextureManager::getTextureID(BORDER_MASK_UI_TEX_PATH), BORDER_MASK_UI_CLOSE_DELAY);
 		addUI(borderMask);
+
+		ReticleUI* reticleUI = new ReticleUI(UIID::RETICLE, W, H, RETICLE_TEXTURE_PATH);
+		addUI(reticleUI);
 	}
 
 	void UIManager::setCursorVisable(bool v) {
@@ -257,7 +260,77 @@ namespace UI {
 		this->progress = progress;
 	}
 
+	// Constructor (inits shaders/shapes)
+	ReticleUI::ReticleUI(UIID id, float W, float H, std::string texture) :BaseUI(id) {
+		shader = new Shader("shaders/normalImgShader/normalImg.vs", "shaders/normalImgShader/normalImg.fs");
+		// Configure VAO/VBO
+		size.y = size.x = W / RETICLE_SIZE_RELATIVE_FACTOR;
+		position.x = W / 2.f - size.x / 2;
+		position.y = H / 2.f - size.y / 2;
+		this->visable = false;
+		currAngle = false;
+		this->ableTrack = false;
+		GLuint VBO;
+		GLfloat vertices[] = {
+			// Pos      // Tex
+			0.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f,
 
+			0.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, 0.0f, 1.0f, 0.0f
+		};
+		textureID = TextureManager::getTextureID(texture);
+		glGenVertexArrays(1, &this->VAO);
+		glGenBuffers(1, &VBO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		glBindVertexArray(this->VAO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	// Destructor
+	ReticleUI::~ReticleUI() {
+		delete this->shader;
+	}
+	// Renders a defined quad textured with given sprite
+	void ReticleUI::draw(unsigned int w, unsigned int h) {
+		size.y = size.x = w / RETICLE_SIZE_RELATIVE_FACTOR;
+		glm::mat4 projection = glm::ortho(0.0f, w*1.f, h*1.f, 0.0f, -1.0f, 1.0f);
+		glm::mat4 model = glm::mat4(1.0f);
+		this->shader->use();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(position.x, position.y, 0.1f));  // First translate (transformations are: scale happens first, then rotation and then finall translation happens; reversed order)
+		if (!this->ableTrack)//如果没有目标
+			model = glm::rotate(model, glm::radians(1.f*(currAngle++ % 360)), glm::vec3(0.f, 0.f, 1.f)); //绕轴rorate_axis旋转，如果rorate_angle是数字形式
+		model = glm::scale(model, glm::vec3(size, 1.0f)); // Last scale
+		//std::cout << "pos \tx:" << position.x << "     y:" << position.y << "\n";
+		//std::cout << "size \tx:" << size.x << "     y:" << size.y << "\n";
+		this->shader->setMat4("model", model);
+		this->shader->setMat4("projection", projection);
+		this->shader->setFloat("alpha", 1.0);
+		//glDepthFunc(GL_ALWAYS);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glBindVertexArray(this->VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDepthFunc(GL_LESS);
+	}
+	void ReticleUI::updateTargetPosition(glm::vec3& pos) {
+		this->position.x = pos.x;
+		this->position.y = pos.y;
+	}
+	void  ReticleUI::enableTrack(bool enable) {
+		this->ableTrack = enable;
+	}
 
 	BorderMaskUI::BorderMaskUI(UIID id, float W, float H, unsigned int textureID, float closeDelay) : BaseUI(id) {
 		position = glm::vec2(0, 0);

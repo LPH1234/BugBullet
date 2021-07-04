@@ -36,8 +36,6 @@ FlameParticle::FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float
 		vertices[STEP * i + 1] = pos.y;
 		vertices[STEP * i + 2] = random[STEP * i + 2] * radis + pos.z;
 	}
-	std::cout << "vertices0:" << vertices[0] << "\t" << vertices[2] << "\n";
-	std::cout << "vertices1:" << vertices[3] << "\t" << vertices[5] << "\n======================\n";
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -51,8 +49,13 @@ FlameParticle::FlameParticle(glm::vec3 pos, int pointNum, float pointSize, float
 	if (hasTexture)
 		this->textureId = TextureManager::getTextureID(texturePath);
 	delete random;
+	delete vertices;
 }
 
+FlameParticle::~FlameParticle() {
+	glDeleteBuffers(1, &this->VBO);
+	glDeleteVertexArrays(1, &this->VAO);
+}
 
 void FlameParticle::draw() {
 	dy += VY;
@@ -107,7 +110,15 @@ SmokeParticle::SmokeParticle(glm::vec3 pos, int pointNum, float pointSize, float
 
 	if (hasTexture)
 		this->textureId = TextureManager::getTextureID(texturePath);
+	delete random;
+	delete vertices;
 }
+
+SmokeParticle::~SmokeParticle() {
+	glDeleteBuffers(1, &this->VBO);
+	glDeleteVertexArrays(1, &this->VAO);
+}
+
 void SmokeParticle::draw() {
 	dy += VY;
 	if (dy > maxY) { this->readyToLeave = true; return; }
@@ -158,7 +169,6 @@ CloudParticle::CloudParticle(glm::vec3 pos, glm::vec3 scale_value, int cloudDens
 		trans[i].y = random[i * 3 + 1];
 		trans[i].z = random[i * 3 + 2];
 	}
-	delete random;
 	const int STEP = 5;
 	GLfloat transparentVertices[] = {
 		// Positions         // Texture Coords (swapped y coordinates because texture is flipped upside down)
@@ -181,8 +191,11 @@ CloudParticle::CloudParticle(glm::vec3 pos, glm::vec3 scale_value, int cloudDens
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glBindVertexArray(0);
+	delete random;
 }
 CloudParticle::~CloudParticle() {
+	glDeleteBuffers(1, &this->VBO);
+	glDeleteVertexArrays(1, &this->VAO);
 	delete angles;
 	delete axis;
 	delete trans;
@@ -247,7 +260,10 @@ DebrisParticle::DebrisParticle(glm::vec3 scale, vector<string>& modelPathes, glm
 	this->modelPathes = modelPathes;
 }
 
-DebrisParticle::~DebrisParticle() {}
+DebrisParticle::~DebrisParticle() {
+	glDeleteBuffers(1, &this->VBO);
+	glDeleteVertexArrays(1, &this->VAO);
+}
 
 void DebrisParticle::update(const PxVec3& position, const  PxVec3& velocity) {
 	//1.…Ë÷√Œª÷√

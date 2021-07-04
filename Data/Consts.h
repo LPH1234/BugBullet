@@ -46,6 +46,9 @@ const std::string PAUSE_ICON_PATH = "images/textures/pause.png";
 
 const std::string HPBAR_TEXTURE_PATH = "images/textures/hpbar-border.png";
 
+const std::string RETICLE_TEXTURE_PATH = "images/textures/target.png";
+const float RETICLE_SIZE_RELATIVE_FACTOR = 15.f;
+
 const unsigned int ANIMATE_START_FRAME = 150;
 const  std::string ANIMATE_FRAMS_PATH = "resources/animation/BattleField2042/images1/";
 const  std::string ANIMATE_FRAMS_SUFFIX = ".png";
