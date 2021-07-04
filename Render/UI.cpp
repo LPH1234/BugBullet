@@ -845,6 +845,7 @@ namespace UI {
 					game.state = GAME_STATE::MAIN_MENU;
 					game.pause = false;
 					MediaPlayer.PlayBackground(Media::MediaType::START);
+					resetLevel();
 				}
 				ImGui::EndPopup();
 			}
