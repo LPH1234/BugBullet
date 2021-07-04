@@ -621,6 +621,12 @@ void AirPlane::ProcessKeyPress() {
 	if (keyToPressState[GLFW_KEY_2]) {
 		activatemissle = true;
 	}
+	if (!keyToPressState[GLFW_KEY_F4] && keyToPrePressState[GLFW_KEY_F4]) {
+		turningSpeed = 2.0f;
+	}
+	if (!keyToPressState[GLFW_KEY_F3] && keyToPrePressState[GLFW_KEY_F3]) {
+		turningSpeed = 6.f;
+	}
 	//·¢Éä
 	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]
 		&& ((!activatemissle&&bullet_ammo > 0) || (activatemissle&&missle_ammo > 0))) {
@@ -1687,6 +1693,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		else if (this->alive == true) {
 			this->health = 0;
 			this->alive = false;
+			addCrashList.push_back(body->getGlobalPose());
 			shotdown(); 
 		}
 	}

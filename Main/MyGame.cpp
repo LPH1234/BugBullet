@@ -298,6 +298,7 @@ void Tick() {
 	Plane_1->manualControlAirPlane4();
 	Bonus.runsupply();
 	addBonusInList();
+	addCrashInList();
 	removeActorInList();
 	//判断是否需要切换场景
 	if (isToChangeLevel()) {

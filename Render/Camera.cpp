@@ -139,13 +139,17 @@ void Camera::trackDynamicPosition() { // 设置相机跟随物体
 		if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
 			PxVec3 t_f; this->target->getFront(t_f);
 			PxVec3 t_u; this->target->getUp(t_u);
-			glm::vec3 t_f1; pxVec3ToGlmVec3(t_f - 0.3f * t_u, t_f1);
+			glm::vec3 t_f1; pxVec3ToGlmVec3(t_f, t_f1);
+			//glm::vec3 t_f1; pxVec3ToGlmVec3(t_f - 0.3f * t_u, t_f1);
 			t_f1 = glm::normalize(t_f1);
 			//glm::vec3 t_f1; pxVec3ToGlmVec3(t_f - Pitch / 180.f * t_u, t_f1);
-			Position.y = target_position.y - t_f1.y * track_radius;
+			/*Position.y = target_position.y - t_f1.y * track_radius;
 			float curr_radians = sqrtf(track_radius * track_radius - (target_position.y - Position.y) * (target_position.y - Position.y));
 			Position.x = target_position.x - t_f1.x * curr_radians;
-			Position.z = target_position.z - t_f1.z * curr_radians;
+			Position.z = target_position.z - t_f1.z * curr_radians;*/
+			Position.y = target_position.y + 0.6f;
+			Position.x = target_position.x;
+			Position.z = target_position.z;
 		}
 	}
 	updateCameraVectors();
@@ -194,12 +198,14 @@ void Camera::updateCameraVectors()
 		front.y = target_position.y - Position.y;
 		front.z = target_position.z - Position.z;
 		Front = glm::normalize(front);
+		PxVec3 FFF;
+		this->target->getFront(FFF);
+		pxVec3ToGlmVec3(FFF, Front);
 		// also re-calculate the Right and Up vector
 		Right = glm::normalize(glm::cross(Front, WorldUp));
 		PxVec3 Right_t(Right.x, Right.y, Right.z); this->target->getRight(Right_t);
 		Right = glm::normalize(pxVec3ToGlmVec3(Right_t));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
-
 	}
 }
 
