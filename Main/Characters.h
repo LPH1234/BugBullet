@@ -67,7 +67,7 @@ public:
 	virtual void getUp(physx::PxVec3& up) {};
 	virtual void ProcessKeyPress() {};
 	virtual void ProcessMouseMove() {};
-	virtual void ProcessMouseClick() {};
+	virtual void ProcessMouseClick(int button, int action) {};
 
 	virtual void oncontact(DATATYPE::ACTOR_TYPE _type) {};
 	virtual void oncontact(DATATYPE::TRIGGER_TYPE _type) {};
@@ -186,7 +186,7 @@ public:
 	void reset();
 	void crash();
 	void shotdown();
-	bool ifEmitMissile();
+	PxVec3 ifEmitMissile();
 	void emitMissile();
 	void updateUI();
 
@@ -196,7 +196,8 @@ public:
 	virtual void getUp(physx::PxVec3& up);
 	virtual void ProcessKeyPress();
 	virtual void ProcessMouseMove() {};
-	virtual void ProcessMouseClick() {};
+	virtual void ProcessMouseClick(int button, int action);
+	void ProcessMouseClick();
 
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
 	void oncontact(DATATYPE::TRIGGER_TYPE _type);
@@ -241,7 +242,7 @@ public:
 	void autoEmit(int time);		//自动发射导弹攻击玩家飞机
 	void oncontact(DATATYPE::ACTOR_TYPE _type);//被击中扣血
 	void crash();					//被击毁
-	void shotdown();                //被击落
+	void shotdown();
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);
@@ -249,7 +250,7 @@ public:
 	virtual void getUp(physx::PxVec3& up);
 	virtual void ProcessKeyPress() {};
 	virtual void ProcessMouseMove() {};
-	virtual void ProcessMouseClick() {};
+	//virtual void ProcessMouseClick() {};
 };
 
 
