@@ -104,7 +104,8 @@ namespace UI {
 		~BorderMaskUI();
 		// Renders a defined quad textured with given sprite
 		void draw(unsigned int w, unsigned int h);
-		void reset(int blingTimes = -1);
+		// 指定闪动次数并展示
+		void show(int blingTimes = -1);
 		void close();
 	};
 

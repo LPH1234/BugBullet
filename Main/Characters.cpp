@@ -697,6 +697,7 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			game.state = GAME_STATE::OVER;
 			UI::UIManager::setCursorVisable(true);
 			cout << "crash" << endl;
+			reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
 		}
 	}
 	else {
@@ -704,6 +705,10 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		if (this->health - damage > 0) {
 			this->health -= damage;
 			cout << "Plane - " << damage << endl;
+			if (this->health < PLAYER_MIN_HP_TO_ALERT) //血量告急一直闪
+				reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
+			else//被击中闪一下
+				reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show(1);
 		}
 		else if (this->alive) {
 			this->health = 0;
@@ -712,6 +717,7 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			game.state = GAME_STATE::OVER;
 			UI::UIManager::setCursorVisable(true);
 			cout << "Plane died" << endl;
+			reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
 		}
 	}
 	updateUI();
@@ -735,7 +741,11 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 		this->missle_ammo += 5;
 		cout << "missle_ammo" << missle_ammo << endl;
 	}
-	else {}
+	else {
+	}
+	if (this->health > PLAYER_MIN_HP_TO_ALERT) //捡血包，停止闪
+		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
+
 }
 void AirPlane::formcloud() {
 	vector<string>textures;
@@ -823,6 +833,8 @@ void AirPlane::updateUI() {
 	UI::PlayerStatus::HP = this->health;
 	UI::PlayerStatus::Ammo = this->bullet_ammo;
 	UI::PlayerStatus::Missile = this->missle_ammo;
+
+
 }
 
 
