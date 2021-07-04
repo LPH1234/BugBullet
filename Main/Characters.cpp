@@ -661,6 +661,9 @@ void AirPlane::ProcessKeyPress() {
 	if (!keyToPressState[GLFW_KEY_R] && keyToPrePressState[GLFW_KEY_R]) {
 		reset();
 	}
+	if (!keyToPressState[GLFW_KEY_H] && keyToPrePressState[GLFW_KEY_H]) {
+		shotdown();
+	}
 	//¾²Ö¹/Æô¶¯
 	if (!keyToPressState[GLFW_KEY_C] && keyToPrePressState[GLFW_KEY_C]) {
 		if (turningState2[0]) {
@@ -825,8 +828,14 @@ void AirPlane::crash() {
 	renderParticleClusterList.push_back(smoke_cluster);
 }
 void AirPlane::shotdown() {
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION,true);
 	PxVec3 p = body->getGlobalPose().p;
-
+	body->setGlobalPose(PxTransform(p, PxQuat(-90.0f, swingForward)));
+	currentHeadForward = headForward;
+	currentBackForward = backForward;
+	currentSwingForward = swingForward;
+	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
+	body->setLinearVelocity(veclocity*5* currentHeadForward);
 }
 
 void AirPlane::updateUI() {

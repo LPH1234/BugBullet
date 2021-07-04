@@ -266,7 +266,7 @@ void module::onTrigger(PxTriggerPair* pairs, PxU32 count) {
 		}*/
 
 		if (actor_data_0 != NULL && actor_data_1 != NULL) {
-			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&&actor_data_0->type !=DATATYPE::ACTOR_TYPE::PLANE) {
+			if (actor_data_1->type2 == DATATYPE::TRIGGER_TYPE::BORDER&& actor_data_0->type!=DATATYPE::ACTOR_TYPE::PLANE) {
 				removeActorList.insert(actor_0);
 				continue;
 			}
@@ -338,10 +338,12 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE ? actor_data_0 : actor_data_1);
 				temp1->basecha->oncontact(DATATYPE::ACTOR_TYPE::MAP);
 			}
-			//Ïú»Ù×²µØÍ¼µÄÅÚËþ×Óµ¯
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
-				//printf("ÅÚËþµ¯Ò©£¡\n");
+			//Ïú»Ù×²µØÍ¼ºÍÅÚËþµÄÅÚËþ×Óµ¯
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && (actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER ||
+				actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET)
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET && (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER||
+				actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP|| actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET)) {
+				printf("ÅÚËþµ¯Ò©£¡\n");
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER_BULLET ? actor_0 : actor_1));
 			}
 			//µ¼µ¯´òÖÐ·É»ú
@@ -362,8 +364,10 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				//}
 			}
 			//Ïú»Ù×²µØÍ¼µÄÌ¹¿Ë×Óµ¯
-			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP
-				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
+			else if (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && (actor_data_1->type == DATATYPE::ACTOR_TYPE::MAP||
+				actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET)
+				|| actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK_BULLET && (actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP || 
+					actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET)) {
 				//printf("tankµ¯Ò©£¡\n");
 				removeActorList.insert((actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK_BULLET ? actor_0 : actor_1));
 			}

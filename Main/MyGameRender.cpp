@@ -18,7 +18,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void updateKeyState(GLFWwindow* window, std::unordered_map<int, bool>& map);
 // settings
-Game game(GAME_STATE::INIT, 1920 / 2, 1080 / 2, 1920 / 4.0f, 1080 / 4.0f, 0.f, 0.f, true);
+Game game(GAME_STATE::INIT,MEDIA_STATE::init, 1920 / 2, 1080 / 2, 1920 / 4.0f, 1080 / 4.0f, 0.f, 0.f, true);
 
 // camera
 Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
@@ -40,7 +40,7 @@ Shader* smokeShader;
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
 bool mouseButtonPressState[3];
-
+extern Media MediaPlayer;									//声音播放器
 
 void exitCallback(void) {
 	cleanupPhysics(true);
@@ -167,6 +167,8 @@ int myRenderLoop()
 			UI::CenterText::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			
+
 		}
 		else if (game.state == GAME_STATE::INIT) { // 初始状态，初始化及渲染初始帧
 			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, false);
@@ -207,6 +209,7 @@ int myRenderLoop()
 				initPhysics(true);
 				game.state = GAME_STATE::MAIN_MENU;
 				game.isInit = true;
+				MediaPlayer.PlayBackground(Media::MediaType::START);
 			}
 		}
 		else if (game.state == GAME_STATE::MAIN_MENU) { // 主菜单界面
@@ -224,6 +227,9 @@ int myRenderLoop()
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			//MediaPlayer.PlayBackground(Media::MediaType::START);
+			
 			if (game.deltaTime < 0.016f)
 				Sleep((int)((0.016f - game.deltaTime) * 1000)); //最高每秒60帧
 		}
