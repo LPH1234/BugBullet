@@ -53,6 +53,7 @@ public:
 	void runguntower(PxRigidDynamic* target);
 	void initlist(vector<glm::vec3> pos_list);
 	void oncontact(int id, DATATYPE::ACTOR_TYPE _type);
+	void reset();
 };
 class bonus:public BaseSceneObject {
 private:
@@ -75,4 +76,5 @@ public:
 		addBonusList.push_back(t);
 	};
 	bool supplyoncontact(int id, DATATYPE::ACTOR_TYPE _type);
+	void reset();
 };
