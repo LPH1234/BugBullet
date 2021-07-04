@@ -7,30 +7,30 @@
 
 using namespace physx;
 
-PxDefaultAllocator		gAllocator;
-PxDefaultErrorCallback	gErrorCallback;
-module moduleCallBack;
-AirPlane				*Plane_1;					//玩家飞机
-AirPlane_AI				*Plane_AI;					//用于测试单个AI飞机
-MissileManager			*ManageMissile;				//导弹管理器
-//第三人称角色位置
-PxTransform born_pos(PxVec3(10, 0, -7));
-Media MediaPlayer;									//声音播放器
+PxDefaultAllocator						gAllocator;
+PxDefaultErrorCallback					gErrorCallback;
+module									moduleCallBack;				//回调函数
+PxReal									stackZ = 3.0f;
+clock_t									lockFrame_last = 0;			//锁帧
+clock_t									lockFrame_current = 0;
+AirPlane								*Plane_1 = nullptr;			//玩家飞机
+AirPlane_AI								*Plane_AI = nullptr;		//用于测试单个AI飞机
+MissileManager							*ManageMissile = nullptr;	//导弹管理器
+Media									MediaPlayer;				//声音播放器
+vector<Player*>							tankList(4,nullptr);		//坦克链表
+vector<AirPlane_AI*>					AI_PlaneList(4, nullptr);	//AI飞机链表
+vector<AirPlane_AI*>					tempList(1, nullptr);		//测试
+//Player*								  vehicle;
+guntower								GunTower;
+bonus									Bonus;
+PxRigidActor*							Map = nullptr;				//地图
+bool									Level[3]{ false,false,false };
+set<PxRigidActor*>						exsitBonusList;				//当前存在的道具
 
 void createModel(std::string path, int scale, PxVec3& offset) {}
 
-PxReal					stackZ = 3.0f;
 extern Camera camera;
 extern Shader* envShader;
-clock_t					lockFrame_last = 0, lockFrame_current = 0;
-vector<Player*>		tankList(4,nullptr);			//坦克链表
-vector<AirPlane_AI*>	AI_PlaneList(4, nullptr);	//AI飞机链表
-vector<AirPlane_AI*>	tempList(1, nullptr);		//测试
-//vector<AirPlane_AI*>	AI_airPlaneList;
-//Player* vehicle;
-guntower GunTower;
-bonus Bonus;
-
 vector<glm::vec3>east_island_pos_list = { glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(248.f, 5.5f, 80.0f),glm::vec3(248.0f, 5.5f, -141.0f),
 										glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
 										glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(350.0f, 7.6f, -136.0f),
@@ -41,10 +41,43 @@ vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::ve
 										glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
 										 glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),
 										glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
+
 vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::vec3(24.6f,7.6f,-330.8f),glm::vec3(25.1f,7.6f,-394.6f),
 										glm::vec3(26.8f,7.6f,-464.3f),glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),
 										glm::vec3(-19.7f,7.6f,-256.8f) };
-//初始化坦克，一共四辆
+
+//初始化地图
+void initMap() {
+	Map = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),
+		"model/env/cityislands/City Islands/City Islands.obj", envShader));
+	Map->setName("map");
+	Map->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
+}
+
+//初始化玩家飞机
+void initMyAirPlane() {
+	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 10.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
+		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
+	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp, ManageMissile, AI_PlaneList);
+}
+
+//初始化炮塔
+void initGunTower() {
+	vector<glm::vec3>pos_list;
+	//加载炮塔
+	for (int i = 0; i < north_island_pos_list.size(); i++) {
+		pos_list.push_back(north_island_pos_list[i]);
+	}
+	GunTower.initlist(pos_list);
+}
+
+//初始化道具等
+void initBonus() {
+	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2] };
+	Bonus.initlist(supply_pos_list);
+}
+
+//初始化坦克，一共2辆
 void initTank() {
 	int index[4][2] = { {1,6},{12,13},{8,3},{5,7} };
 	PxVec3 dir[4] = { PxVec3(1,0,0),PxVec3(0,0,-1),PxVec3(-1,0,0),PxVec3(0,0,-1) };
@@ -60,6 +93,7 @@ void initTank() {
 		
 	}
 }
+//坦克移动
 void tankAutoMove() {
 	for (int i = 0; i < 2; i++) {
 		tankList[i]->automove();
@@ -82,10 +116,93 @@ vector<AirPlane_AI*> initAI_Plane() {
 	}
 	return AI_PlaneList;
 }
+//AI飞机飞行
 void AI_PlaneAutoFly() {
 	for (int i = 0; i < 4; i++) {
 		if(AI_PlaneList[i]->alive)AI_PlaneList[i]->autoFlying();
 	}
+}
+
+bool isToChangeLevel() {
+	bool isSuccessful = false;
+	if (Level[0]) {
+		for (int i = 0; i < 2; i++) {
+			if (tankList[i]->alive)
+				return false;
+		}
+		Level[0] = false;
+		Level[1] = true;
+		return true;
+	}
+	else if (Level[1]) {
+		int count = GunTower.tower_list.size();
+		for (int i = 0; i < count; i++) {
+			if (GunTower.health_list[i] != 0)
+				return false;
+		}
+		Level[1] = false;
+		Level[2] = true;
+		return true;
+	}
+	else if (Level[2]) {
+		int count = AI_PlaneList.size();
+		for (int i = 0; i < count; i++) {
+			if (AI_PlaneList[i]->alive)
+				return false;
+		}
+		/*可写通关后的标志之类的*/
+		isSuccessful = true;
+	}
+	else {}
+	return false;
+}
+void initPhysics2() {
+	initGunTower();
+	Level[1] = true;
+}
+void initPhysics3() {
+	initAI_Plane();
+	Level[2] = true;
+}
+
+//重置关卡
+void resetLevel() {
+	//销毁坦克内容
+	for (int i = 0; i < 2; i++) {
+		if(tankList[i]->alive)gScene->removeActor(*tankList[i]->healthBody);
+		gScene->removeActor(*tankList[i]->body);
+		//free(tankList[i]);
+		//tankList[i] = nullptr;
+	}
+	for (auto i = exsitBonusList.begin(); i != exsitBonusList.end(); i++) {
+		gScene->removeActor(*(*i));
+	}
+	//销毁炮塔内容
+	GunTower.reset();
+	//销毁AI飞机内容
+	for (int i = 0; i < 4; i++) {
+		if(AI_PlaneList[i]!=nullptr)
+			gScene->removeActor(*AI_PlaneList[i]->body);
+		//free(AI_PlaneList[i]);
+		AI_PlaneList[i] = nullptr;
+	}
+	//销毁道具
+	Bonus.reset();
+	//销毁玩家飞机
+	if(Plane_1!=nullptr)
+		gScene->removeActor(*Plane_1->body);
+	//free(Plane_1);
+	Plane_1 = nullptr;
+
+	//重新加载
+	initMyAirPlane();
+	camera.setTarget(Plane_1);
+	initTank();
+	initBonus();
+
+	Level[0] = true;
+	Level[1] = false;
+	Level[2] = false;
 }
 
 void initPhysics(bool interactive)
@@ -108,10 +225,7 @@ void initPhysics(bool interactive)
 	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
 	gDispatcher = PxDefaultCpuDispatcherCreate(2);
 	sceneDesc.cpuDispatcher = gDispatcher;
-	//sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	//sceneDesc.filterShader = testCCDFilterShader;
 	sceneDesc.filterShader = testCCDFilterShader2;
-	//sceneDesc.filterShader = testCollisionFilterShader;
 	//注册onContact
 	sceneDesc.simulationEventCallback = &moduleCallBack;
 	gScene = gPhysics->createScene(sceneDesc);
@@ -125,166 +239,79 @@ void initPhysics(bool interactive)
 	}
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
-	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
-	PxRigidStatic* groundPlaneMap = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
-	groundPlane->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
-	groundPlaneMap->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
-	PxShape* treasureShape;
-	groundPlane->getShapes(&treasureShape, 1);
-	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
-	gScene->addActor(*groundPlane);
-	gScene->addActor(*groundPlaneMap);
+	//当前为Level0
+	Level[0] = true;
+	//地面和trigger墙
+	testTriggerWall();
 
-	//for (PxU32 i = 0; i < 3; i++)
-		//createStack(PxTransform(PxVec3(0, 2, stackZ -= 3.0f)), 10, 0.1f);
-	//createBigBall();
-	//createAbleBreakWall();
-	//createBreakableWall();
-
-
-	//init3rdplayer(born_pos, PxSphereGeometry(0.5f));
-	//initvehicle(born_pos, PxSphereGeometry(0.5f));
-	//createBigBall();
-
-
-	/*glm::vec3 pos1(5.0f, 5.0f, 0.0f);
-	GunTower.initguntower(pos1);*/
-	vector<glm::vec3>pos_list;
-
-	glm::vec3 pos1(5.0f, 5.0f, 0.0f); 
-	int nb_tower = 5;
-	/*for (int i = 0; i < nb_tower; i++) {
-		pos_list.push_back(pos1);
-		pos1.x += i * 1.0f;
-		pos1.y += i * 1.0f;
-	}*/
-	/*for (int i = 0; i < east_island_pos_list.size(); i++) {
-		pos_list.push_back(east_island_pos_list[i]);
-	}*/
-	/*for (int i = 0; i < south_island_pos_list.size(); i++) {
-		pos_list.push_back(south_island_pos_list[i]);
-	}*/
+	//加载地图
+	initMap();
 
 	//初始化导弹管理器
 	ManageMissile = new MissileManager();
 
-	//加载炮塔
-	for (int i = 0; i < north_island_pos_list.size(); i++) {
-		pos_list.push_back(north_island_pos_list[i]);
-	}
-	GunTower.initlist(pos_list);
-	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2] };
-	Bonus.initlist(supply_pos_list);
+	//加载玩家飞机
+	initMyAirPlane();
 
-	//加载AI飞机
-	/*PxRigidDynamic* plane_AI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
-		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	Plane_AI = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), plane_AI);*/
-
-	//加载飞机
-	PxRigidDynamic* temp = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 10.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
-		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	Plane_1 = new AirPlane(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), temp, ManageMissile, AI_PlaneList);
-
-	//加载4架AI飞机
-	initAI_Plane();
-	/*PxRigidDynamic* tempAI = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(0.0f, 80.0f, -10.0f), glm::vec3(0.3f, 0.3f, 0.3f),
-		"model/vehicle/Fighter-jet/fighter_jet.obj", envShader, false));
-	tempList[0] = new AirPlane_AI(PxVec3(0, 0, 1), PxVec3(0, 1, 0), PxVec3(-1, 0, 0), tempAI);*/
-
-
-	//加载坦克
-	initTank();
-
-
-	/*PxRigidDynamic* input_tank = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(131.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
-		"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader, false));*/
-	//setupFiltering(input_tank, FilterGroup::eTANK, FilterGroup::eMISILE);
-	//testFilter();
-	testTriggerWall();
-
-	//testTriggerCollection();
-	//vehicle = new Player(input_tank, Plane_1);
-
-	{
-		//PxRigidStatic* staticTank = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(-10.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
-		//	"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader));
-		//setupFiltering(staticTank, FilterGroup::eMAP, FilterGroup::eMISILE);
-
-		///*PxRigidStatic* staticBox = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(0.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
-		//	"model/test/cube.obj", envShader));
-		//setupFiltering(staticBox, FilterGroup::eMAP, FilterGroup::eMISILE);*/
-
-		//PxRigidActor* dynamicTank = createModel(glm::vec3(10.f, 7.0f, 22.0f), glm::vec3(0.75f, 0.75f, 0.75f),
-		//	"model/vehicle/ls2fh1gay9-PGZ-95 AA/PGZ-99.obj", envShader,false);
-		//setupFiltering(dynamicTank, FilterGroup::eMAP, FilterGroup::eMISILE);
-		//
-		///*PxRigidDynamic* dynamicBox = reinterpret_cast<PxRigidDynamic*>(createModel(glm::vec3(20.f, 7.0f, 22.0f), glm::vec3(1.0f, 1.0f, 1.0f),
-		//	"model/test/cube.obj", envShader,false));
-		//setupFiltering(dynamicBox, FilterGroup::eMAP, FilterGroup::eMISILE);*/
-	}
-
+	//相机跟踪目标
 	//camera.setTarget(player);
 	camera.setTarget(Plane_1);
 	//camera.setTarget(tankList[1]);
 	//camera.setTarget(Plane_AI);
 
-	PxRigidActor* Map = nullptr;
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f),"model/street/Street environment_V01.obj", envShader);
-	//Map = createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Castelia-City/Castelia City.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/cityislands/City Islands/City Islands.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/street/Street environment_V01.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/env/Castelia-City/Castelia City.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/env/Castelia-City/Castelia City.obj", envShader);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/env/Stadium/sports stadium.obj", envShader, false);
-	Map = reinterpret_cast<PxRigidStatic*>(createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 
-		"model/env/cityislands/City Islands/City Islands.obj", envShader));
-	//setupFiltering(Map, FilterGroup::eMAP, FilterGroup::eMISILE);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/chevrolet/Chevrolet_Camaro_SS_Low.obj", envShader,false);
-	//createModel(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/suv/Models/1.obj", envShader, false);
-	//createModel(glm::vec3(10.0f,50.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), "model/vehicle/airplane/11803_Airplane_v1_l1.obj", envShader,false);
-	//model\vehicle\suv\Models Transport Shuttle_obj.obj
-	//createModel(glm::vec3(10.0f, 50.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "model/vehicle/99-intergalactic_spaceship-obj/Intergalactic_Spaceship-(Wavefront).obj", envShader, false);
-	Map->setName("map");
+	//加载坦克
+	initTank();
+	//加载道具
+	initBonus();
 
-	Map->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
+	//加载4架AI飞机
+	//initAI_Plane();
 
-	//ball = new Ball(glm::vec3(0.0f, 0.20f, 0.0f), glm::vec3(0.0025f, 0.0025f, 0.0025f), "model/football/soccer ball.obj", envShader);
-
-	if (!interactive)
-		createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
 }
-//更新炮塔血条
-//void updateGuntowerInList() {
-//	int count = GunTower.count;
-//	for (int i = 0; i < count; i++) {
-//		int currentHealth = GunTower.health_list[i];
-//		if (currentHealth == 0) {
-//			if (GunTower.blood_body_list[i]) {
-//				gScene->removeActor(*GunTower.blood_body_list[i]);
-//			}
-//			GunTower.blood_body_list[i] = nullptr;
-//		}
-//		else {
-//			float l = currentHealth / 50.0*3.0;
-//			const PxU32 numShapes = GunTower.blood_body_list[i]->getNbShapes();
-//			PxShape** shapes = (PxShape**)malloc(sizeof(PxShape*)*numShapes);
-//			GunTower.blood_body_list[i]->getShapes(shapes, numShapes);
-//			for (PxU32 j = 0; j < numShapes; j++)
-//			{
-//				PxShape* shape = shapes[j];
-//				shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
-//			}
-//			free(shapes);
-//		}
-//	}
-//}
+
 void beforeStepPhysics() {
 	addForceToPartivleSystem(physicsParticleSystemList);
 }
+
+//我们所有需要每一帧调用的物理计算放在这里面
+void Tick() {
+	if (Level[0]) {
+		tankAutoMove();
+		updateTankInList();
+
+	}
+	else if (Level[1]) {
+		GunTower.runguntower(Plane_1->body);
+		updateGuntowerInList();
+
+	}
+	else if (Level[2]) {
+		AI_PlaneAutoFly();
+		ManageMissile->trackingAllMissile();
+		ManageMissile->removeMissile();
+	}
+	else {}
+	Plane_1->manualControlAirPlane4();
+	Bonus.runsupply();
+	addBonusInList();
+	removeActorInList();
+	//判断是否需要切换场景
+	if (isToChangeLevel()) {
+		if (Level[0]) {}
+		else if (Level[1]) {
+			initPhysics2();
+		}
+		else if (Level[2]) {
+			initPhysics3();
+		}
+		else {}
+	}
+	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
+	//Plane_AI->autoFlying();
+	//Plane_1->formcloud();
+	//Plane_1->formmisslecloud();
+}
+
 
 void stepPhysics(bool interactive)
 {
@@ -292,10 +319,13 @@ void stepPhysics(bool interactive)
 		return;
 
 	beforeStepPhysics();
+	gScene->simulate(1.0f / 60.0f);
+	gScene->fetchResults(true);
+	Tick();
 
 	//锁帧
-	lockFrame_current = clock();//当前时钟
-	/*if ((lockFrame_current - lockFrame_last) < 16) {
+	/*lockFrame_current = clock();//当前时钟
+	if ((lockFrame_current - lockFrame_last) < 16) {
 		//skip，1000clocks/s，则一帧约16ms（60帧）
 		Sleep(16 - (lockFrame_current - lockFrame_last));
 	}
@@ -308,33 +338,7 @@ void stepPhysics(bool interactive)
 		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 
 	}*/
-	gScene->simulate(1.0f / 60.0f);
-	gScene->fetchResults(true);
-	//vehicle->automove();
-	tankAutoMove();
-	AI_PlaneAutoFly();
-	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
-	Plane_1->manualControlAirPlane4();
-	//Plane_AI->autoFlying();
-	//Plane_1->formcloud();
-	//Plane_1->formmisslecloud();
-	GunTower.runguntower(Plane_1->body);
-	Bonus.runsupply();
-	//GunTower.runguntower(vehicle->getRigid());
-	addBonusInList();
 	
-	removeActorInList();
-	updateTankInList();
-	updateGuntowerInList();
-	ManageMissile->trackingAllMissile();
-	ManageMissile->removeMissile();
-	//gScene->simulate(((lockFrame_current - lockFrame_last) / 16.f) / 60.f);
-	/*gScene->fetchResults(true);
-	removeActorInList();
-	changeAirPlaneVelocity();
-	GunTower.runguntower(player);
-	lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
-	*/
 }
 
 void cleanupPhysics(bool interactive)

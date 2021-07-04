@@ -1,5 +1,5 @@
 #include "UI.h"
-
+extern void resetLevel();
 extern Game game;
 namespace UI {
 	GLFWwindow* MainMenu::window = nullptr;
@@ -395,6 +395,7 @@ namespace UI {
 					PauseMenu::visable = false;
 					game.state = GAME_STATE::MAIN_MENU;
 					game.pause = false;
+					resetLevel();
 				}
 				ImGui::EndPopup();
 			}

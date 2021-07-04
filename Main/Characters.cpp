@@ -689,8 +689,8 @@ void AirPlane::ProcessKeyPress() {
 void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	if (_type == DATATYPE::ACTOR_TYPE::MAP) {
 		this->health = 0;
+		if(this->alive)crash();
 		this->alive = false;
-		crash();
 		cout << "crash" << endl;
 	}
 	else {
@@ -701,8 +701,8 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		}
 		else if (this->alive == true) {
 			this->health = 0;
-			this->alive = false;
-			shotdown();
+			if (this->alive)shotdown();
+			this->alive = false;			
 			cout << "Plane died" << endl;
 		}
 	}
@@ -1000,7 +1000,7 @@ void Player::automove() {
 	fireTime++;
 	this->body->addForce(PxVec3(0, -10, 0), PxForceMode::eFORCE);
 	if (fireTime % 200 == 0) {
-		//autoEmit();
+		autoEmit();
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);
@@ -1149,6 +1149,21 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		//MediaPlayer.PlayMedia2D(Media::MediaType::EXPLODE);
 		MediaPlayer.PlayMedia3D(vec3df(tankToPlane.x + 10.f, tankToPlane.y + 10.f, tankToPlane.z + 10.f), Media::MediaType::EXPLODE);
 	}
+}
+void Player::reset() {
+	currentheadforward = headforward;
+	currentbackforward = backforward;
+	PxVec3 startPos;//路线起点
+	PxVec3 endPos;//路线终点
+	PxVec3 startDir;//起始方向
+	bool autoshooting;//射击机制
+	last = 0;
+	health = 100;//坦克生命值
+	alive = true;
+	turnningState.resize(2,false);//转向状态，分别是直行中、转向中
+	currentAngle = 0;//当前已经转过的角度
+	velocity = 8.0f;//默认速度
+	fireTime = 0;//发射间隔计时器
 }
 
 

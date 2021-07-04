@@ -34,7 +34,6 @@ extern PxPhysics*				gPhysics;
 extern PxScene*					gScene;
 extern PxMaterial*				gMaterial;
 extern Camera camera;
-extern PxTransform born_pos;
 extern const float velocity;
 extern std::set<PxRigidDynamic*> airPlaneBullet;
 extern set<Player*>				updateTankList;
@@ -137,7 +136,7 @@ public:
 	void automove();
 	void autoEmit();
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
-
+	void reset();
 };
 
 
@@ -166,9 +165,9 @@ public:
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
 	bool activatemissle = false;
-	int health = 100;//飞机生命值
+	int health = 10000;//飞机生命值
 	bool alive = true;
-	int bullet_ammo = 100;
+	int bullet_ammo = 10000;
 	int missle_ammo = 0;
 
 	void*					user_data;//信息
@@ -187,6 +186,8 @@ public:
 	void reset();
 	void crash();
 	void shotdown();
+	bool ifEmitMissile();
+	void emitMissile();
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);
