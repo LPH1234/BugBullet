@@ -146,7 +146,7 @@ public:
 	PxRigidDynamic*			body;//飞机刚体
 	MissileManager*			myMissileManager;//导弹管理器
 	//AirPlane_AI*			targetPlane;//目标AI飞机
-	vector<AirPlane_AI*>	AI_PlaneList;
+	vector<AirPlane_AI*>	AI_PlaneList_this;
 	PxTransform				initTransform;//飞机初始位置与姿态
 	PxTransform				emitTransform;//炮弹发射口相对于飞机位置
 	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
@@ -205,6 +205,8 @@ public:
 class AirPlane_AI : public BaseCharacter {
 public:
 	PxRigidDynamic*			body;//飞机刚体
+	MissileManager*			AI_MissileManager;//导弹管理器
+	AirPlane*				targetPlane;//玩家飞机
 	PxTransform				initTransform;//飞机初始位置与姿态
 	PxTransform				emitTransform;//炮弹发射口相对于飞机位置
 	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
@@ -220,19 +222,23 @@ public:
 	int						currentYawAngle = 0;//当前转过的偏航角
 	int						emitBulletTime = 0;//发射间隔计时器
 	int						currentTime = 0;//计时器，用于状态机切换
+	int						lastEmit = 0;//导弹冷却计时
 
 	float					veclocity = 10.0f;//默认飞行速度
 	float					emitVeclocity = 64.0f;//默认炮弹飞行速度
 	float					turningSpeed = 6.0f;//转向速度
 
-	int						health = 100;//飞机生命值
+	int						health = 20;//飞机生命值
 	bool					alive = true;//是否存活
 
 	AirPlane_AI(PxRigidDynamic*	_body);
 	~AirPlane_AI();
-	AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body);
-	void autoFlying();
-	void FSM(int currentState);
+	AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _AI_MissileManager,AirPlane* _targetPlane);
+	void autoFlying();				//根据状态进行自动飞行控制
+	void FSM(int currentState);		//有限状态机转换
+	void autoEmit(int time);		//自动发射导弹攻击玩家飞机
+	void oncontact(DATATYPE::ACTOR_TYPE _type);//被击中扣血
+	void crash();					//被击毁
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);

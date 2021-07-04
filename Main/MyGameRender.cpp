@@ -87,7 +87,7 @@ int myRenderLoop()
 	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	TextureManager::init();
-	//TextureManager::initAnimateTextures(); // 开启动画，执行此函数会开始加载动画帧。
+	TextureManager::initAnimateTextures(); // 开启动画，执行此函数会开始加载动画帧。
 	UI::UIManager::init(game.SCR_WIDTH, game.SCR_HEIGHT);
 	game.state = GAME_STATE::INIT; // 将游戏的初始状态设置为INIT状态，游戏状态是一个有限状态机
 	// render loop
