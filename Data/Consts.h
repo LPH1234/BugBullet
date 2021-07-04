@@ -69,3 +69,4 @@ const std::string PLAYER_STATUS_AMMO_TEXT = "Ammo";
 const std::string PLAYER_STATUS_MISSILE_ICON = "images/textures/missile.png";
 const std::string PLAYER_STATUS_MISSILE_TEXT = "Missile";
 
+const unsigned int PLAYER_MIN_HP_TO_ALERT = 30;

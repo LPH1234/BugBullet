@@ -187,6 +187,7 @@ public:
 	void reset();
 	void crash();
 	void shotdown();
+	void updateUI();
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);
@@ -233,7 +234,7 @@ public:
 
 	AirPlane_AI(PxRigidDynamic*	_body);
 	~AirPlane_AI();
-	AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _AI_MissileManager,AirPlane* _targetPlane);
+	AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _AI_MissileManager, AirPlane* _targetPlane);
 	void autoFlying();				//根据状态进行自动飞行控制
 	void FSM(int currentState);		//有限状态机转换
 	void autoEmit(int time);		//自动发射导弹攻击玩家飞机

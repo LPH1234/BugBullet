@@ -46,6 +46,9 @@ void mouseMove() {
 void mouseSingleClick(int button, int action) { //鼠标单次点击
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) { //左键按下
 		UI::CenterText::show(string(HETP_TEXT), 6, 4, true);
+		//一直闪动
+		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->reset();
+		UI::UIManager::setUIVisable(UI::UIID::BORDER_MASK, true);
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) { //左键抬起
 
@@ -58,6 +61,9 @@ void mouseSingleClick(int button, int action) { //鼠标单次点击
 
 	}
 	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS) { //中键按下
+		//闪动一次
+		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->reset(1);
+		UI::UIManager::setUIVisable(UI::UIID::BORDER_MASK, true);
 
 	}
 	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE) { //中键抬起
