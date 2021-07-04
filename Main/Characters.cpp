@@ -753,7 +753,6 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 }
 void AirPlane::formcloud() {
 	vector<string>textures;
-
 	//textures.push_back("images/textures/smoke/smoke-white-1.png");
 	textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
 	PxVec3 pos1 = body->getGlobalPose().p + (-1)*currentHeadForward + 2 * currentSwingForward;

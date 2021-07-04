@@ -313,6 +313,7 @@ void Tick() {
 	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
 	//Plane_AI->autoFlying();
 	Plane_1->formcloud();
+
 	Plane_1->formmisslecloud();
 }
 
