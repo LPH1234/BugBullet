@@ -28,7 +28,7 @@ namespace UI {
 		GAME_PASS,
 		GAME_OVER,
 		HP_BAR,
-		DANGER_MASK,
+		BORDER_MASK,
 	};
 
 
@@ -83,6 +83,27 @@ namespace UI {
 		const float animateVelocity = 0.5f;
 		float progress = 100.f;
 		float length;
+	};
+
+	class BorderMaskUI : public BaseUI {
+		GLuint VAO;
+		unsigned int textureID;
+		Shader* borderMaskShader;
+		float alpha;
+		bool shouldClose; //应该关闭
+		float blingValue; //当前闪动值，0~1
+		bool blingDown; //当前闪动值是否减小方向
+		unsigned int closeDelay;
+		unsigned int startCloseTime;
+	public:
+		// Constructor (inits shaders/shapes)
+		BorderMaskUI(UIID id, float W, float H, unsigned int textureID, float closeDelay);
+		// Destructor
+		~BorderMaskUI();
+		// Renders a defined quad textured with given sprite
+		void draw(unsigned int w, unsigned int h);
+		void reset();
+		void close();
 	};
 
 
@@ -191,10 +212,20 @@ namespace UI {
 
 	};
 
-	class TextModal {
+	class CenterText {
 		static std::string text;
+		static unsigned int fadeTime; //开始消失的时间
+		static unsigned int timeToLeave;//完全消失的时间
+		static unsigned int showTime;//开始显示的时间
+		static float currAlpha;
+		static bool isBling; //是否闪动效果
+		static int blingTimes; //当前已经闪动次数
+		static float blingValue; //当前闪动值，0~1
+		static bool blingDown; //当前闪动值是否减小方向
 	public:
 		static void init(GLFWwindow* window);
+		//经过timeToLeave秒后不显示，经过fadeTime秒后开始渐隐，isBling为true时会有闪动效果
+		static void show(std::string& text, unsigned int timeToLeave, unsigned int fadeTime = 0U, bool isBling = false);
 		static void draw(unsigned int w, unsigned int h);
 		static bool visable;
 	};

@@ -45,13 +45,14 @@ void mouseMove() {
 
 void mouseSingleClick(int button, int action) { //鼠标单次点击
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) { //左键按下
-
+		UI::CenterText::show(string(HETP_TEXT), 6, 4, true);
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) { //左键抬起
 
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) { //右键按下
-
+		UI::BorderMaskUI* ui = reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK));
+		ui->close();
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) { //右键抬起
 

@@ -153,7 +153,9 @@ int myRenderLoop()
 
 			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, true);
 			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, false);
+			UI::UIManager::setUIVisable(UI::UIID::BORDER_MASK, true);
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
@@ -163,6 +165,7 @@ int myRenderLoop()
 			UI::PauseMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::OverModal::visable = game.state == GAME_STATE::OVER;
 			UI::OverModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::CenterText::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
@@ -189,7 +192,7 @@ int myRenderLoop()
 				UI::CornerTip::init(window, &camera);
 				UI::PlayerStatus::init(window);
 				UI::PauseMenu::init(window);
-				UI::TextModal::init(window);
+				UI::CenterText::init(window);
 				UI::OverModal::init(window);
 				// var init
 				// -----------------------------
@@ -222,7 +225,7 @@ int myRenderLoop()
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			if (game.deltaTime < 0.016f)
-				Sleep((int)(0.016f - game.deltaTime) * 1000);
+				Sleep((int)((0.016f - game.deltaTime) * 1000)); //最高每秒60帧
 		}
 
 

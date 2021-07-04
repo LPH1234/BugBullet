@@ -19,6 +19,20 @@ Press The W,S,A,D,Q,E Key To Control The Movement And \n\
 Orientation of Fighter, Press Space Key To Emit Missile.\n\
 ";
 
+const std::string EN_FONT_PATH = "resources/fonts/troika.ttf";
+const float EN_FONT_SIZE = 20;
+const std::string ZH_CN_FONT_PATH = "resources/fonts/zh-cn-1.ttf";
+const float ZH_CN_FONT_SIZE = 26;
+
+const unsigned int CENTER_TEXT_HEIGHT = 100U;
+const unsigned int CENTER_TEXT_Y_OFFSET = 100U;
+const unsigned int CENTER_TEXT_MAX_BLING_TIMES = 5;
+const float CENTER_TEXT_BLING_VELOCITY = 0.02f;
+
+const float BORDER_MASK_UI_CLOSE_DELAY = 5;
+const float BORDER_MASK_UI_BLING_VELOCITY = 0.02;
+const std::string BORDER_MASK_UI_TEX_PATH = "images/textures/borderMask.png";
+
 const std::string CUBE_TEXTURE_PATH = "images/textures/w200Bullet.png";
 const std::string BLOOD_TEXTURE_PATH = "images/textures/blood.png";
 
@@ -54,3 +68,4 @@ const std::string PLAYER_STATUS_AMMO_ICON = "images/textures/ammo.png";
 const std::string PLAYER_STATUS_AMMO_TEXT = "Ammo";
 const std::string PLAYER_STATUS_MISSILE_ICON = "images/textures/missile.png";
 const std::string PLAYER_STATUS_MISSILE_TEXT = "Missile";
+
