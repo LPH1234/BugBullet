@@ -5,7 +5,7 @@ extern void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterM
 extern Shader* cloudShader;
 extern Shader* smokeShader;
 extern Shader* flameShader;
-
+extern Game game;
 
 //生成血条,参数为：被绑定的物体、血条长度、血条位置、joint相对于物体的位置以及joint相对于血条的位置
 PxRigidDynamic* createAndShowBlood(PxRigidDynamic* _body, float _healthLength, PxTransform _healthPos, PxTransform t0, PxTransform t1) {
@@ -92,7 +92,7 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	body->setName("airPlane");
 	body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	body->userData = new UserData(this ,0, "myPlane", DATATYPE::ACTOR_TYPE::PLANE);
+	body->userData = new UserData(this, 0, "myPlane", DATATYPE::ACTOR_TYPE::PLANE);
 	setupFiltering(body, FilterGroup::ePlayer, FilterGroup::eMISILE);
 	turningState.resize(5, false);
 	turningState[2] = true;
@@ -102,6 +102,7 @@ AirPlane::AirPlane(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body
 	user_data = nullptr;
 
 	emitTransform = PxTransform(-currentBackForward * 1);
+	updateUI();
 }
 
 void AirPlane::controlAirPlane() {
@@ -567,11 +568,11 @@ void AirPlane::reset() {
 	body->setLinearVelocity(veclocity * currentHeadForward);
 }
 
-void AirPlane::getRight(physx::PxVec3& right) { right = currentSwingForward; };
+void AirPlane::getRight(physx::PxVec3& right) { right = currentSwingForward; }
 
-void AirPlane::getFront(physx::PxVec3& front) { front = currentHeadForward; };
+void AirPlane::getFront(physx::PxVec3& front) { front = currentHeadForward; }
 
-void AirPlane::getUp(physx::PxVec3& up) { up = currentBackForward; };
+void AirPlane::getUp(physx::PxVec3& up) { up = currentBackForward; }
 
 void AirPlane::ProcessKeyPress() {
 
@@ -621,7 +622,7 @@ void AirPlane::ProcessKeyPress() {
 		activatemissle = true;
 	}
 	//发射
-	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE] 
+	if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]
 		&& ((!activatemissle&&bullet_ammo > 0) || (activatemissle&&missle_ammo > 0))) {
 		if (activatemissle) {
 			missle_ammo--;
@@ -687,29 +688,42 @@ void AirPlane::ProcessKeyPress() {
 		cout << "位置：" << this->body->getGlobalPose().p.x << "\t"
 			<< this->body->getGlobalPose().p.y << "\t" << this->body->getGlobalPose().p.z << "\n";
 	}
-};
+	updateUI();
+}
 
 void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	if (_type == DATATYPE::ACTOR_TYPE::MAP) {
 		this->health = 0;
-		this->alive = false;
-		crash();
-		cout << "crash" << endl;
+		if (this->alive) {
+			this->alive = false;
+			crash();
+			game.state = GAME_STATE::OVER;
+			UI::UIManager::setCursorVisable(true);
+			cout << "crash" << endl;
+			reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
+		}
 	}
 	else {
 		int damage = int(_type) * 2;
 		if (this->health - damage > 0) {
 			this->health -= damage;
 			cout << "Plane - " << damage << endl;
+			if (this->health < PLAYER_MIN_HP_TO_ALERT) //血量告急一直闪
+				reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
+			else//被击中闪一下
+				reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show(1);
 		}
-		else if (this->alive == true) {
-			this->health = 0;
+		else if (this->alive) {
+			this->health = 0;	
 			this->alive = false;
 			shotdown();
+			game.state = GAME_STATE::OVER;
+			UI::UIManager::setCursorVisable(true);
 			cout << "Plane died" << endl;
+			reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
 		}
 	}
-
+	updateUI();
 }
 void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 	if (_type == DATATYPE::TRIGGER_TYPE::SUPPLY) {
@@ -730,7 +744,11 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 		this->missle_ammo += 5;
 		cout << "missle_ammo" << missle_ammo << endl;
 	}
-	else {}
+	else {
+	}
+	if (this->health > PLAYER_MIN_HP_TO_ALERT) //捡血包，停止闪
+		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
+
 }
 void AirPlane::formcloud() {
 	vector<string>textures;
@@ -820,7 +838,13 @@ void AirPlane::shotdown() {
 	body->setLinearVelocity(veclocity*5* currentHeadForward);
 }
 
+void AirPlane::updateUI() {
+	UI::PlayerStatus::HP = this->health;
+	UI::PlayerStatus::Ammo = this->bullet_ammo;
+	UI::PlayerStatus::Missile = this->missle_ammo;
 
+
+}
 
 
 
@@ -1009,7 +1033,7 @@ void Player::automove() {
 	fireTime++;
 	this->body->addForce(PxVec3(0, -10, 0), PxForceMode::eFORCE);
 	if (fireTime % 200 == 0) {
-		//autoEmit();
+		autoEmit();
 	}
 	if (turnningState[0]) {
 		this->rigid->setLinearVelocity(currentheadforward*this->velocity);
@@ -1159,6 +1183,21 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		MediaPlayer.PlayMedia3D(vec3df(tankToPlane.x + 10.f, tankToPlane.y + 10.f, tankToPlane.z + 10.f), Media::MediaType::EXPLODE);
 	}
 }
+void Player::reset() {
+	currentheadforward = headforward;
+	currentbackforward = backforward;
+	PxVec3 startPos;//路线起点
+	PxVec3 endPos;//路线终点
+	PxVec3 startDir;//起始方向
+	bool autoshooting;//射击机制
+	last = 0;
+	health = 100;//坦克生命值
+	alive = true;
+	turnningState.resize(2,false);//转向状态，分别是直行中、转向中
+	currentAngle = 0;//当前已经转过的角度
+	velocity = 8.0f;//默认速度
+	fireTime = 0;//发射间隔计时器
+}
 
 
 
@@ -1212,7 +1251,7 @@ AirPlane_AI::~AirPlane_AI() {
 	body = nullptr;
 }
 
-AirPlane_AI::AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, 
+AirPlane_AI::AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body,
 	MissileManager* _AI_MissileManager, AirPlane* _targetPlane) :BaseCharacter(_body) {
 	currentHeadForward = headForward = head;
 	currentBackForward = backForward = back;

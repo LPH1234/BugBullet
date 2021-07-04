@@ -34,7 +34,6 @@ extern PxPhysics*				gPhysics;
 extern PxScene*					gScene;
 extern PxMaterial*				gMaterial;
 extern Camera camera;
-extern PxTransform born_pos;
 extern const float velocity;
 extern std::set<PxRigidDynamic*> airPlaneBullet;
 extern set<Player*>				updateTankList;
@@ -137,7 +136,7 @@ public:
 	void automove();
 	void autoEmit();
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
-
+	void reset();
 };
 
 
@@ -166,9 +165,9 @@ public:
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
 	bool activatemissle = false;
-	int health = 100;//飞机生命值
+	int health = 10000;//飞机生命值
 	bool alive = true;
-	int bullet_ammo = 100;
+	int bullet_ammo = 10000;
 	int missle_ammo = 0;
 
 	void*					user_data;//信息
@@ -187,6 +186,9 @@ public:
 	void reset();
 	void crash();
 	void shotdown();
+	bool ifEmitMissile();
+	void emitMissile();
+	void updateUI();
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);
@@ -233,7 +235,7 @@ public:
 
 	AirPlane_AI(PxRigidDynamic*	_body);
 	~AirPlane_AI();
-	AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _AI_MissileManager,AirPlane* _targetPlane);
+	AirPlane_AI(PxVec3 head, PxVec3 back, PxVec3 swing, PxRigidDynamic* _body, MissileManager* _AI_MissileManager, AirPlane* _targetPlane);
 	void autoFlying();				//根据状态进行自动飞行控制
 	void FSM(int currentState);		//有限状态机转换
 	void autoEmit(int time);		//自动发射导弹攻击玩家飞机

@@ -2,7 +2,7 @@
 #include "Media.h"
 using namespace irrklang;
 Media::Media() {
-	SoundEngine = createIrrKlangDevice(ESOD_AUTO_DETECT,ESEO_DEFAULT_OPTIONS);
+	SoundEngine = createIrrKlangDevice(ESOD_AUTO_DETECT, ESEO_DEFAULT_OPTIONS);
 	Sound = nullptr;
 	BGSOUND = nullptr;
 }
@@ -51,7 +51,7 @@ void Media::ResumeBG() {
 		}
 	}
 }
-void Media::PlayMedia2D(Media::MediaType _type) {
+void Media::PlayMedia2D(Media::MediaType _type){
 	if (_type == Media::MediaType::EXPLODE) {
 		Sound = SoundEngine->play2D("audio/boom.mp3", false, false, true, ESM_AUTO_DETECT);
 		Sound->setVolume(0.3f);
@@ -81,7 +81,7 @@ void Media::PlayMedia2D(Media::MediaType _type) {
 		Sound->setVolume(0.3f);
 	}
 	else if (_type == Media::MediaType::COLLECTION) {
-		Sound = SoundEngine->play2D("audio/gun_reload1.ogg", false, false, true, ESM_AUTO_DETECT,true);
+		Sound = SoundEngine->play2D("audio/gun_reload1.ogg", false, false, true, ESM_AUTO_DETECT, true);
 		Sound->setVolume(0.3f);
 	}
 }
@@ -97,6 +97,12 @@ void Media::PlayMedia3D(vec3df pos, Media::MediaType _type) {
 	else if (_type == Media::MediaType::TANKSHOOT) {
 		Sound = SoundEngine->play3D("audio/tankfire.mp3", pos/5, false, false, true, ESM_AUTO_DETECT,true);
 		//Sound->setVolume(70.f);
+		Sound = SoundEngine->play3D("audio/boom.mp3", pos, false, false, true, ESM_AUTO_DETECT, true);
+		Sound->setVolume(0.3f);
+	}
+	else if (_type == Media::MediaType::TANKSHOOT) {
+		Sound = SoundEngine->play3D("audio/tankfire.mp3", pos, false, false, true, ESM_AUTO_DETECT, true);
+		Sound->setVolume(70.f);
 	}
 	else if (_type == Media::MediaType::TOWERSHOOT) {
 		Sound = SoundEngine->play3D("audio/biggun1.wav", pos/5, false, false, true, ESM_AUTO_DETECT, true);

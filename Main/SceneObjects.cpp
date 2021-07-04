@@ -132,6 +132,23 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 	}
 }
 
+void guntower::reset() {
+	for (int i = 0; i < count; i++) {
+		if(health_list[i]!=0)gScene->removeActor(*blood_body_list[i]);
+		gScene->removeActor(*tower_list[i]);
+	}
+	count = 0;
+	timer_last = 0;
+	towerpos_list.clear();
+	timer_list.clear();
+	tower_list.clear();
+	headforward = PxVec3(1.0f, 0.0f, 0.0f);
+	backforward = PxVec3(0.0f, 1.0f, 0.0f);
+	health_list.clear();
+	enable_attack_list.clear();
+	blood_body_list.clear();
+}
+
 PxVec3 bonus::initsupply(glm::vec3 pos) {
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
 	PxVec3 input;glmVec3ToPxVec3(pos1, input);
@@ -189,5 +206,15 @@ bool bonus::supplyoncontact(int id, DATATYPE::ACTOR_TYPE _type) {
 		return true;
 	}
 	return false;
+}
+void bonus::reset() {
+	for (int i = 0; i < supply_list.size(); i++) {
+		gScene->removeActor(*supply_list[i]);
+	}
+	count = 0;
+	supply_pos_list.clear();
+	timer_list.clear();
+	enable_supply_list.clear();
+	odd = false;//交替生成补血和补弹药
 }
 

@@ -49,6 +49,7 @@ extern Camera camera;
 extern AirPlane* Plane_1;
 extern guntower GunTower;
 extern vector<AirPlane_AI*>	AI_PlaneList;
+extern set<PxRigidActor*>	exsitBonusList;
 
 
 PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath, Shader* shader, bool ifStatic) {
@@ -63,7 +64,7 @@ PxRigidActor* createModel(glm::vec3 pos, glm::vec3 scale, std::string modelPath,
 			ObjLoader loader(model, MESH_TYPE::CONVEX);
 			rigid = loader.createDynamicActorAndAddToScene(); // 动态刚体
 		}
-		Logger::debug("创建完成");
+		//Logger::debug("创建完成");
 	}
 	else {
 		Logger::error("文件不存在：" + modelPath);
@@ -159,6 +160,18 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 	free(shapes);
 }
 void testTriggerWall() {
+	//地面碰撞以及trigger
+	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	PxRigidStatic* groundPlaneMap = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	groundPlane->userData = new UserData(1, "border", DATATYPE::TRIGGER_TYPE::BORDER);
+	groundPlaneMap->userData = new UserData(1, "map", DATATYPE::ACTOR_TYPE::MAP);
+	PxShape* treasureShape;
+	groundPlane->getShapes(&treasureShape, 1);
+	treasureShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+	treasureShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	gScene->addActor(*groundPlane);
+	gScene->addActor(*groundPlaneMap);
+	//前后左右上的trigger墙
 	PxRigidStatic* borderPlaneSky = PxCreatePlane(*gPhysics, PxPlane(0, -1, 0, 700), *gMaterial);
 	PxRigidStatic* borderPlaneNorth = PxCreatePlane(*gPhysics, PxPlane(0, 0, 1, 750), *gMaterial);
 	PxRigidStatic* borderPlaneSouth = PxCreatePlane(*gPhysics, PxPlane(0, 0, -1, 750), *gMaterial);
@@ -489,6 +502,7 @@ void addBonusInList() {
 		bonus->userData = new UserData(0, "BONUS", DATATYPE::TRIGGER_TYPE::COLLECTION);
 		bonus->setName("BONUS");
 		gScene->addActor(*bonus);
+		exsitBonusList.insert(bonus);
 		/*glm::vec3 input; pxVec3ToGlmVec3(PxVec3(addBonusList[i].p), input);*/
 
 		//cout << addBonusList[i].p.x <<"\t"<< addBonusList[i].p.y << addBonusList[i].p.z << endl;
