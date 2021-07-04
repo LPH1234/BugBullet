@@ -20,7 +20,7 @@ namespace UI {
 
 	void initIcon(GLFWwindow* window);
 	void initImgUI(GLFWwindow* window);
-
+	void backToMain();
 	enum UIID {
 		MAIN,
 		MAIN_ANIMATION,
@@ -127,7 +127,7 @@ namespace UI {
 		void draw(unsigned int w, unsigned int h);
 		// 指定闪动次数并展示
 		void show(int blingTimes = -1);
-		void close();
+		void close(bool immediately = false);
 	};
 
 
