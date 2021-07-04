@@ -138,6 +138,8 @@ public:
 
 	void draw() {
 		model->Draw(*shader);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
 	}
 
 	glm::mat4 getModel() {
@@ -322,7 +324,7 @@ public:
 		// render the cube
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 

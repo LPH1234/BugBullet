@@ -43,6 +43,7 @@ void mouseMove() {
 }
 
 void mouseSingleClick(int button, int action) { //鼠标单次点击
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) { //左键按下
 		UI::CenterText::show(string(HETP_TEXT), 6, 4, true);
 		//一直闪动

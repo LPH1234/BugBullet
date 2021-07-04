@@ -65,6 +65,16 @@ namespace UI {
 		io.Fonts->AddFontFromFileTTF(EN_FONT_PATH.c_str(), EN_FONT_SIZE); // 英文字体
 		zhFont = io.Fonts->AddFontFromFileTTF(ZH_CN_FONT_PATH.c_str(), ZH_CN_FONT_SIZE, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon()); //中文字体
 	}
+	void backToMain() {
+		game.state = GAME_STATE::MAIN_MENU;
+		game.pause = false;
+		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close(true);
+
+		MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
+		MediaPlayer.StopBackground();
+		MediaPlayer.PlayBackground(Media::MediaType::START);
+		resetLevel();
+	}
 
 	void UIManager::addUI(BaseUI* ui) {
 		if (idToUI.find(ui->getUIID()) == idToUI.end()) {
@@ -414,7 +424,8 @@ namespace UI {
 		currBlingTimes = 0;
 		UI::UIManager::setUIVisable(this->getUIID(), true);
 	}
-	void BorderMaskUI::close() {
+	void BorderMaskUI::close(bool immediately) {
+		if (immediately) UI::UIManager::setUIVisable(this->getUIID(), false);
 		if (shouldClose) return;
 		shouldClose = true;
 		startCloseTime = clock();
@@ -584,14 +595,7 @@ namespace UI {
 				if (ImGui::Button("Back To Main", BtnSize)) {
 					ImGui::CloseCurrentPopup();
 					PauseMenu::visable = false;
-					game.state = GAME_STATE::MAIN_MENU;
-					game.pause = false;
-
-					MediaPlayer.PlayMedia2D(Media::MediaType::CLICK);
-					MediaPlayer.StopBackground();
-					MediaPlayer.PlayBackground(Media::MediaType::START);
-
-					resetLevel();
+					backToMain();
 
 				}
 				ImGui::EndPopup();
@@ -659,7 +663,7 @@ namespace UI {
 		}
 		else {//关闭
 			std::cout << "关背景音乐\n";
-		    MediaPlayer.PauseBackground();
+			MediaPlayer.PauseBackground();
 		}
 	}
 
@@ -842,9 +846,7 @@ namespace UI {
 				if (ImGui::Button(OVER_BUTTON1_TEXT.c_str(), BtnSize)) {
 					ImGui::CloseCurrentPopup();
 					OverModal::visable = false;
-					game.state = GAME_STATE::MAIN_MENU;
-					game.pause = false;
-					MediaPlayer.PlayBackground(Media::MediaType::START);
+					backToMain();
 				}
 				ImGui::EndPopup();
 			}
