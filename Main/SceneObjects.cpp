@@ -11,6 +11,8 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 
 	PxRigidStatic* guntower = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader));
 	PxShape* bloodShape = gPhysics->createShape(PxBoxGeometry(3, 0.1f, 0.1f), *gMaterial, true);
+	bloodShape->userData = new UserData(1024, "", DATATYPE::BLOOD);
+	idToRenderModel[1024] = getCube("images/textures/blood.png");
 	PxRigidStatic* blood_body = PxCreateStatic(*gPhysics, PxTransform(guntower->getGlobalPose().p + PxVec3(0, 5, 0)), *bloodShape);
 	blood_body->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
 	bloodShape->setName("blood");
@@ -78,8 +80,9 @@ void guntower::fire(const PxTransform& t, const PxVec3& velocity) {
 	//MediaPlayer.PlayMedia2D(Media::MediaType::TOWERSHOOT);
 	MediaPlayer.PlayMedia3D(vec3df(velocity.x/5, velocity.y/5, velocity.z/5), Media::MediaType::TOWERSHOOT);
 }
-void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos) {
+void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos1) {
 	PxVec3 target_pos = target->getGlobalPose().p;
+	PxVec3 pos(pos1.x, pos1.y + 5.f, pos1.z);
 	double distance = sqrt(pow(target_pos.x - pos.x, 2) + pow(target_pos.y - pos.y, 2) + pow(target_pos.z - pos.z, 2));
 	if (distance > 200.0f) {
 		//cout << "out of range" << endl;
