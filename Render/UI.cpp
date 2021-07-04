@@ -264,7 +264,6 @@ namespace UI {
 		this->textureID = textureID;
 		this->closeDelay = closeDelay * 1000;
 		this->visable = false;
-		reset();
 		borderMaskShader = new Shader("shaders/borderMaskShader/borderMask.vs", "shaders/borderMaskShader/borderMask.fs");
 		// Configure VAO/VBO
 		GLuint VBO;
@@ -332,13 +331,14 @@ namespace UI {
 		}
 	}
 
-	void BorderMaskUI::reset(int blingTimes) {
+	void BorderMaskUI::show(int blingTimes) {
 		blingValue = 1.f; //当前闪动值，0~1
 		blingDown = true; //当前闪动值是否减小方向
 		shouldClose = false;
 		alpha = 1.f;
 		this->blingTimes = blingTimes; //默认参数-1:一直闪动(当blingTimes《=0时一直闪动)
 		currBlingTimes = 0;
+		UI::UIManager::setUIVisable(this->getUIID(), true);
 	}
 	void BorderMaskUI::close() {
 		if (shouldClose) return;
