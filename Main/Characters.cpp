@@ -1262,6 +1262,7 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		this->health = 0;
 		updateTankList.insert(this);
 		this->alive = false;
+		UI::MissionModal::currBeatAndTotal[0][0] += 1;
 		Logger::debug(this->getGlobalPose());
 		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
 		cout << "Tank died" << endl;
@@ -1764,10 +1765,9 @@ void AirPlane_AI::autoEmit(int time) {
 void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	if ( _type == DATATYPE::ACTOR_TYPE::MAP) {
 		this->health = 0;
-		if (this->alive) {
-			this->alive = false;
-			crash();
-		}
+		this->alive = false;
+		UI::MissionModal::currBeatAndTotal[2][0] += 1;
+		crash();
 	}
 	else {
 		int damage = int(_type) * 2;
@@ -1777,6 +1777,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		else if (this->alive == true) {
 			this->health = 0;
 			this->alive = false;
+			UI::MissionModal::currBeatAndTotal[2][0] += 1;
 			PxVec3 p = body->getGlobalPose().p;
 			glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
 			MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::EXPLODE);

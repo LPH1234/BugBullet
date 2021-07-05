@@ -248,13 +248,13 @@ namespace UI {
 
 	class MissionModal {
 		static int maxLevel;
-		static int currLevel;
 		static unordered_map<int, std::string> levelToTaskInfo;
 		static unordered_map<int, std::string> levelToTaskIcon;
 	public:
 		static void init(GLFWwindow* window);
 		static void draw(unsigned int w, unsigned int h);
 		static bool visable;
+		static int currLevel;
 		static int **currBeatAndTotal;//二维数组： 每一行：  当前击败/目标总数
 	};
 
