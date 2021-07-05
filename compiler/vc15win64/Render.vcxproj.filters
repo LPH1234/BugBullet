@@ -111,6 +111,9 @@
     <Filter Include="资源文件\shader\reticleShader">
       <UniqueIdentifier>{7c4bacd0-1ea4-4565-aa28-e68c384b8ace}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shader\boomFlameShader">
+      <UniqueIdentifier>{8a9a3e8d-d10c-4e5f-9bac-69aea7dd51c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Render\Render.cpp">
@@ -225,6 +228,12 @@
     </None>
     <None Include="shaders\reticleShader\reticle.vs">
       <Filter>资源文件\shader\reticleShader</Filter>
+    </None>
+    <None Include="shaders\boomFlameShader\boomFlame.fs">
+      <Filter>资源文件\shader\boomFlameShader</Filter>
+    </None>
+    <None Include="shaders\boomFlameShader\boomFlame.vs">
+      <Filter>资源文件\shader\boomFlameShader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -36,6 +36,7 @@ Shader* pointParticleShader;
 Shader* cloudShader;
 Shader* flameShader;
 Shader* smokeShader;
+Shader* boomFlameShader;
 
 std::unordered_map<int, bool> keyToPressState;
 std::unordered_map<int, bool> keyToPrePressState;
@@ -189,6 +190,7 @@ int myRenderLoop()
 				smokeShader = new Shader("shaders/smokeShader/smoke.vs", "shaders/smokeShader/smoke.fs");
 				flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
 				cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
+				boomFlameShader = new Shader("shaders/boomFlameShader/boomFlame.vs", "shaders/boomFlameShader/boomFlame.fs");
 				ModelManager::init();
 				UI::initImgUI(window);
 				UI::MainMenu::init(window);

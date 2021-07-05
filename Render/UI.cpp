@@ -943,7 +943,7 @@ namespace UI {
 			window_flags |= ImGuiWindowFlags_NoMove;
 			//ImVec2 textWinSize = ImVec2(io.DisplaySize.x, CENTER_TEXT_HEIGHT);
 			ImGui::SetNextWindowPos(ImVec2(200.0f, CENTER_TEXT_Y_OFFSET));
-		//	ImGui::SetNextWindowSize(textWinSize);
+			//	ImGui::SetNextWindowSize(textWinSize);
 			ImGui::SetNextWindowBgAlpha(0.f); // Transparent background
 			if (ImGui::Begin("Logo Text", NULL, window_flags))
 			{

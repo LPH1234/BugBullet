@@ -241,7 +241,7 @@ void initPhysics(bool interactive)
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	//当前为Level0
-	Level[2] = true;
+	Level[0] = true;
 	//地面和trigger墙
 	testTriggerWall();
 
@@ -313,7 +313,7 @@ void Tick() {
 	}
 	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
 	//Plane_AI->autoFlying();
-	//Plane_1->formcloud();
+	Plane_1->formcloud();
 
 	Plane_1->formmisslecloud();
 }
