@@ -108,6 +108,9 @@
     <Filter Include="资源文件\shader\normalImg">
       <UniqueIdentifier>{054e6052-3554-4619-89a8-cacfd10bb999}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shader\reticleShader">
+      <UniqueIdentifier>{7c4bacd0-1ea4-4565-aa28-e68c384b8ace}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Render\Render.cpp">
@@ -216,6 +219,12 @@
     </None>
     <None Include="shaders\normalImgShader\normalImg.vs">
       <Filter>资源文件\shader\normalImg</Filter>
+    </None>
+    <None Include="shaders\reticleShader\reticle.fs">
+      <Filter>资源文件\shader\reticleShader</Filter>
+    </None>
+    <None Include="shaders\reticleShader\reticle.vs">
+      <Filter>资源文件\shader\reticleShader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -43,7 +43,7 @@ extern vector<AirPlane_AI*>		AI_PlaneList;
 extern Media MediaPlayer;
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
 extern unordered_map<int, BaseModel*> idToRenderModel;
-
+extern vector<PxTransform> addCrashList;
 
 class BaseCharacter {
 protected:
@@ -164,6 +164,8 @@ public:
 	float					turningSpeed = 6.0f;//转向速度
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
+	bool track_mode = false;
+
 	bool activatemissle = false;
 	int health = 10000;//飞机生命值
 	bool alive = true;
@@ -186,7 +188,7 @@ public:
 	void reset();
 	void crash();
 	void shotdown();
-	PxVec3 ifEmitMissile();
+	bool ifEmitMissile(PxVec3 &pos);
 	void emitMissile();
 	void updateUI();
 
@@ -259,7 +261,7 @@ public:
 class MissileManager {
 public:
 	set<PxRigidDynamic*>		MissileList;
-	set<PxRigidDynamic*>			MissileToRemoveList;
+	set<PxRigidDynamic*>		MissileToRemoveList;
 	int							count = 0;
 	float						missileSpeed = 30.f;
 	MissileManager();

@@ -7,6 +7,8 @@ namespace UI {
 
 	unordered_map<UIID, BaseUI*> UIManager::idToUI;
 	GLFWwindow* UIManager::window;
+	glm::mat4 UIManager::projection;
+	glm::mat4 UIManager::view;
 
 	GLFWwindow* MainMenu::window = nullptr;
 	bool MainMenu::visable = false;
@@ -272,14 +274,15 @@ namespace UI {
 
 	// Constructor (inits shaders/shapes)
 	ReticleUI::ReticleUI(UIID id, float W, float H, std::string texture) :BaseUI(id) {
-		shader = new Shader("shaders/normalImgShader/normalImg.vs", "shaders/normalImgShader/normalImg.fs");
+		shader = new Shader("shaders/reticleShader/reticle.vs", "shaders/reticleShader/reticle.fs");
 		// Configure VAO/VBO
 		size.y = size.x = W / RETICLE_SIZE_RELATIVE_FACTOR;
-		position.x = W / 2.f - size.x / 2;
-		position.y = H / 2.f - size.y / 2;
+		initPos.x = position.x = W / 2.f - size.x / 2;
+		initPos.y = position.y = H / 2.f - size.y / 2;
 		this->visable = false;
-		currAngle = false;
+		this->currAngle = false;
 		this->ableTrack = false;
+		this->blingDown = true;
 		GLuint VBO;
 		GLfloat vertices[] = {
 			// Pos      // Tex
@@ -315,15 +318,38 @@ namespace UI {
 		glm::mat4 model = glm::mat4(1.0f);
 		this->shader->use();
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(position.x, position.y, 0.1f));  // First translate (transformations are: scale happens first, then rotation and then finall translation happens; reversed order)
-		if (!this->ableTrack)//如果没有目标
+		if (!this->ableTrack) {//如果没有目标
+			initPos.x = position.x = w / 2.f - size.x / 2;
+			initPos.y = position.y = h / 2.f - size.y / 2;
+			model = glm::translate(model, glm::vec3(initPos.x, initPos.y, 0.1f));  // First translate (transformations are: scale happens first, then rotation and then finall translation happens; reversed order)
 			model = glm::rotate(model, glm::radians(1.f*(currAngle++ % 360)), glm::vec3(0.f, 0.f, 1.f)); //绕轴rorate_axis旋转，如果rorate_angle是数字形式
+			blingValue = 1.f;
+		}
+		else {
+			const float dist = glm::distance(position, targetPos);
+			const glm::vec2& ori = glm::normalize(targetPos - position);
+			if (dist <= RETICLE_BEGIN_TO_BLING_DISTANCE) { //到了闪动的距离
+				blingValue += blingDown ? -RETICLE_BLING_VELOCITY : RETICLE_BLING_VELOCITY;
+				if (blingValue >= 1.f) {
+					blingDown = true; blingValue = 1.f;
+				}
+				if (blingValue <= 0.f) {
+					blingDown = false; blingValue = 0.f;
+				}
+			}
+			if (dist <= RETICLE_LOCK_DISTANCE) { //锁定距离
+				position = targetPos; blingValue = 0.f;
+			}
+			else {
+				position += (RETICLE_LOCK_DISTANCE / 1.2f * ori);
+			}
+			model = glm::translate(model, glm::vec3(position.x, position.y, 0.1f));  // First translate (transformations are: scale happens first, then rotation and then finall translation happens; reversed order)
+		}
 		model = glm::scale(model, glm::vec3(size, 1.0f)); // Last scale
-		//std::cout << "pos \tx:" << position.x << "     y:" << position.y << "\n";
-		//std::cout << "size \tx:" << size.x << "     y:" << size.y << "\n";
 		this->shader->setMat4("model", model);
 		this->shader->setMat4("projection", projection);
 		this->shader->setFloat("alpha", 1.0);
+		this->shader->setFloat("blingValue", blingValue);
 		//glDepthFunc(GL_ALWAYS);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glActiveTexture(GL_TEXTURE0);
@@ -334,9 +360,16 @@ namespace UI {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDepthFunc(GL_LESS);
 	}
-	void ReticleUI::updateTargetPosition(glm::vec3& pos) {
-		this->position.x = pos.x;
-		this->position.y = pos.y;
+	void ReticleUI::updateTargetPosition(glm::vec3& pos) { //     gl_Position = projection * view * model * vec4(aPos, 1.0);
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::vec3 temp = glm::project(pos, UIManager::view * model, UIManager::projection, glm::vec4(0.f, 0.f, game.SCR_WIDTH, game.SCR_HEIGHT));
+		temp.x = temp.x < size.x ? size.x : temp.x;;
+		temp.x = temp.x > game.SCR_WIDTH - size.x ? game.SCR_WIDTH - size.x : temp.x;
+		temp.y = temp.y < size.y ? size.y : temp.y;;
+		temp.y = temp.y > game.SCR_HEIGHT - size.y ? game.SCR_HEIGHT - size.y : temp.y;
+		this->targetPos.x = temp.x;
+		this->targetPos.y = game.SCR_HEIGHT - temp.y;
+		//std::cout << "x:" << this->targetPos.x << "    y:" << this->targetPos.y << "\n";
 	}
 	void  ReticleUI::enableTrack(bool enable) {
 		this->ableTrack = enable;

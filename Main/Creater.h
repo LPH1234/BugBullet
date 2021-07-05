@@ -89,7 +89,7 @@ void updateTankInList();
 //¸üĞÂÅÚËşÑªÌõ
 void updateGuntowerInList();
 void addBonusInList();
-
+void addCrashInList();
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(20));
 //
 //PxRigidDynamic* init3rdplayer(const PxTransform& t, const PxGeometry& geometry);

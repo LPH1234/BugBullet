@@ -29,6 +29,7 @@ extern MissileManager			*ManageMissile;
 
 set<PxActor*>		removeActorList;
 vector<PxTransform> addBonusList;
+vector<PxTransform> addCrashList;
 set<Player*>			updateTankList;
 list<PxParticleSystem*> physicsParticleSystemList;
 list<BaseParticleCluster*> renderParticleClusterList;
@@ -433,6 +434,11 @@ void removeActorInList() {
 			airPlaneBullet.erase((PxRigidDynamic*)(*i));
 			//cout << "erase!\n";
 		}
+		PxScene* s = (*i)->getScene();
+		if (s == NULL) {
+			string temp = "Line439--";
+			Logger::debug(temp);
+		}
 		gScene->removeActor(*(*i));
 	}
 	removeActorList.clear();
@@ -535,7 +541,27 @@ void addBonusInList() {
 	}
 	addBonusList.clear();
 }
-
+void addCrashInList() {
+	int n = addCrashList.size();
+	for (int i = 0; i < n; i++) {
+		vector<string> paths;
+		for (int i = 1; i <= 18; i++) {
+			paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
+		}
+		glm::vec3 input(addCrashList[i].p.x , addCrashList[i].p.y , addCrashList[i].p.z );
+		createPointParticles(
+			10, false,
+			new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
+			PxVec3(input.x / 2, input.y + 7.f, input.z / 2),
+			true, 2.0, // true是散开
+			true, 20.0, // true是随机速度
+			15, 12, // 消失时间、开始渐隐时间
+			PxVec3(10.f, 5.f, 0.f), //初始速度
+			PxVec3(2.f, 5.f, 0.f)  //力场
+		);
+	}
+	addCrashList.clear();
+}
 PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity)
 {
 	if (!t.isValid()) {

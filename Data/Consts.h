@@ -48,6 +48,9 @@ const std::string HPBAR_TEXTURE_PATH = "images/textures/hpbar-border.png";
 
 const std::string RETICLE_TEXTURE_PATH = "images/textures/target.png";
 const float RETICLE_SIZE_RELATIVE_FACTOR = 15.f;
+const float RETICLE_BEGIN_TO_BLING_DISTANCE = 300.f;
+const float RETICLE_LOCK_DISTANCE = 15.f;
+const float RETICLE_BLING_VELOCITY = 0.1f;
 
 const unsigned int ANIMATE_START_FRAME = 150;
 const  std::string ANIMATE_FRAMS_PATH = "resources/animation/BattleField2042/images1/";
