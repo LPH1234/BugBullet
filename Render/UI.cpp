@@ -154,6 +154,16 @@ namespace UI {
 		glfwSetInputMode(UIManager::window, GLFW_CURSOR, v ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 
+	void UIManager::ImgUIBeginFrame() {
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+	}
+	void UIManager::ImgUIEndFrame() {
+		ImGui::Render();// äÖÈ¾ImgUI½çÃæ
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
 	BaseUI::BaseUI(UIID id) {
 		this->id = id;
 	}

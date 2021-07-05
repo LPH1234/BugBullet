@@ -172,6 +172,8 @@ namespace UI {
 		static void setEnableAnimate(UIID id, bool enable);
 		static void draw(const float W, const float H);
 		static void setCursorVisable(bool v);
+		static void ImgUIBeginFrame();
+		static void ImgUIEndFrame();
 
 	};
 
