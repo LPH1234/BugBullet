@@ -158,6 +158,7 @@ bool isToChangeLevel() {
 		UI::UIManager::setCursorVisable(true);
 		game.state = GAME_STATE::OVER;
 		UI::OverModal::isFail = false;
+		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::BORDER_MASK))->close(true);
 	}
 	else {}
 	
