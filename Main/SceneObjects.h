@@ -19,7 +19,7 @@
 extern PxPhysics*				gPhysics;
 extern PxScene*					gScene;
 extern PxMaterial*				gMaterial;
-extern PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type);
+extern PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type,bool movable);
 extern vector<PxTransform> addBonusList;
 class BaseSceneObject {
 public:

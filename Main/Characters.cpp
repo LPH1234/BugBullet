@@ -1767,8 +1767,10 @@ void AirPlane_AI::autoEmit(int time) {
 void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	if ( _type == DATATYPE::ACTOR_TYPE::MAP&&this->alive) {
 		this->health = 0;
-		UI::MissionModal::currBeatAndTotal[2][0] += 1;
-		this->alive = false;
+		if (this->alive) {
+			this->alive = false;
+			UI::MissionModal::currBeatAndTotal[2][0] += 1;
+		}
 		crash();
 	}
 	else {
@@ -1803,13 +1805,8 @@ void AirPlane_AI::crash() {
 	body->setAngularDamping(PxReal(50.f));
 	body->addForce(PxVec3(0.f, 1000.f, 0.f));
 	PxVec3 p = body->getGlobalPose().p;
-	//body->setGlobalPose(PxTransform(p));
-	/*currentHeadForward = headForward;
-	currentBackForward = backForward;
-	currentSwingForward = swingForward;*/
-	//body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
 	glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
-	MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
+	//MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
 	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
 	renderParticleClusterList.push_back(flame_cluster);
 	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,

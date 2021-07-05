@@ -110,7 +110,7 @@ void Media::PlayMedia3D(vec3df pos, Media::MediaType _type) {
 		//Sound->setVolume(6.7f);
 	}
 	else if (_type == Media::MediaType::PLANEMISSILE) {
-		Sound = SoundEngine->play3D("audio/rlaunch.wav", pos/5, false, false, true, ESM_AUTO_DETECT, true);
+		Sound = SoundEngine->play3D("audio/rlaunch.wav", pos/25, false, false, true, ESM_AUTO_DETECT, true);
 		//Sound->setVolume(0.7f);
 	}
 	else if (_type == Media::MediaType::SUPPLY) {

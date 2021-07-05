@@ -170,7 +170,8 @@ public:
 	bool track_mode = false;
 
 	bool activatemissle = false;
-	int health = 10000;//飞机生命值
+
+	int health = 1000;//飞机生命值
 	bool alive = true;
 	int bullet_ammo = 10000;
 	int missle_ammo = 50;
