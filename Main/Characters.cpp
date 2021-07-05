@@ -811,7 +811,7 @@ void AirPlane::formcloud() {
 	);
 	PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
 	CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
-		10, 0.005f,  //云密度、云团的半径
+		10, 0.1f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
 		glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
@@ -820,8 +820,8 @@ void AirPlane::formcloud() {
 		cloudShader //渲染此烟雾的shader
 	);
 	renderParticleClusterList.push_back(cloud_cluster1);
-	//renderParticleClusterList.push_back(cloud_cluster2);
-	//renderParticleClusterList.push_back(cloud_cluster3);
+	renderParticleClusterList.push_back(cloud_cluster2);
+	renderParticleClusterList.push_back(cloud_cluster3);
 }
 void AirPlane::formmisslecloud() {
 	for (auto i = airPlaneBullet.begin(); i != airPlaneBullet.end(); i++) {

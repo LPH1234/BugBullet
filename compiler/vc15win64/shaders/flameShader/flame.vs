@@ -23,7 +23,11 @@ void main(void)
 	alpha = 1.0;
 
 	float dist = sqrt((position.x - initPos.x)*(position.x - initPos.x) + (position.z - initPos.z)*(position.z - initPos.z));
-
+	if(dist > radis) {
+		vNewPosition.x = initPos.x;
+		vNewPosition.z = initPos.z;
+		dist = radis/10.0;
+	}
 	if(dist < radis/10) dist = radis/10;
 	float dyFactor = (1 - dist/(1.5*radis));
 	if(dyFactor <= 0)

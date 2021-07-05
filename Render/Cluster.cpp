@@ -58,3 +58,11 @@ CloudParticleCluster::CloudParticleCluster(int cloudDensity, float cloudRadis, f
 	this->cloudDensity = cloudDensity;
 	particles.push_back(new CloudParticle(initPos, scale, cloudDensity, cloudRadis, cloudVy, cloudMaxY, textures[0], shader));
 }
+
+BoomFlameParticleCluster::BoomFlameParticleCluster(int flameNum, float pointSize, float timeToLeave, glm::vec3 initPos, vector<string> textures, Shader* shader) : BaseParticleCluster(initPos, textures, shader) {
+	this->flameNum = flameNum;
+	for (int i = 0; i < flameNum; i++) //int »»³É size_t ±¨´í
+	{
+		particles.push_back(new BoomFlameParticle(initPos, 300, pointSize, 3.f, timeToLeave, "images/textures/flame/flame" + to_string(i) + ".png", shader));
+	}
+}

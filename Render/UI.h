@@ -287,11 +287,11 @@ namespace UI {
 
 
 	class OverModal {
-		static std::string text;
 	public:
 		static void init(GLFWwindow* window);
 		static void draw(unsigned int w, unsigned int h);
 		static bool visable;
+		static bool isFail;
 	};
 
 }; // namespace UI

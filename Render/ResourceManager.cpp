@@ -84,7 +84,8 @@ void TextureManager::init() {
 	texturePathes.push_back(CUBE_TEXTURE_PATH);
 	texturePathes.push_back(HPBAR_TEXTURE_PATH);
 	texturePathes.push_back(PAUSE_ICON_PATH);
-	texturePathes.push_back(OVER_ICON_PATH);
+	texturePathes.push_back(OVER_ICON_FAIL_PATH);
+	texturePathes.push_back(OVER_ICON_COMPLETE_PATH);
 
 	for (int i = 0; i < texturePathes.size(); i++) {
 		if (FileUtils::isFileExist(texturePathes[i])) {

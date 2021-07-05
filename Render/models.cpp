@@ -5,7 +5,7 @@
 
 extern float* createUniformRandomFloatArray(int num, float bottom, float up);
 extern float* createNormalRandomFloatArray(int num, float arg1, float arg2);
-
+extern Camera camera;
 //点精灵渲染粒子
 BaseSpriteParticle::BaseSpriteParticle(glm::vec3 pos, int pointNum, float pointSize, float radis, std::string texturePath, Shader* shader) :PlainModel(pos, glm::vec3(1.f), "", shader) {
 	this->hasTexture = texturePath != "";
@@ -67,6 +67,60 @@ void FlameParticle::draw() {
 	shader->setFloat("radis", radis);
 	shader->setFloat("maxY", maxY);
 	shader->setFloat("alpha1", alpha);
+	this->updateShaderModel();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (hasTexture) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+	}
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_POINTS, 0, pointNum);
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+BoomFlameParticle::BoomFlameParticle(glm::vec3 pos, int pointNum, float pointSize,  float velocity, int timeToLeave, std::string texturePath, Shader* shader) :BaseSpriteParticle(pos, pointNum, pointSize, radis, texturePath, shader) {
+	this->timeToLeave = timeToLeave;
+	this->radis = radis;
+	this->velocity = velocity;
+	this->createTime = clock();
+	//顶点属性
+	const int STEP = 3;
+	vertices = new float[pointNum * STEP]; // 正态分布的初速度方向和大小
+	float* random = createNormalRandomFloatArray(pointNum * STEP, 0.f, velocity);
+	for (int i = 0; i < pointNum; i++){
+		for (int ji = 0; ji < STEP; ji++)
+			vertices[STEP * i + ji] = random[STEP * i + ji];
+	}
+
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * pointNum * STEP, vertices, GL_STATIC_DRAW);
+
+	glBindVertexArray(VAO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, STEP * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	if (hasTexture)
+		this->textureId = TextureManager::getTextureID(texturePath);
+	delete random;
+
+}
+BoomFlameParticle::~BoomFlameParticle() {
+	glDeleteBuffers(1, &this->VBO);
+	glDeleteVertexArrays(1, &this->VAO);
+	delete vertices;
+}
+void BoomFlameParticle::draw() {
+	if (clock() - createTime > timeToLeave * 1000) { this->readyToLeave = true; return; }
+	alpha = 1 - (clock() - createTime) / (timeToLeave * 1000.f);
+	shader->setFloat("pointSize", pointSize);
+	shader->setVec3("initPos", Position);
+	shader->setFloat("currTime", (clock() - createTime)/1000.f);
+	shader->setFloat("alpha1", alpha);
+	shader->setVec3("cameraPos", camera.getPosition());
 	this->updateShaderModel();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	if (hasTexture) {
