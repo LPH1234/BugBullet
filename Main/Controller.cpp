@@ -43,26 +43,25 @@ void mouseMove() {
 }
 
 void mouseSingleClick(int button, int action) { //鼠标单次点击
-
+	Plane_1->ProcessMouseClick(button, action);
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) { //左键按下
 		//UI::CenterText::show(string(HETP_TEXT), 6, 4, true);
 		//一直闪动
 		//	reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
-		reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(true);
-		reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->updateTargetPosition(glm::vec3(1.f, 1.f, 1.f));
+	//	reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(true);
+		//reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->updateTargetPosition(glm::vec3(1.f, 1.f, 1.f));
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) { //左键抬起
-		reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(false);
+		//reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(false);
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) { //右键按下
-	//	reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
+		//reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) { //右键抬起
-
 	}
 	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS) { //中键按下
 		//闪动一次
-		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show(1);
+		//reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show(1);
 	}
 	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE) { //中键抬起
 
@@ -70,6 +69,7 @@ void mouseSingleClick(int button, int action) { //鼠标单次点击
 }
 
 void mouseClick() {
+	Plane_1->ProcessMouseClick();
 	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_LEFT]) {
 		return;
 		PxTransform px;

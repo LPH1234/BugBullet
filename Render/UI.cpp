@@ -362,19 +362,14 @@ namespace UI {
 	}
 	void ReticleUI::updateTargetPosition(glm::vec3& pos) { //     gl_Position = projection * view * model * vec4(aPos, 1.0);
 		glm::mat4 model = glm::mat4(1.0f);
-		//model = glm::translate(model, pos);
-		//glm::mat4 projection = glm::frustum(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 100.0f);
-		//glm::vec4 temp = viewport * UIManager::projection * UIManager::view * model * glm::vec4(pos, 1.0);
-		//glm::vec4 temp = viewport * UIManager::projection * UIManager::view * model * glm::vec4(pos, 1.0);
 		glm::vec3 temp = glm::project(pos, UIManager::view * model, UIManager::projection, glm::vec4(0.f, 0.f, game.SCR_WIDTH, game.SCR_HEIGHT));
 		temp.x = temp.x < size.x ? size.x : temp.x;;
 		temp.x = temp.x > game.SCR_WIDTH - size.x ? game.SCR_WIDTH - size.x : temp.x;
 		temp.y = temp.y < size.y ? size.y : temp.y;;
 		temp.y = temp.y > game.SCR_HEIGHT - size.y ? game.SCR_HEIGHT - size.y : temp.y;
-
 		this->targetPos.x = temp.x;
 		this->targetPos.y = game.SCR_HEIGHT - temp.y;
-		std::cout << "x:" << this->targetPos.x << "    y:" << this->targetPos.y << "\n";
+		//std::cout << "x:" << this->targetPos.x << "    y:" << this->targetPos.y << "\n";
 	}
 	void  ReticleUI::enableTrack(bool enable) {
 		this->ableTrack = enable;
