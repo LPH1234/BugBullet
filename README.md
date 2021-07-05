@@ -1,15 +1,15 @@
 # BugBullet
 ### 简介
 
-数字媒体实训，根据PhysX物理引擎制作一个第一人称游戏，渲染引擎使用原生OpenGL。
+数字媒体实训，根据PhysX物理引擎制作一个第一人称战机游戏，渲染引擎使用原生OpenGL 3.3
 
 ### 目录结构
 
-共有五个子模块：Main、Render、Data、Utils、Test。对应文件夹存放代码文件。
+共有五个子模块：Main、Render、Data、Utils、Test。对应文件夹存放代码文件
 
 其他：
 
-1. Common：
+1. Common：第三方库包含目录及库文件
 2. compiler：项目文件及资源文件存放位置
 3. Graphics：OpenGL-Shader所需的头文件及库(glew,glfw,assimp,soil2)（x64版本）
 4. lib：存放子模块生成的lib
@@ -24,4 +24,4 @@
 
 ### 游戏视角控制
 
-F1：第一人称     F2：自由模式     F3：第三人称
+F1：第一人称     F2：自由模式     F3：第三人称     F4：追踪战机
