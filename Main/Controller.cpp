@@ -57,8 +57,8 @@ void mouseSingleClick(int button, int action) { //鼠标单次点击
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) { //右键按下
 		//reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
-		BoomFlameParticleCluster* flame_cluster = new BoomFlameParticleCluster(5, 10.f,  5.f, glm::vec3(0.f,0.f,0.f), std::vector<string>(), boomFlameShader);
-		renderParticleClusterList.push_back(flame_cluster);
+		/*BoomFlameParticleCluster* flame_cluster = new BoomFlameParticleCluster(5, 10.f,  5.f, glm::vec3(0.f,0.f,0.f), std::vector<string>(), boomFlameShader);
+		renderParticleClusterList.push_back(flame_cluster);*/
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) { //右键抬起
 	}
