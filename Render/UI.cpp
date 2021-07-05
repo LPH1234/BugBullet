@@ -4,6 +4,9 @@ extern Game game;
 extern Media MediaPlayer;
 namespace UI {
 	ImFont* zhFont = nullptr;
+	ImFont* logoFont = nullptr;
+	ImFont* titleFont = nullptr;
+	ImFont* defaultFont = nullptr;
 
 	unordered_map<UIID, BaseUI*> UIManager::idToUI;
 	GLFWwindow* UIManager::window;
@@ -45,8 +48,19 @@ namespace UI {
 	float  CenterText::blingValue = 0.f;
 	bool CenterText::blingDown = false;
 
+	std::string LogoText::text;
+	bool LogoText::visable = false;
+
+
 	std::string OverModal::text = "";
 	bool OverModal::visable = false;
+
+	int MissionModal::maxLevel;
+	int MissionModal::currLevel;
+	bool MissionModal::visable;
+	unordered_map<int, std::string> MissionModal::levelToTaskInfo;
+	unordered_map<int, std::string> MissionModal::levelToTaskIcon;
+	int** MissionModal::currBeatAndTotal = nullptr;
 
 	void initIcon(GLFWwindow* window) {
 		GLFWimage icons[1];
@@ -64,7 +78,9 @@ namespace UI {
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init(glsl_version);
-		io.Fonts->AddFontFromFileTTF(EN_FONT_PATH.c_str(), EN_FONT_SIZE); // 英文字体
+		defaultFont = io.Fonts->AddFontFromFileTTF(EN_FONT_PATH.c_str(), EN_FONT_SIZE); // 英文字体(默认字体）
+		logoFont = io.Fonts->AddFontFromFileTTF(EN_FONT_PATH.c_str(), EN_LOGO_FONT_SIZE); // 英文logo字体
+		titleFont = io.Fonts->AddFontFromFileTTF(EN_TITLE_FONT_PATH.c_str(), EN_TITLE_FONT_SIZE); // 英文标题字体
 		zhFont = io.Fonts->AddFontFromFileTTF(ZH_CN_FONT_PATH.c_str(), ZH_CN_FONT_SIZE, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon()); //中文字体
 	}
 	void backToMain() {
@@ -789,6 +805,70 @@ namespace UI {
 		}
 	}
 
+	void MissionModal::init(GLFWwindow* window) {
+		maxLevel = MAX_GAME_LEVEL;
+		visable = true;
+		currLevel = 1;
+		MissionModal::levelToTaskInfo[1] = GAME_MISSION_TANK_TEXT;
+		MissionModal::levelToTaskIcon[1] = GAME_MISSION_TANK_ICON;
+		MissionModal::levelToTaskInfo[2] = GAME_MISSION_TOWER_TEXT;
+		MissionModal::levelToTaskIcon[2] = GAME_MISSION_TOWER_ICON;
+		MissionModal::levelToTaskInfo[3] = GAME_MISSION_PLANE_TEXT;
+		MissionModal::levelToTaskIcon[3] = GAME_MISSION_PLANE_ICON;
+		currBeatAndTotal = new int*[maxLevel];
+		for (int i = 0; i < maxLevel; i++) {
+			currBeatAndTotal[i] = new int[2];  //当前击败/目标总数
+			currBeatAndTotal[i][0] = currBeatAndTotal[i][1] = 0;
+		}
+
+	}
+	void MissionModal::draw(unsigned int w, unsigned int h){
+		if (MissionModal::visable) {
+			bool* p_open = NULL;
+			const float DISTANCE = 10.0f;
+			ImGuiIO& io = ImGui::GetIO();
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs;
+			window_flags |= ImGuiWindowFlags_NoMove;
+			ImVec2 window_pos = ImVec2(io.DisplaySize.x - DISTANCE, DISTANCE);
+			ImVec2 window_pos_pivot = ImVec2(1.0f, 0.0f);
+			ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.11f, 0.59f, 0.92f, 0.1f)); //分割线
+			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+			if (ImGui::Begin("Mission Modal", p_open, window_flags)){
+				ImGui::PushFont(titleFont);
+				float imgh = ImGui::GetTextLineHeightWithSpacing() - ImGui::GetStyle().FramePadding.y;
+				ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(GAME_MISSION_ICON), ImVec2(imgh, imgh));
+				ImGui::SameLine();
+				ImGui::Text(GAME_MISSION_TITLE.c_str());
+				ImGui::Separator();
+				ImGui::PopFont();
+
+				ImVec4 color(1.f, 1.f, 1.f, 1.f);
+				 imgh = ImGui::GetTextLineHeightWithSpacing() - ImGui::GetStyle().FramePadding.y;
+				for (int i = 1; i <= maxLevel; i++){
+					if (i > currLevel)
+						color.w = 0.6f;
+					//	color.x = color.y = color.z = 0.7f;
+					ImGui::TextColored(color,"LEVEL %d: Eliminate ",i);
+					ImGui::SameLine();
+					ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(levelToTaskIcon[i]), ImVec2(imgh, imgh));
+					ImGui::SameLine();
+					ImGui::TextColored(color,levelToTaskInfo[i].c_str(), currBeatAndTotal[i-1][0], currBeatAndTotal[i - 1][1]); //// AA on north island
+					ImGui::SameLine();
+					if(i < currLevel)
+						ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(GAME_MISSION_COMPLETE_ICON), ImVec2(imgh, imgh));
+					else
+						ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(GAME_MISSION_DISCOMPLETE_ICON), ImVec2(imgh, imgh));
+				}
+
+			}
+			ImGui::End();
+			ImGui::PopStyleColor();
+		}
+
+	}
+	
+
 
 
 	void CenterText::init(GLFWwindow* window) {
@@ -850,6 +930,35 @@ namespace UI {
 		if (timeToLeave != 0)
 			CenterText::visable = true;
 	}
+
+	void LogoText::init(GLFWwindow* window) {
+		LogoText::visable = true;
+		LogoText::text = WINDOW_TITLE_EN;
+	}
+	void LogoText::draw(unsigned int w, unsigned int h) {
+		if (LogoText::visable) {
+			ImVec4 textColor(1.f, 1.f, 1.f, 1.f);
+			ImGuiIO& io = ImGui::GetIO();
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+			window_flags |= ImGuiWindowFlags_NoMove;
+			//ImVec2 textWinSize = ImVec2(io.DisplaySize.x, CENTER_TEXT_HEIGHT);
+			ImGui::SetNextWindowPos(ImVec2(200.0f, CENTER_TEXT_Y_OFFSET));
+		//	ImGui::SetNextWindowSize(textWinSize);
+			ImGui::SetNextWindowBgAlpha(0.f); // Transparent background
+			if (ImGui::Begin("Logo Text", NULL, window_flags))
+			{
+				ImGui::PushFont(logoFont);
+				ImGui::TextColored(textColor, LogoText::text.c_str());
+				ImGui::PopFont();
+				float imgh = ImGui::GetTextLineHeightWithSpacing() - ImGui::GetStyle().FramePadding.y;
+				ImGui::SameLine();
+				ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(GAME_MISSION_COMPLETE_ICON), ImVec2(imgh, imgh));
+				ImGui::End();
+			}
+
+		}
+	}
+
 
 
 	void OverModal::init(GLFWwindow* window) {

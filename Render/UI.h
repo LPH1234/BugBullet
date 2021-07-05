@@ -34,7 +34,7 @@ namespace UI {
 
 
 
-	class BaseUI {
+	class BaseUI { // 继承自此类的UI类应该实现draw方法，且全局只存在一个实例，与封装的ImgUI区分开
 	protected:
 		bool visable = true;
 		bool enableAnimate = true;
@@ -246,6 +246,18 @@ namespace UI {
 
 	};
 
+	class MissionModal {
+		static int maxLevel;
+		static int currLevel;
+		static unordered_map<int, std::string> levelToTaskInfo;
+		static unordered_map<int, std::string> levelToTaskIcon;
+	public:
+		static void init(GLFWwindow* window);
+		static void draw(unsigned int w, unsigned int h);
+		static bool visable;
+		static int **currBeatAndTotal;//二维数组： 每一行：  当前击败/目标总数
+	};
+
 	class CenterText {
 		static std::string text;
 		static unsigned int fadeTime; //开始消失的时间
@@ -264,7 +276,14 @@ namespace UI {
 		static bool visable;
 	};
 
-
+	class LogoText {
+		static std::string text;
+	public:
+		static void init(GLFWwindow* window);
+		//经过timeToLeave秒后不显示，经过fadeTime秒后开始渐隐，isBling为true时会有闪动效果
+		static void draw(unsigned int w, unsigned int h);
+		static bool visable;
+	};
 
 
 	class OverModal {
