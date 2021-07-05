@@ -538,7 +538,8 @@ void updateGuntowerInList() {
 			for (PxU32 j = 0; j < numShapes; j++)
 			{
 				PxShape* shape = shapes[j];
-				shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
+			    shape->setGeometry(PxBoxGeometry(l, 0.1f, 0.1f));
+				
 			}
 			free(shapes);
 		}

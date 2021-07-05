@@ -19,7 +19,7 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	bloodShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 	bloodShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
 	//bloodShape->setLocalPose(PxTransform(guntower->getGlobalPose().p + PxVec3(0, 5, 0)));
-	blood_body->attachShape(*bloodShape);
+	//blood_body->attachShape(*bloodShape);
 	gScene->addActor(*blood_body);
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
