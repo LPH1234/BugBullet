@@ -168,6 +168,7 @@ int myRenderLoop()
 			UI::OverModal::visable = game.state == GAME_STATE::OVER;
 			UI::OverModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::CenterText::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
+			UI::MissionModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -197,7 +198,10 @@ int myRenderLoop()
 				UI::PlayerStatus::init(window);
 				UI::PauseMenu::init(window);
 				UI::CenterText::init(window);
+				UI::LogoText::init(window);
 				UI::OverModal::init(window);
+				UI::MissionModal::init(window);
+
 
 				// var init
 				// -----------------------------
@@ -224,10 +228,11 @@ int myRenderLoop()
 			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, true);
 			//	std::cout << "tex loadTexProgress:" << TextureManager::loadTexProgress << "   " << TextureManager::getAnimationLoadProgress() << "\n";
 			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, false);
+			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
 			UI::MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::HelpModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::ConfigModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+			UI::LogoText::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			ImGui::Render();// 渲染ImgUI界面
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

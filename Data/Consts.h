@@ -4,6 +4,7 @@
 
 
 const std::string WINDOW_TITLE = "Bug子弹";
+const std::string WINDOW_TITLE_EN = "B U G   B U L L E T";
 const std::string ICON_PATH = "images/icon/icon.png";
 
 
@@ -19,8 +20,23 @@ Press The W,S,A,D,Q,E Key To Control The Movement And \n\
 Orientation of Fighter, Press Space Key To Emit Missile.\n\
 ";
 
+const unsigned int MAX_GAME_LEVEL = 3;
+const std::string GAME_MISSION_TITLE = "M I S S I O N     T A R G E T";
+const std::string GAME_MISSION_ICON = "images/textures/goal.png";
+const std::string GAME_MISSION_TANK_TEXT = "Tanks On East Island(%d/%d)";
+const std::string GAME_MISSION_TANK_ICON = "images/textures/tank.png";
+const std::string GAME_MISSION_TOWER_TEXT = "Anti-Aircraft On North Island(%d/%d)";
+const std::string GAME_MISSION_TOWER_ICON = "images/textures/tower.png";
+const std::string GAME_MISSION_PLANE_TEXT = "Hostile Aircraft In The Air(%d/%d)";
+const std::string GAME_MISSION_PLANE_ICON = "images/textures/plane.png";
+const std::string GAME_MISSION_COMPLETE_ICON = "images/textures/check.png";
+const std::string GAME_MISSION_DISCOMPLETE_ICON = "images/textures/check-unactive.png";
+
+const float EN_LOGO_FONT_SIZE = 100;
 const std::string EN_FONT_PATH = "resources/fonts/troika.ttf";
 const float EN_FONT_SIZE = 20;
+const std::string EN_TITLE_FONT_PATH = "resources/fonts/cunia.ttf";
+const float EN_TITLE_FONT_SIZE = 26;
 const std::string ZH_CN_FONT_PATH = "resources/fonts/zh-cn-1.ttf";
 const float ZH_CN_FONT_SIZE = 26;
 
@@ -52,8 +68,8 @@ const float RETICLE_BEGIN_TO_BLING_DISTANCE = 300.f;
 const float RETICLE_LOCK_DISTANCE = 15.f;
 const float RETICLE_BLING_VELOCITY = 0.1f;
 
-const unsigned int ANIMATE_START_FRAME = 150;
-const  std::string ANIMATE_FRAMS_PATH = "resources/animation/BattleField2042/images1/";
+const unsigned int ANIMATE_START_FRAME = 946; //主界面动画开始帧
+const  std::string ANIMATE_FRAMS_PATH = "resources/animation/BattleField2042/images/";
 const  std::string ANIMATE_FRAMS_SUFFIX = ".png";
 
 const std::string OVER_ICON_PATH = "images/textures/fail.png";
