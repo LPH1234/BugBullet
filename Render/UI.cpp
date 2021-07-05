@@ -52,8 +52,8 @@ namespace UI {
 	bool LogoText::visable = false;
 
 
-	std::string OverModal::text = "";
 	bool OverModal::visable = false;
+	bool OverModal::isFail = true;
 
 	int MissionModal::maxLevel;
 	int MissionModal::currLevel;
@@ -822,7 +822,7 @@ namespace UI {
 		}
 
 	}
-	void MissionModal::draw(unsigned int w, unsigned int h){
+	void MissionModal::draw(unsigned int w, unsigned int h) {
 		if (MissionModal::visable) {
 			bool* p_open = NULL;
 			const float DISTANCE = 10.0f;
@@ -834,7 +834,7 @@ namespace UI {
 			ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.11f, 0.59f, 0.92f, 0.1f)); //分割线
 			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-			if (ImGui::Begin("Mission Modal", p_open, window_flags)){
+			if (ImGui::Begin("Mission Modal", p_open, window_flags)) {
 				ImGui::PushFont(titleFont);
 				float imgh = ImGui::GetTextLineHeightWithSpacing() - ImGui::GetStyle().FramePadding.y;
 				ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(GAME_MISSION_ICON), ImVec2(imgh, imgh));
@@ -844,18 +844,18 @@ namespace UI {
 				ImGui::PopFont();
 
 				ImVec4 color(1.f, 1.f, 1.f, 1.f);
-				 imgh = ImGui::GetTextLineHeightWithSpacing() - ImGui::GetStyle().FramePadding.y;
-				for (int i = 1; i <= maxLevel; i++){
+				imgh = ImGui::GetTextLineHeightWithSpacing() - ImGui::GetStyle().FramePadding.y;
+				for (int i = 1; i <= maxLevel; i++) {
 					if (i > currLevel)
 						color.w = 0.6f;
 					//	color.x = color.y = color.z = 0.7f;
-					ImGui::TextColored(color,"LEVEL %d: Eliminate ",i);
+					ImGui::TextColored(color, "LEVEL %d: Eliminate ", i);
 					ImGui::SameLine();
 					ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(levelToTaskIcon[i]), ImVec2(imgh, imgh));
 					ImGui::SameLine();
-					ImGui::TextColored(color,levelToTaskInfo[i].c_str(), currBeatAndTotal[i-1][0], currBeatAndTotal[i - 1][1]); //// AA on north island
+					ImGui::TextColored(color, levelToTaskInfo[i].c_str(), currBeatAndTotal[i - 1][0], currBeatAndTotal[i - 1][1]); //// AA on north island
 					ImGui::SameLine();
-					if(i < currLevel)
+					if (i < currLevel)
 						ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(GAME_MISSION_COMPLETE_ICON), ImVec2(imgh, imgh));
 					else
 						ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(GAME_MISSION_DISCOMPLETE_ICON), ImVec2(imgh, imgh));
@@ -867,7 +867,7 @@ namespace UI {
 		}
 
 	}
-	
+
 
 
 
@@ -962,7 +962,7 @@ namespace UI {
 
 
 	void OverModal::init(GLFWwindow* window) {
-		OverModal::text = OVER_CONTENT_TEXT.c_str();
+		isFail = true;
 	}
 
 	void OverModal::draw(unsigned int w, unsigned int h) {
@@ -972,17 +972,20 @@ namespace UI {
 			ImGui::SetNextWindowPos(ImVec2(w / 2 - w / 6, h / 2 - h / 6));
 			if (ImGui::BeginPopupModal("OVER", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar))
 			{
+				unsigned int overIconId = TextureManager::getTextureID(isFail ? OVER_ICON_FAIL_PATH : OVER_ICON_COMPLETE_PATH);
+				string title = isFail ? OVER_TITLE_FAIL_TEXT : OVER_TITLE_COMPLETE_TEXT;
+				ImVec4 titieColor = isFail ? ImVec4(1.f, 0.f, 0.f, 0.9f) : ImVec4(0.f, 1.f, 0.f, 0.9f);
+				string content = isFail ? OVER_CONTENT_FAIL_TEXT : OVER_CONTENT_COMPLETE_TEXT;
 				float imgh = ImGui::GetTextLineHeightWithSpacing() - ImGui::GetStyle().FramePadding.y;
-				ImGui::Image((void*)(intptr_t)TextureManager::getTextureID(OVER_ICON_PATH), ImVec2(imgh, imgh));
+				ImGui::Image((void*)(intptr_t)overIconId, ImVec2(imgh, imgh));
 				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.20f, 0.20f, 0.20f, 0.6f)); //标题栏
 				ImGui::AlignTextToFramePadding();
-				ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 0.9f), OVER_TITLE_TEXT.c_str());
+				ImGui::TextColored(titieColor, title.c_str());
 				ImGui::Separator();
 				ImGui::PopStyleColor();
 				ImGui::NewLine();
-
-				ImGui::Text(OverModal::text.c_str());
+				ImGui::Text(content.c_str());
 
 				ImVec2 BtnSize(w / 3, h / 3.f);
 				if (ImGui::Button(OVER_BUTTON1_TEXT.c_str(), BtnSize)) {

@@ -22,7 +22,7 @@ Orientation of Fighter, Press Space Key To Emit Missile.\n\
 
 const unsigned int MAX_GAME_LEVEL = 3;
 const std::string GAME_MISSION_TITLE = "M I S S I O N     T A R G E T";
-const std::string GAME_MISSION_ICON = "images/textures/goal.png";
+const std::string GAME_MISSION_ICON = "images/textures/flag.png";
 const std::string GAME_MISSION_TANK_TEXT = "Tanks On East Island(%d/%d)";
 const std::string GAME_MISSION_TANK_ICON = "images/textures/tank.png";
 const std::string GAME_MISSION_TOWER_TEXT = "Anti-Aircraft On North Island(%d/%d)";
@@ -72,9 +72,12 @@ const unsigned int ANIMATE_START_FRAME = 946; //主界面动画开始帧
 const  std::string ANIMATE_FRAMS_PATH = "resources/animation/BattleField2042/images/";
 const  std::string ANIMATE_FRAMS_SUFFIX = ".png";
 
-const std::string OVER_ICON_PATH = "images/textures/fail.png";
-const std::string OVER_TITLE_TEXT = "M I S S I O N     F A I L";
-const std::string OVER_CONTENT_TEXT = "YOU CRASHED.";
+const std::string OVER_ICON_FAIL_PATH = "images/textures/fail.png";
+const std::string OVER_TITLE_FAIL_TEXT = "M I S S I O N     F A I L E D";
+const std::string OVER_CONTENT_FAIL_TEXT = "You Crashed.";
+const std::string OVER_ICON_COMPLETE_PATH = "images/textures/check.png";
+const std::string OVER_TITLE_COMPLETE_TEXT = "M I S S I O N     C O M P L E T E D";
+const std::string OVER_CONTENT_COMPLETE_TEXT = "You Made It Through All The Levels!";
 const std::string OVER_BUTTON1_TEXT = "BACK TO MAIN";
 
 const std::string CONNER_TIP_POSITION_ICON = "images/textures/position.png";
