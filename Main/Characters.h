@@ -72,6 +72,9 @@ public:
 	virtual void oncontact(DATATYPE::ACTOR_TYPE _type) {};
 	virtual void oncontact(DATATYPE::TRIGGER_TYPE _type) {};
 
+	static void rocket_oncontact() {
+
+	}
 	physx::PxRigidDynamic* getRigid() {
 		return this->rigid;
 	}
@@ -167,13 +170,13 @@ public:
 	bool track_mode = false;
 
 	bool activatemissle = false;
-	int health = 10000;//飞机生命值
+	int health = 100;//飞机生命值
 	bool alive = true;
 	int bullet_ammo = 10000;
-	int missle_ammo = 0;
+	int missle_ammo = 50;
 
 	void*					user_data;//信息
-
+	clock_t last_time_signal = 0;
 
 	AirPlane();
 	~AirPlane();

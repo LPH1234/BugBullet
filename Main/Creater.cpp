@@ -227,12 +227,23 @@ void testTriggerCollection() {
 }
 PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type, bool movable) {
 	PxShape* collectionShape = gPhysics->createShape(PxBoxGeometry(2.f, 2.f, 2.f), *gMaterial);
+	//PxShape* collectionContactShape = gPhysics->createShape(PxBoxGeometry(1.f, 1.f, 1.f), *gMaterial);
 	PxRigidDynamic* collection = gPhysics->createRigidDynamic(tran);
+	if (_type == DATATYPE::TRIGGER_TYPE::COLLECTION) {
+		collectionShape->userData = new UserData(1026, "", DATATYPE::TRIGGER_TYPE::COLLECTION);
+		idToRenderModel[1026] = getCube("images/textures/missle1.jpg");
+	}
+	else {
+		collectionShape->userData = new UserData(1025, "", DATATYPE::TRIGGER_TYPE::SUPPLY);
+		idToRenderModel[1025] = getCube("images/textures/redcross.png");
+	}
+	
 	collection->userData = new UserData(1, "collection", _type);
 	collection->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	collectionShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 	collectionShape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
 	collection->attachShape(*collectionShape);
+	//collection->attachShape(*collectionContactShape);
 	gScene->addActor(*collection);
 	if (movable) {
 		collection->setLinearVelocity(PxVec3(0.f, 1.f, 0.f) * 3);
@@ -328,6 +339,17 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::MAP) {
 				printf("飞机弹药！\n");
+				if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) {
+					PxRigidActor* temp = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1;
+					PxVec3 p = temp->getGlobalPose().p;
+					glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
+					MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
+					FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
+					renderParticleClusterList.push_back(flame_cluster);
+					SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
+						input, std::vector<string>(), smokeShader);
+					renderParticleClusterList.push_back(smoke_cluster);
+				}
 				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				/*	cout << pairHeader.pairs->contactImpulses << "\n";*/
@@ -392,6 +414,17 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::TANK
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK) {
+				if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) {
+					PxRigidActor* temp = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1;
+					PxVec3 p = temp->getGlobalPose().p;
+					glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
+					MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
+					FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
+					renderParticleClusterList.push_back(flame_cluster);
+					SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
+						input, std::vector<string>(), smokeShader);
+					renderParticleClusterList.push_back(smoke_cluster);
+				}
 				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TANK ? actor_data_0 : actor_data_1);
@@ -404,6 +437,17 @@ void module::onContact(const PxContactPairHeader& pairHeader, const PxContactPai
 				&& actor_data_1->type == DATATYPE::ACTOR_TYPE::TOWER
 				|| (actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE)
 				&& actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER) {
+				if (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE || actor_data_1->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) {
+					PxRigidActor* temp = (actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1;
+					PxVec3 p = temp->getGlobalPose().p;
+					glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
+					MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
+					FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
+					renderParticleClusterList.push_back(flame_cluster);
+					SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
+						input, std::vector<string>(), smokeShader);
+					renderParticleClusterList.push_back(smoke_cluster);
+				}
 				removeActorList.insert(((actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_BULLET ||
 					actor_data_0->type == DATATYPE::ACTOR_TYPE::PLANE_MISSLE) ? actor_0 : actor_1));
 				UserData* temp1 = (actor_data_0->type == DATATYPE::ACTOR_TYPE::TOWER ? actor_data_0 : actor_data_1);
@@ -543,17 +587,18 @@ void addCrashInList() {
 		for (int i = 1; i <= 18; i++) {
 			paths.push_back("model/particle/crash/" + to_string(i) + ".obj"); //机械残骸碎片
 		}
-		glm::vec3 input(addCrashList[i].p.x , addCrashList[i].p.y , addCrashList[i].p.z );
+		glm::vec3 input(addCrashList[i].p.x , addCrashList[i].p.y+5.f , addCrashList[i].p.z );
 		createPointParticles(
-			10, false,
+			100, false,
 			new DebrisParticle(glm::vec3(0.01f, 0.01f, 0.01f), paths, glm::vec3(1.f, 1.f, 0.f), envShader),
 			PxVec3(input.x / 2, input.y + 7.f, input.z / 2),
 			true, 2.0, // true是散开
 			true, 20.0, // true是随机速度
 			15, 12, // 消失时间、开始渐隐时间
-			PxVec3(10.f, 5.f, 0.f), //初始速度
-			PxVec3(2.f, 5.f, 0.f)  //力场
+			PxVec3(0.f, -6.f, 0.f), //初始速度
+			PxVec3(0.3f, -100.f, 0.3f)  //力场
 		);
+		cout << "create crash" << endl;
 	}
 	addCrashList.clear();
 }
