@@ -73,7 +73,7 @@ const  std::string ANIMATE_FRAMS_PATH = "resources/animation/BattleField2042/ima
 const  std::string ANIMATE_FRAMS_SUFFIX = ".png";
 
 const std::string OVER_ICON_PATH = "images/textures/fail.png";
-const std::string OVER_TITLE_TEXT = "M I S S I O N     F A I L";
+const std::string OVER_TITLE_TEXT = "M I S S I O N     F A I L E D";
 const std::string OVER_CONTENT_TEXT = "YOU CRASHED.";
 const std::string OVER_BUTTON1_TEXT = "BACK TO MAIN";
 

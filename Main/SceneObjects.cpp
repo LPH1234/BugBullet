@@ -157,7 +157,7 @@ void guntower::reset() {
 PxVec3 bonus::initsupply(glm::vec3 pos) {
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
 	PxVec3 input;glmVec3ToPxVec3(pos1, input);
-	PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(PxTransform(input), DATATYPE::TRIGGER_TYPE::COLLECTION,false));
+	PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(PxTransform(input), DATATYPE::TRIGGER_TYPE::SUPPLY,false));
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 
@@ -207,7 +207,7 @@ void bonus::runsupply() {
 bool bonus::supplyoncontact(int id, DATATYPE::ACTOR_TYPE _type) {
 	if (_type==DATATYPE::ACTOR_TYPE::PLANE &&enable_supply_list[id] == true) {
 		enable_supply_list[id] = false;
-		
+		MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::SUPPLY);
 		return true;
 	}
 	return false;
