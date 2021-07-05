@@ -31,6 +31,7 @@ void createModel(std::string path, int scale, PxVec3& offset) {}
 
 extern Camera camera;
 extern Shader* envShader;
+extern Game game;
 
 vector<glm::vec3>east_island_pos_list = { glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(248.f, 5.5f, 80.0f),glm::vec3(248.0f, 5.5f, -141.0f),
 										glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
@@ -153,17 +154,24 @@ bool isToChangeLevel() {
 		}
 		/*可写通关后的标志之类的*/
 		isSuccessful = true;
+		UI::MissionModal::currLevel = 4;
+		UI::UIManager::setCursorVisable(true);
+		game.state = GAME_STATE::OVER;
+		UI::OverModal::isFail = false;
 	}
 	else {}
+	
 	return false;
 }
 void initPhysics2() {
 	initGunTower();
 	Level[1] = true;
+	UI::MissionModal::currLevel = 2;
 }
 void initPhysics3() {
 	initAI_Plane();
 	Level[2] = true;
+	UI::MissionModal::currLevel = 3;
 }
 
 //重置关卡
@@ -204,6 +212,11 @@ void resetLevel() {
 	Level[0] = true;
 	Level[1] = false;
 	Level[2] = false;
+	//右上角UI
+	UI::MissionModal::currBeatAndTotal[0][0] = 0;
+	UI::MissionModal::currBeatAndTotal[1][0] = 0;
+	UI::MissionModal::currBeatAndTotal[2][0] = 0;
+	UI::MissionModal::currLevel = 1;
 }
 
 void initPhysics(bool interactive)
@@ -319,7 +332,7 @@ void Tick() {
 	}
 	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
 	//Plane_AI->autoFlying();
-	Plane_1->formcloud();
+	//Plane_1->formcloud();
 
 	Plane_1->formmisslecloud();
 }

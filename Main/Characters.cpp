@@ -735,6 +735,7 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			UI::UIManager::setCursorVisable(true);
 			cout << "crash" << endl;
 			reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
+			UI::OverModal::isFail = true;
 		}
 	}
 	else {
@@ -756,6 +757,7 @@ void AirPlane::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			UI::UIManager::setCursorVisable(true);
 			cout << "Plane died" << endl;
 			reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->show();
+			UI::OverModal::isFail = true;
 		}
 	}
 	updateUI();
@@ -1763,10 +1765,10 @@ void AirPlane_AI::autoEmit(int time) {
 }
 
 void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
-	if ( _type == DATATYPE::ACTOR_TYPE::MAP) {
+	if ( _type == DATATYPE::ACTOR_TYPE::MAP&&this->alive) {
 		this->health = 0;
-		this->alive = false;
 		UI::MissionModal::currBeatAndTotal[2][0] += 1;
+		this->alive = false;
 		crash();
 	}
 	else {
