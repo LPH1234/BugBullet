@@ -90,6 +90,10 @@ namespace UI {
 		bool ableTrack = false;
 		unsigned int textureID;
 		unsigned int currAngle;
+		glm::vec2 targetPos;
+		glm::vec2 initPos;
+		float blingValue;
+		bool blingDown;
 	public:
 		// Constructor (inits shaders/shapes)
 		ReticleUI(UIID id, float W, float H, std::string texture);
@@ -156,7 +160,11 @@ namespace UI {
 		static GLFWwindow* window;
 		static unordered_map<UIID, BaseUI*> idToUI;
 		static void addUI(BaseUI*);
+
 	public:
+		static glm::mat4 projection;
+		static glm::mat4 view;
+
 		static void init(GLFWwindow* window, const float W, const  float H);
 		static BaseUI* getUI(UIID id);
 		static void setUIVisable(UIID id, bool v);
@@ -164,6 +172,7 @@ namespace UI {
 		static void setEnableAnimate(UIID id, bool enable);
 		static void draw(const float W, const float H);
 		static void setCursorVisable(bool v);
+
 	};
 
 
@@ -254,6 +263,8 @@ namespace UI {
 		static void draw(unsigned int w, unsigned int h);
 		static bool visable;
 	};
+
+
 
 
 	class OverModal {
