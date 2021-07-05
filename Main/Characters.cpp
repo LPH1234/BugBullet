@@ -1238,6 +1238,7 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		this->health = 0;
 		updateTankList.insert(this);
 		this->alive = false;
+		UI::MissionModal::currBeatAndTotal[0][0] += 1;
 		Logger::debug(this->getGlobalPose());
 		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
 		cout << "Tank died" << endl;
@@ -1741,6 +1742,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	if (_type == DATATYPE::ACTOR_TYPE::MAP) {
 		this->health = 0;
 		this->alive = false;
+		UI::MissionModal::currBeatAndTotal[2][0] += 1;
 		crash();
 	}
 	else {
@@ -1751,6 +1753,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		else if (this->alive == true) {
 			this->health = 0;
 			this->alive = false;
+			UI::MissionModal::currBeatAndTotal[2][0] += 1;
 			addCrashList.push_back(body->getGlobalPose());
 			shotdown();
 		}
@@ -1884,5 +1887,5 @@ void MissileManager::removeMissile() {
 		}
 		gScene->removeActor(*(*i));
 	}
-	MissileToRemoveList.clear();
+	//MissileToRemoveList.clear();
 }

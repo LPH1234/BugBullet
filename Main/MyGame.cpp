@@ -241,7 +241,7 @@ void initPhysics(bool interactive)
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	//当前为Level0
-	Level[2] = true;
+	Level[0] = true;
 	//地面和trigger墙
 	testTriggerWall();
 
@@ -268,8 +268,14 @@ void initPhysics(bool interactive)
 	//加载道具
 	initBonus();
 
+	//右上角UI
+	UI::MissionModal::currBeatAndTotal[0][1] = 2;
+	UI::MissionModal::currBeatAndTotal[1][1] = 7;
+	UI::MissionModal::currBeatAndTotal[2][1] = 4;
+
 	//加载4架AI飞机
-	initAI_Plane();
+	//initAI_Plane();
+	//initPhysics2();
 
 }
 
@@ -330,20 +336,19 @@ void stepPhysics(bool interactive)
 	Tick();
 
 	//锁帧
-	/*lockFrame_current = clock();//当前时钟
-	if ((lockFrame_current - lockFrame_last) < 16) {
-		//skip，1000clocks/s，则一帧约16ms（60帧）
-		Sleep(16 - (lockFrame_current - lockFrame_last));
-	}
-	else {
-		gScene->simulate(((lockFrame_current - lockFrame_last) / 16.0f) / 60.0f);
-		gScene->fetchResults(true);
-		removeActorInList();
-		changeAirPlaneVelocity();
-		GunTower.runguntower(player);
-		lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
+	//lockFrame_current = clock();//当前时钟
+	//if ((lockFrame_current - lockFrame_last) < 16) {
+	//	//skip，1000clocks/s，则一帧约16ms（60帧）
+	//	Sleep(16 - (lockFrame_current - lockFrame_last));
+	//}
+	//else {
+	//	beforeStepPhysics();
+	//	gScene->simulate(((lockFrame_current - lockFrame_last) / 16.0f) / 60.0f);
+	//	gScene->fetchResults(true);
+	//	Tick();
+	//	lockFrame_last = lockFrame_current;//每执行一帧，记录上一帧（即当前帧）时钟
 
-	}*/
+	//}
 
 
 }
