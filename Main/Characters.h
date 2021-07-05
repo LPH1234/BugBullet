@@ -191,7 +191,7 @@ public:
 	void reset();
 	void crash();
 	void shotdown();
-	PxVec3 ifEmitMissile();
+	bool ifEmitMissile(PxVec3 &pos);
 	void emitMissile();
 	void updateUI();
 
@@ -264,7 +264,7 @@ public:
 class MissileManager {
 public:
 	set<PxRigidDynamic*>		MissileList;
-	set<PxRigidDynamic*>			MissileToRemoveList;
+	set<PxRigidDynamic*>		MissileToRemoveList;
 	int							count = 0;
 	float						missileSpeed = 30.f;
 	MissileManager();

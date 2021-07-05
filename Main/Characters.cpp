@@ -707,8 +707,8 @@ void AirPlane::ProcessMouseClick(int button, int action) {
 
 void AirPlane::ProcessMouseClick() {
 	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT]) {
-		PxVec3 pos = this->ifEmitMissile();
-		if (abs(pos.x) + abs(pos.y) + abs(pos.z) < 0.1) {
+		PxVec3 pos(0, 0, 0);
+		if (this->ifEmitMissile(pos)) {
 			reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(true);
 			reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->updateTargetPosition(pxVec3ToGlmVec3(pos));
 			clock_t now_signal = clock();
@@ -889,7 +889,7 @@ void AirPlane::shotdown() {
 	body->setLinearVelocity(veclocity * 2 * currentHeadForward);
 }
 
-PxVec3 AirPlane::ifEmitMissile() {
+bool AirPlane::ifEmitMissile(PxVec3 &pos) {
 	for (int k = 0; k < AI_PlaneList.size(); k++) {
 		if (AI_PlaneList[k] != nullptr&&AI_PlaneList[k]->alive) {
 			PxVec3 targetDir = AI_PlaneList[k]->body->getGlobalPose().p - this->body->getGlobalPose().p;
@@ -898,12 +898,13 @@ PxVec3 AirPlane::ifEmitMissile() {
 			double radiusAng = acos(cosine);
 			double ang = radiusAng * 180 / PxPi;
 			//Logger::debug(to_string(ang));
-			if (ang < 15 && distance < 150) {
-				return AI_PlaneList[k]->body->getGlobalPose().p;
+			if (ang < 15 && distance < 250) {
+				pos = AI_PlaneList[k]->body->getGlobalPose().p + (5)*AI_PlaneList[k]->body->getLinearVelocity().getNormalized() + PxVec3(0, 10, 0);
+				return true;
 			}
 		}
 	}
-	return PxVec3(0, 0, 0);
+	return false;
 }
 
 void AirPlane::emitMissile() {
@@ -915,7 +916,7 @@ void AirPlane::emitMissile() {
 			double radiusAng = acos(cosine);
 			double ang = radiusAng * 180 / PxPi;
 			//Logger::debug(to_string(ang));
-			if (ang < 15 && distance < 150) {
+			if (ang < 15 && distance < 250) {
 				PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
 				myMissileManager->emitMissile(emitPos, currentHeadForward, AI_PlaneList[k]);
 				leftOrRight *= -1;
@@ -1775,7 +1776,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		}
 		else if (this->alive == true) {
 			this->health = 0;
-			//this->alive = false;
+			this->alive = false;
 			PxVec3 p = body->getGlobalPose().p;
 			glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
 			MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::EXPLODE);
@@ -1910,6 +1911,12 @@ void MissileManager::removeMissile() {
 		if (MissileList.find(*i) != MissileList.end()) {
 			MissileList.erase(*i);
 		}
+		PxScene* s = (*i)->getScene();
+		if (s == NULL) {
+			string temp = "Line1882--";
+			Logger::debug(temp);
+		}
 		gScene->removeActor(*(*i));
 	}
+	MissileToRemoveList.clear();
 }

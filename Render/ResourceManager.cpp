@@ -73,6 +73,13 @@ void TextureManager::init() {
 	texturePathes.push_back(CONNER_TIP_POSITION_ICON);
 	//危险边缘遮罩
 	texturePathes.push_back(BORDER_MASK_UI_TEX_PATH);
+	//任务信息窗口
+	texturePathes.push_back(GAME_MISSION_ICON);
+	texturePathes.push_back(GAME_MISSION_TANK_ICON);
+	texturePathes.push_back(GAME_MISSION_TOWER_ICON);
+	texturePathes.push_back(GAME_MISSION_PLANE_ICON);
+	texturePathes.push_back(GAME_MISSION_COMPLETE_ICON);
+	texturePathes.push_back(GAME_MISSION_DISCOMPLETE_ICON);
 
 	texturePathes.push_back(CUBE_TEXTURE_PATH);
 	texturePathes.push_back(HPBAR_TEXTURE_PATH);

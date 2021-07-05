@@ -478,6 +478,11 @@ void removeActorInList() {
 			airPlaneBullet.erase((PxRigidDynamic*)(*i));
 			//cout << "erase!\n";
 		}
+		PxScene* s = (*i)->getScene();
+		if (s == NULL) {
+			string temp = "Line439--";
+			Logger::debug(temp);
+		}
 		gScene->removeActor(*(*i));
 	}
 	removeActorList.clear();
