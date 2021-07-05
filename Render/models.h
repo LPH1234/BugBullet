@@ -191,6 +191,34 @@ public:
 
 };
 
+class BoomFlameParticle : public BaseSpriteParticle { //四散的火焰
+	float velocity;
+	int timeToLeave;
+	int createTime;
+	float alpha;
+	float *vertices;
+	
+public:
+	BoomFlameParticle(glm::vec3 pos, int pointNum, float pointSize, float velocity, int timeToLeave, std::string texturePath, Shader* shader);
+	~BoomFlameParticle();
+	void draw();
+
+};
+//
+//class SphereFlameParticle : public BaseSpriteParticle { //包围球火焰
+//	float dBack = 0.f;
+//	float VBack; //中心火焰在back方向的最大速度
+//	float maxBack;
+//	int timeToLeave;
+//	int createTime;
+//	float alpha;
+//public:
+//	SphereFlameParticle(int pointNum, float pointSize, float radis, float velocity, int timeToLeave, PxRigidDynamic* target, std::string texturePath, Shader* shader);
+//	~SphereFlameParticle();
+//	void draw();
+//
+//};
+
 
 class SmokeParticle : public BaseSpriteParticle {
 	float dy = 0.f;

@@ -29,7 +29,8 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	guntower->userData = new UserData(this, count, "tower", DATATYPE::ACTOR_TYPE::TOWER);
 	count++;
 	guntower->setName("Tower");
-	
+	string temp = "Line32--";
+	Logger::debug(temp);
 	guntower::tower_list.push_back(guntower);
 	guntower::health_list.push_back(50);
 	guntower::enable_attack_list.push_back(true);
@@ -44,7 +45,10 @@ void guntower::initlist(vector<glm::vec3> pos_list) {
 		PxVec3 e = initguntower(pos_list[i]);
 		guntower::towerpos_list.push_back(e);
 		guntower::timer_list.push_back(0);
+
 	}
+	string temp = "SceneObject  Line50";
+	Logger::debug(temp);
 }
 PxQuat guntower::getshellrotate(const PxVec3& needfront, const PxVec3& bulletfront) {
 	/*cout << "neededFront:" << needfront.x << "\t" << needfront.y << "\t" << needfront.z << "\t\t"
@@ -62,7 +66,7 @@ void guntower::fire(const PxTransform& t, const PxVec3& velocity) {
 	PxTransform emitTransform = t;
 	/*emitTransform.q = bulletRot;*/
 	emitTransform.q = getshellrotate(velocity, PxVec3(1.0f, 0.0f, 0.0f));
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, emitTransform, PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, emitTransform, PxCapsuleGeometry(0.04, 0.07), *gMaterial, 0.01f);
 	//ÉèÖÃ¸ÕÌåÃû³Æ
 	dynamic->setName("bullet");
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
@@ -123,6 +127,7 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 	else if(this->enable_attack_list[id] ==true) {
 		this->health_list[id] = 0;
 		this->enable_attack_list[id] = false;
+		UI::MissionModal::currBeatAndTotal[1][0] += 1;
 		PxRigidActor* temp = reinterpret_cast<PxRigidActor*>(this->tower_list[id]);
 		bonus::generate_bonus_pos(temp->getGlobalPose());
 		cout << "Tower died" << endl;

@@ -58,6 +58,8 @@
     <ClCompile Include="..\..\Render\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\boomFlameShader\boomFlame.fs" />
+    <None Include="shaders\boomFlameShader\boomFlame.vs" />
     <None Include="shaders\borderMaskShader\borderMask.fs" />
     <None Include="shaders\borderMaskShader\borderMask.vs" />
     <None Include="shaders\cloudShader\cloud.fs" />
@@ -86,7 +88,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{43554530-2170-F5A9-4794-3AD09344F18D}</ProjectGuid>
     <RootNamespace>SnippetRender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">

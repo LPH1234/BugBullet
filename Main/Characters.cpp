@@ -811,7 +811,7 @@ void AirPlane::formcloud() {
 	);
 	PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
 	CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
-		10, 0.005f,  //云密度、云团的半径
+		10, 0.1f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
 		glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
@@ -820,8 +820,8 @@ void AirPlane::formcloud() {
 		cloudShader //渲染此烟雾的shader
 	);
 	renderParticleClusterList.push_back(cloud_cluster1);
-	//renderParticleClusterList.push_back(cloud_cluster2);
-	//renderParticleClusterList.push_back(cloud_cluster3);
+	renderParticleClusterList.push_back(cloud_cluster2);
+	renderParticleClusterList.push_back(cloud_cluster3);
 }
 void AirPlane::formmisslecloud() {
 	for (auto i = airPlaneBullet.begin(); i != airPlaneBullet.end(); i++) {
@@ -1262,6 +1262,7 @@ void Player::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		this->health = 0;
 		updateTankList.insert(this);
 		this->alive = false;
+		UI::MissionModal::currBeatAndTotal[0][0] += 1;
 		Logger::debug(this->getGlobalPose());
 		bonus::generate_bonus_pos(this->rigid->getGlobalPose());
 		cout << "Tank died" << endl;
@@ -1764,10 +1765,9 @@ void AirPlane_AI::autoEmit(int time) {
 void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 	if ( _type == DATATYPE::ACTOR_TYPE::MAP) {
 		this->health = 0;
-		if (this->alive) {
-			this->alive = false;
-			crash();
-		}
+		this->alive = false;
+		UI::MissionModal::currBeatAndTotal[2][0] += 1;
+		crash();
 	}
 	else {
 		int damage = int(_type) * 2;
@@ -1777,6 +1777,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 		else if (this->alive == true) {
 			this->health = 0;
 			this->alive = false;
+			UI::MissionModal::currBeatAndTotal[2][0] += 1;
 			PxVec3 p = body->getGlobalPose().p;
 			glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
 			MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::EXPLODE);

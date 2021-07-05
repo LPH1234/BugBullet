@@ -36,3 +36,9 @@ class CloudParticleCluster : public BaseParticleCluster {
 public:
 	CloudParticleCluster(int cloudDensity, float cloudRadis, float cloudVy, float cloudMaxY, glm::vec3 initPos, glm::vec3 scale, vector<string> textures, Shader* shader);
 };
+
+class BoomFlameParticleCluster : public BaseParticleCluster {
+	int flameNum;
+public:
+	BoomFlameParticleCluster(int flameNum, float pointSize, float timeToLeave, glm::vec3 initPos, vector<string> textures, Shader* shader);
+};

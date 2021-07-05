@@ -170,6 +170,7 @@ public:
 	bool track_mode = false;
 
 	bool activatemissle = false;
+
 	int health = 1000;//·É»úÉúÃüÖµ
 	bool alive = true;
 	int bullet_ammo = 10000;
