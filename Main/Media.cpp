@@ -100,13 +100,6 @@ void Media::PlayMedia3D(vec3df pos, Media::MediaType _type) {
 	}
 	else if (_type == Media::MediaType::TANKSHOOT) {
 		Sound = SoundEngine->play3D("audio/tankfire.mp3", pos/5, false, false, true, ESM_AUTO_DETECT,true);
-		//Sound->setVolume(70.f);
-		Sound = SoundEngine->play3D("audio/boom.mp3", pos, false, false, true, ESM_AUTO_DETECT, true);
-		Sound->setVolume(0.3f);
-	}
-	else if (_type == Media::MediaType::TANKSHOOT) {
-		Sound = SoundEngine->play3D("audio/tankfire.mp3", pos, false, false, true, ESM_AUTO_DETECT, true);
-		Sound->setVolume(70.f);
 	}
 	else if (_type == Media::MediaType::TOWERSHOOT) {
 		Sound = SoundEngine->play3D("audio/biggun1.wav", pos/5, false, false, true, ESM_AUTO_DETECT, true);
@@ -121,7 +114,7 @@ void Media::PlayMedia3D(vec3df pos, Media::MediaType _type) {
 		//Sound->setVolume(0.7f);
 	}
 	else if (_type == Media::MediaType::SUPPLY) {
-		Sound = SoundEngine->play3D("audio/life_pickup.mp3", pos/5, false, false, true, ESM_AUTO_DETECT, true);
+		Sound = SoundEngine->play3D("audio/life_pickup.mp3", pos/25, false, false, true, ESM_AUTO_DETECT, true);
 		//Sound->setVolume(50.f);
 	}
 	else if (_type == Media::MediaType::COLLECTION) {

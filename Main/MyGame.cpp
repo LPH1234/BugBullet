@@ -74,7 +74,7 @@ void initGunTower() {
 
 //初始化道具等
 void initBonus() {
-	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2] };
+	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2], south_island_pos_list[2],glm::vec3(north_island_pos_list[3].x,north_island_pos_list[3].y,north_island_pos_list[3].z-7.f) };
 	Bonus.initlist(supply_pos_list);
 }
 
@@ -241,7 +241,7 @@ void initPhysics(bool interactive)
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	//当前为Level0
-	Level[2] = true;
+	Level[0] = true;
 	//地面和trigger墙
 	testTriggerWall();
 
@@ -313,7 +313,7 @@ void Tick() {
 	}
 	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
 	//Plane_AI->autoFlying();
-	//Plane_1->formcloud();
+	Plane_1->formcloud();
 
 	Plane_1->formmisslecloud();
 }
