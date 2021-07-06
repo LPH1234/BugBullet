@@ -33,19 +33,19 @@ extern Camera camera;
 extern Shader* envShader;
 extern Game game;
 
-vector<glm::vec3>east_island_pos_list = { glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(248.f, 5.5f, 80.0f),glm::vec3(248.0f, 5.5f, -141.0f),
+vector<glm::vec3>east_island_pos_list = { glm::vec3(247.0f, 7.6f, 29.3f),glm::vec3(248.f, 7.5f, 80.0f),glm::vec3(248.0f, 5.5f, -141.0f),
 										glm::vec3(361.0f, 7.6f, -138.0f),glm::vec3(361.0f, 7.6f, -55.0f),glm::vec3(313.0f, 7.6f, 29.0f),
 										glm::vec3(356.0f, 7.6f, -243.0f),glm::vec3(350.0f, 7.6f, -136.0f),
 										glm::vec3(136.5f, 5.4f, -140.0f),glm::vec3(136.5f, 5.4f, 22.0f),glm::vec3(136.5f, 5.4f, 60.0f),
 										glm::vec3(136.5f, 5.4f, -23.0f),glm::vec3(136.5f, 5.4f, -45.0f) };
 
-vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 5.6f, 18.3f),
+vector<glm::vec3>south_island_pos_list = { glm::vec3(-1.6f, 5.6f, 23.4f),glm::vec3(-6.7f, 5.6f, 31.8f),glm::vec3(-88.6f, 7.6f, 18.3f),
 										glm::vec3(-85.3f, 5.6f, -30.5f),glm::vec3(-85.3f, 5.6f, 107.4f),glm::vec3(88.9f, 5.6f, -49.9f),
 										 glm::vec3(131.0f, 5.6f, 22.3f),glm::vec3(130.0f, 5.6f, 60.3f),glm::vec3(130.3f, 5.6f, -140.0f),
 										glm::vec3(24.8f, 5.6f, -103.9f),glm::vec3(23.8f, 5.6f, -12.5f) };
 
 vector<glm::vec3>north_island_pos_list = { glm::vec3(24.8f,7.6f,-261.8f),glm::vec3(24.6f,7.6f,-330.8f),glm::vec3(25.1f,7.6f,-394.6f),
-										glm::vec3(26.8f,7.6f,-464.3f),glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),
+										glm::vec3(26.8f,9.6f,-470.3f),glm::vec3(-52.8f,7.6f,-484.3f),glm::vec3(-87.1f,7.6f,-384.8f),
 										glm::vec3(-19.7f,7.6f,-256.8f) };
 
 //初始化地图
@@ -75,7 +75,7 @@ void initGunTower() {
 
 //初始化道具等
 void initBonus() {
-	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2], south_island_pos_list[2],glm::vec3(north_island_pos_list[3].x,north_island_pos_list[3].y,north_island_pos_list[3].z - 7.f) };
+	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2], south_island_pos_list[2],glm::vec3(north_island_pos_list[3].x, north_island_pos_list[3].y, north_island_pos_list[3].z - 7.f) };
 	Bonus.initlist(supply_pos_list);
 }
 
