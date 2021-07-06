@@ -8,12 +8,12 @@ private:
 	ISoundEngine *SoundEngine;
 	ISound *Sound;
 	ISound *BGSOUND;
-
+	bool enableEffect = true;
 public:
 	enum MediaType {
-		NONE,START,TOWERSHOOT, TANKSHOOT, PLANEBULLET,
-		PLANEMISSILE, COLLECTION, SUPPLY, EXPLODE,FLYING,
-		CLICK,SELECT,AIMED
+		NONE, START, TOWERSHOOT, TANKSHOOT, PLANEBULLET,
+		PLANEMISSILE, COLLECTION, SUPPLY, EXPLODE, FLYING,
+		CLICK, SELECT, AIMED, SWITCH_AMMO
 	};
 	Media::MediaType currentBG = Media::MediaType::NONE;
 	Media();
@@ -25,5 +25,6 @@ public:
 	void PlayMedia2D(Media::MediaType _type);
 	void PlayMedia3D(vec3df pos, Media::MediaType _type);
 	void setlistenerpos(vec3df pos, vec3df lookat);
+	void setEnableEffect(bool enable);
 };
 
