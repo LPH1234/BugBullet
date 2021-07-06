@@ -42,7 +42,6 @@ extern vector<AirPlane_AI*>		AI_PlaneList;
 //extern MissileManager			*ManageMissile;
 extern Media MediaPlayer;
 //extern void createshell(const PxTransform& t, const PxVec3& velocity);
-extern unordered_map<int, BaseModel*> idToRenderModel;
 extern vector<PxTransform> addCrashList;
 
 class BaseCharacter {
@@ -207,7 +206,8 @@ public:
 
 	void oncontact(DATATYPE::ACTOR_TYPE _type);
 	void oncontact(DATATYPE::TRIGGER_TYPE _type);
-	void formcloud();
+	void formCloud2Side();
+	void formCloudBehind();
 	void formmisslecloud();
 };
 
@@ -221,6 +221,7 @@ public:
 	PxVec3					headForward, currentHeadForward;//初始机头朝向、当前机头朝向
 	PxVec3					backForward, currentBackForward;//初始机背朝向、当前机背朝向
 	PxVec3					swingForward, currentSwingForward;//初始机翼朝向、当前机翼朝向
+	PxVec3					velocityOnShutDown;//初始机翼朝向、当前机翼朝向
 	vector<bool>			turningState;//飞机转向的5个状态，直行、左转、右转、上仰、俯冲
 
 	int						rollingAngle = 0;//滚转角
@@ -236,6 +237,7 @@ public:
 	float					veclocity = 10.0f;//默认飞行速度
 	float					emitVeclocity = 64.0f;//默认炮弹飞行速度
 	float					turningSpeed = 6.0f;//转向速度
+	float					currRotAngle;//转向速度
 
 	int						health = 20;//飞机生命值
 	bool					alive = true;//是否存活
@@ -250,6 +252,8 @@ public:
 	void oncontact(DATATYPE::ACTOR_TYPE _type);//被击中扣血
 	void crash();					//被击毁
 	void shotdown();
+	void afterShutDown();
+
 
 	//重写
 	virtual void getRight(physx::PxVec3& right);

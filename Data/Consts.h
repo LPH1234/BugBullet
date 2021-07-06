@@ -105,3 +105,7 @@ const std::string PLAYER_STATUS_MISSILE_ICON = "images/textures/missile.png";
 const std::string PLAYER_STATUS_MISSILE_TEXT = "Missile";
 
 const unsigned int PLAYER_MIN_HP_TO_ALERT = 30;
+
+
+
+const std::string RED_MISSILE_MODEL_PATH = "model/missile/missile-red/missile-red.obj";

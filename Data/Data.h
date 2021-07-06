@@ -15,14 +15,14 @@ enum GAME_STATE
 };
 enum MEDIA_STATE {
 	init,
-    mainmenu,
+	mainmenu,
 	pause,
 	started,
 	over
 };
 struct Game
 {
-	Game(GAME_STATE state,MEDIA_STATE _mediastate, float w, float h, float lx, float ly, float dt, float lt, bool firstMouse) {
+	Game(GAME_STATE state, MEDIA_STATE _mediastate, float w, float h, float lx, float ly, float dt, float lt, bool firstMouse) {
 		this->state = state; this->MediaState = _mediastate; this->SCR_WIDTH = w; this->SCR_HEIGHT = h; this->lastX = lx; this->lastY = ly; this->deltaTime = dt; this->lastFrame = lt; this->firstMouse = firstMouse;
 		this->pause = false; this->isInit = false;
 	}
@@ -42,7 +42,7 @@ struct Game
 
 struct DATATYPE {
 	enum ACTOR_TYPE {
-		MAP, TOWER, PLANE, TANK, TANK_BULLET, TOWER_BULLET, PLANE_BULLET=(100), PLANE_MISSLE = (20)
+		MAP, TOWER, PLANE, TANK, TANK_BULLET, TOWER_BULLET, PLANE_BULLET = (100), PLANE_MISSLE = (20)
 	};
 	enum TRIGGER_TYPE {
 		BORDER,
@@ -67,11 +67,32 @@ struct UserData
 		name = a;
 		type = _type;
 	}
+
+	UserData(BaseCharacter* _basecha, int input, std::string a, DATATYPE::TRIGGER_TYPE _type2) {
+		basecha = _basecha;
+		id = input;
+		name = a;
+		type2 = _type2;
+	}
+	UserData(BaseCharacter* _basecha, int input, std::string a, DATATYPE::ACTOR_TYPE _type, DATATYPE::TRIGGER_TYPE _type2) {
+		basecha = _basecha;
+		id = input;
+		name = a;
+		type = _type;
+		type2 = _type2;
+	}
 	UserData(BaseSceneObject* _basesce, int input, std::string a, DATATYPE::ACTOR_TYPE _type) {
 		basesce = _basesce;
 		id = input;
 		name = a;
 		type = _type;
+	}
+	UserData(BaseSceneObject* _basesce, int input, std::string a, DATATYPE::ACTOR_TYPE _type, DATATYPE::TRIGGER_TYPE _type2) {
+		basesce = _basesce;
+		id = input;
+		name = a;
+		type = _type;
+		type2 = _type2;
 	}
 	UserData(BaseSceneObject* _basesce, int input, std::string a, DATATYPE::TRIGGER_TYPE _type) {
 		basesce = _basesce;

@@ -12,7 +12,7 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	PxRigidStatic* guntower = reinterpret_cast<PxRigidStatic*>(createModel(pos1, glm::vec3(0.5f, 0.5f, 0.5f), "model/vehicle/AA/flak38.obj", envShader));
 	PxShape* bloodShape = gPhysics->createShape(PxBoxGeometry(3, 0.1f, 0.1f), *gMaterial, true);
 	bloodShape->userData = new UserData(1024, "", DATATYPE::BLOOD);
-	idToRenderModel[1024] = getCube("images/textures/blood.png");
+	ObjLoader::meshToRenderModel[bloodShape] = getCube("images/textures/blood.png");
 	PxRigidStatic* blood_body = PxCreateStatic(*gPhysics, PxTransform(guntower->getGlobalPose().p + PxVec3(0, 5, 0)), *bloodShape);
 	blood_body->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
 	bloodShape->setName("blood");
@@ -23,8 +23,8 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	gScene->addActor(*blood_body);
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
-	
-	
+
+
 	/*guntower->userData = new TowerData(1, "Tower", 50, true,DATATYPE::ACTOR_TYPE::TOWER);*/
 	guntower->userData = new UserData(this, count, "tower", DATATYPE::ACTOR_TYPE::TOWER);
 	count++;
@@ -35,8 +35,8 @@ PxVec3 guntower::initguntower(glm::vec3 pos) {
 	guntower::health_list.push_back(50);
 	guntower::enable_attack_list.push_back(true);
 	guntower::blood_body_list.push_back(blood_body);
-	setupFiltering(guntower, FilterGroup::eTower, FilterGroup::eMISILE );
-	
+	setupFiltering(guntower, FilterGroup::eTower, FilterGroup::eMISILE);
+
 	//cout << temp->id << endl;
 	return mPos;
 }
@@ -73,16 +73,16 @@ void guntower::fire(const PxTransform& t, const PxVec3& velocity) {
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	dynamic->setLinearVelocity(velocity);
-	
+
 	setupFiltering(dynamic, FilterGroup::eTowerBullet, FilterGroup::ePlayer);
 
-	dynamic->userData = new UserData(1, "ab",DATATYPE::ACTOR_TYPE::TOWER_BULLET);
+	dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::TOWER_BULLET);
 	UserData* temp = reinterpret_cast<UserData*>(dynamic->userData);
 	//cout << temp->id << endl;
 	//cout << a << endl;
 	gScene->addActor(*dynamic);
 	//MediaPlayer.PlayMedia2D(Media::MediaType::TOWERSHOOT);
-	MediaPlayer.PlayMedia3D(vec3df(velocity.x/5, velocity.y/5, velocity.z/5), Media::MediaType::TOWERSHOOT);
+	MediaPlayer.PlayMedia3D(vec3df(velocity.x / 5, velocity.y / 5, velocity.z / 5), Media::MediaType::TOWERSHOOT);
 }
 void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos1) {
 	PxVec3 target_pos = target->getGlobalPose().p;
@@ -96,11 +96,11 @@ void guntower::autoattack(PxRigidDynamic* target, PxVec3 pos1) {
 	fire(PxTransform(pos), velocity);
 	//cout << "gunshot" << endl;
 }
-void guntower::rotate(PxRigidDynamic* target,PxVec3 current) {
-	PxVec3 target_pos = PxVec3(target->getGlobalPose().p.x,current.y, target->getGlobalPose().p.z);
+void guntower::rotate(PxRigidDynamic* target, PxVec3 current) {
+	PxVec3 target_pos = PxVec3(target->getGlobalPose().p.x, current.y, target->getGlobalPose().p.z);
 	PxVec3 dir = target_pos - current;
 	cout << dir.x << " " << dir.y << " " << dir.z << endl;
-	
+
 	double angle = acos((dir.getNormalized()).dot(this->currentheadforward.getNormalized()));
 	PxQuat rot(angle, currentbackforward);
 }
@@ -118,13 +118,13 @@ void guntower::runguntower(PxRigidDynamic* target) {
 	}
 }
 
-void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
+void guntower::oncontact(int id, DATATYPE::ACTOR_TYPE _type) {
 	int damage = int(_type) * 2;
-	if (this->health_list[id]- damage > 0) {
+	if (this->health_list[id] - damage > 0) {
 		this->health_list[id] -= damage;
 		cout << "Tower - " << damage << endl;
 	}
-	else if(this->enable_attack_list[id] ==true) {
+	else if (this->enable_attack_list[id] == true) {
 		this->health_list[id] = 0;
 		this->enable_attack_list[id] = false;
 		UI::MissionModal::currBeatAndTotal[1][0] += 1;
@@ -132,14 +132,14 @@ void guntower::oncontact(int id,DATATYPE::ACTOR_TYPE _type) {
 		bonus::generate_bonus_pos(temp->getGlobalPose());
 		cout << "Tower died" << endl;
 		//MediaPlayer.PlayMedia2D(Media::MediaType::EXPLODE);
-		MediaPlayer.PlayMedia3D(vec3df(15.f,15.f,15.f),Media::MediaType::EXPLODE);
+		MediaPlayer.PlayMedia3D(vec3df(15.f, 15.f, 15.f), Media::MediaType::EXPLODE);
 
 	}
 }
 
 void guntower::reset() {
 	for (int i = 0; i < count; i++) {
-		if(health_list[i]!=0)gScene->removeActor(*blood_body_list[i]);
+		if (health_list[i] != 0)gScene->removeActor(*blood_body_list[i]);
 		gScene->removeActor(*tower_list[i]);
 	}
 	count = 0;
@@ -156,8 +156,8 @@ void guntower::reset() {
 
 PxVec3 bonus::initsupply(glm::vec3 pos) {
 	glm::vec3 pos1(pos.x, pos.y - 0.75f, pos.z);
-	PxVec3 input;glmVec3ToPxVec3(pos1, input);
-	PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(PxTransform(input), DATATYPE::TRIGGER_TYPE::SUPPLY,false));
+	PxVec3 input; glmVec3ToPxVec3(pos1, input);
+	PxRigidDynamic* bonus = reinterpret_cast<PxRigidDynamic*>(createCollection(PxTransform(input), DATATYPE::TRIGGER_TYPE::SUPPLY, false));
 
 	PxVec3 mPos; glmVec3ToPxVec3(pos, mPos);
 
@@ -173,7 +173,7 @@ PxVec3 bonus::initsupply(glm::vec3 pos) {
 		bonus->setName("SUPPLY");
 		odd = !odd;
 	}
-	
+
 
 	bonus::supply_list.push_back(bonus);
 	//setupFiltering(bonus, FilterGroup::eBONUS, FilterGroup::eMISILE);
@@ -197,7 +197,7 @@ void bonus::runsupply() {
 		PxVec3 e = supply_pos_list[i];
 		if (enable_supply_list[i] == false) {
 			clock_t timer_now = clock();
-			if (timer_now - timer_list[i] >600000) {
+			if (timer_now - timer_list[i] > 600000) {
 				autorefresh(i);
 				timer_list[i] = timer_now;
 			}
@@ -205,7 +205,7 @@ void bonus::runsupply() {
 	}
 }
 bool bonus::supplyoncontact(int id, DATATYPE::ACTOR_TYPE _type) {
-	if (_type==DATATYPE::ACTOR_TYPE::PLANE &&enable_supply_list[id] == true) {
+	if (_type == DATATYPE::ACTOR_TYPE::PLANE &&enable_supply_list[id] == true) {
 		enable_supply_list[id] = false;
 		MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::SUPPLY);
 		return true;

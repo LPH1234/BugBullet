@@ -22,9 +22,7 @@ unsigned int TextureFromFile(const char *path, const string &directory)
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		std::cout << filename <<"   load texture start\n";
 		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << filename << "   load texture over\n";
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -93,8 +91,9 @@ void loadTexture(char const* path, unsigned int* textureID)
 
 		glBindTexture(GL_TEXTURE_2D, *textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		std::cout << path << "   load texture start\n";
 		glGenerateMipmap(GL_TEXTURE_2D);
-
+		std::cout << path << "   load texture over\n";
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
