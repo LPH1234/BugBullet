@@ -169,6 +169,7 @@ void initLevel1() {
 	Level[1] = true;
 	UI::MissionModal::currLevel = 1;
 	UI::MissionModal::currBeatAndTotal[0][0] = 0;
+	UI::CenterText::show(LEVEL1_BEGIN_TEXT, 10, 5);
 }
 void initLevel2() {
 	initGunTower();
@@ -176,6 +177,7 @@ void initLevel2() {
 	UI::MissionModal::currLevel = 2;
 	UI::MissionModal::currBeatAndTotal[0][0] = 2;
 	UI::MissionModal::currBeatAndTotal[1][0] = 0;
+	UI::CenterText::show(LEVEL2_BEGIN_TEXT, 10, 5);
 }
 void initLevel3() {
 	initAI_Plane();
@@ -184,6 +186,7 @@ void initLevel3() {
 	UI::MissionModal::currBeatAndTotal[0][0] = 2;
 	UI::MissionModal::currBeatAndTotal[1][0] = 7;
 	UI::MissionModal::currBeatAndTotal[2][0] = 0;
+	UI::CenterText::show(LEVEL3_BEGIN_TEXT, 10, 5);
 }
 
 //重置关卡
@@ -287,7 +290,7 @@ void initPhysics(bool interactive)
 	UI::MissionModal::currBeatAndTotal[1][1] = 7;
 	UI::MissionModal::currBeatAndTotal[2][1] = 4;
 	//当前Level
-	Level[3] = true;
+	Level[1] = true;
 	if (Level[1]) {
 		initLevel1();
 	}

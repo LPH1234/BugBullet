@@ -172,6 +172,8 @@ namespace UI {
 		static void setEnableAnimate(UIID id, bool enable);
 		static void draw(const float W, const float H);
 		static void setCursorVisable(bool v);
+		static void ImgUIBeginFrame();
+		static void ImgUIEndFrame();
 
 	};
 
@@ -271,7 +273,7 @@ namespace UI {
 	public:
 		static void init(GLFWwindow* window);
 		//经过timeToLeave秒后不显示，经过fadeTime秒后开始渐隐，isBling为true时会有闪动效果
-		static void show(std::string& text, unsigned int timeToLeave, unsigned int fadeTime = 0U, bool isBling = false);
+		static void show(std::string text, unsigned int timeToLeave, unsigned int fadeTime = 0U, bool isBling = false);
 		static void draw(unsigned int w, unsigned int h);
 		static bool visable;
 	};

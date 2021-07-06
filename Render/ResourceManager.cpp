@@ -135,11 +135,12 @@ DWORD WINAPI runLoadTextures(LPVOID lpParamter) {
 		string path = ANIMATE_FRAMS_PATH + to_string(i) + ANIMATE_FRAMS_SUFFIX;
 		int width, height, nrComponents;
 		unsigned char* data = SOIL_load_image(path.c_str(), &width, &height, &nrComponents, 0);
-		TextureDataInfo* info = new TextureDataInfo(path.c_str(), data, width, height, nrComponents);
-		tex_loader_mutex.lock();
-		TextureManager::animateTextureDatas.push_back(info);
-		tex_loader_mutex.unlock();
-
+		if (data) {
+			TextureDataInfo* info = new TextureDataInfo(path.c_str(), data, width, height, nrComponents);
+			tex_loader_mutex.lock();
+			TextureManager::animateTextureDatas.push_back(info);
+			tex_loader_mutex.unlock();
+		}
 	}
 	delete task;
 	return 0;
@@ -176,17 +177,16 @@ float TextureManager::getAnimationLoadProgress() {
 		}
 		delete info;
 	}
-	return (1.f * loadTexProgress) / TextureManager::frameNum;
+	return TextureManager::frameNum > 0 ? ((1.f * loadTexProgress) / TextureManager::frameNum) : 0;
 }
 
 
 
 void TextureManager::getSkyBoxTextures(std::vector<string>& faces) {
-	string dir = "sky"; string suffix = "png";
-	faces.push_back("images/skyboxes/" + dir + "/right." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/left." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/bottom." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/top." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/front." + suffix);
-	faces.push_back("images/skyboxes/" + dir + "/back." + suffix);
+	faces.push_back(SKYBOX_DIR + "/right." + SKYBOX_SUFFIX);
+	faces.push_back(SKYBOX_DIR + "/left." + SKYBOX_SUFFIX);
+	faces.push_back(SKYBOX_DIR + "/bottom." + SKYBOX_SUFFIX);
+	faces.push_back(SKYBOX_DIR + "/top." + SKYBOX_SUFFIX);
+	faces.push_back(SKYBOX_DIR + "/front." + SKYBOX_SUFFIX);
+	faces.push_back(SKYBOX_DIR + "/back." + SKYBOX_SUFFIX);
 }

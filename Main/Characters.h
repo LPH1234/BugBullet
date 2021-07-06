@@ -239,6 +239,7 @@ public:
 
 	int						health = 20;//飞机生命值
 	bool					alive = true;//是否存活
+	bool					isContactMap = false;//是否接触过地图
 
 	AirPlane_AI(PxRigidDynamic*	_body);
 	~AirPlane_AI();

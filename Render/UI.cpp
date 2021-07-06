@@ -154,6 +154,16 @@ namespace UI {
 		glfwSetInputMode(UIManager::window, GLFW_CURSOR, v ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 
+	void UIManager::ImgUIBeginFrame() {
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+	}
+	void UIManager::ImgUIEndFrame() {
+		ImGui::Render();// ‰÷»æImgUIΩÁ√Ê
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
 	BaseUI::BaseUI(UIID id) {
 		this->id = id;
 	}
@@ -879,10 +889,10 @@ namespace UI {
 			if (CenterText::isBling && blingTimes < CENTER_TEXT_MAX_BLING_TIMES) {
 				blingValue += blingDown ? -CENTER_TEXT_BLING_VELOCITY : CENTER_TEXT_BLING_VELOCITY;
 				if (blingValue >= 1.f) {
-					blingDown = true; blingTimes++; blingValue = 1.f;
+					blingDown = true;  blingValue = 1.f;
 				}
 				if (blingValue <= 0.f) {
-					blingDown = false; blingValue = 0.f;
+					blingDown = false; blingValue = 0.f; blingTimes++;
 				}
 			}
 			clock_t now = clock();
@@ -909,7 +919,6 @@ namespace UI {
 				ImGui::PopFont();
 				ImGui::End();
 			}
-
 			if (currAlpha <= 0.f || clock() - showTime >= timeToLeave) {
 				CenterText::visable = false;
 			}
@@ -917,7 +926,7 @@ namespace UI {
 		}
 	}
 
-	void CenterText::show(std::string& text, unsigned int timeToLeave, unsigned int fadeTime, bool isBling) {
+	void CenterText::show(std::string text, unsigned int timeToLeave, unsigned int fadeTime, bool isBling) {
 		CenterText::currAlpha = 1.f;
 		CenterText::isBling = isBling;
 		CenterText::text = text;
@@ -925,10 +934,9 @@ namespace UI {
 		CenterText::timeToLeave = timeToLeave * 1000; //¥¢¥Ê∫¡√Î
 		CenterText::showTime = clock();
 		CenterText::blingTimes = 0;
-		CenterText::blingValue = 1.f;
-		CenterText::blingDown = true;
-		if (timeToLeave != 0)
-			CenterText::visable = true;
+		CenterText::blingValue = isBling ? 0.f : 1.f;
+		CenterText::blingDown = !isBling;
+		CenterText::visable = timeToLeave != 0;
 	}
 
 	void LogoText::init(GLFWwindow* window) {
