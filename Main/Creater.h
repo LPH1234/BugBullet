@@ -29,7 +29,6 @@ extern PxPvd*                  gPvd;
 extern list<PxParticleSystem*> physicsParticleSystemList; //储存粒子系统的链表
 extern list<BaseParticleCluster*> renderParticleClusterList; //储存粒子系统的链表
 
-extern unordered_map<int, BaseModel*> idToRenderModel;
 extern unordered_map<std::string, Cube*> texToCubeModel;
 extern unordered_map<std::string, BaseModel*> modelPathToCapsuleModel;
 

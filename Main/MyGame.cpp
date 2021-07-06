@@ -75,7 +75,7 @@ void initGunTower() {
 
 //初始化道具等
 void initBonus() {
-	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2], south_island_pos_list[2],glm::vec3(north_island_pos_list[3].x,north_island_pos_list[3].y,north_island_pos_list[3].z-7.f) };
+	vector<glm::vec3> supply_pos_list = { east_island_pos_list[1],south_island_pos_list[2], south_island_pos_list[2],glm::vec3(north_island_pos_list[3].x,north_island_pos_list[3].y,north_island_pos_list[3].z - 7.f) };
 	Bonus.initlist(supply_pos_list);
 }
 
@@ -122,6 +122,7 @@ vector<AirPlane_AI*> initAI_Plane() {
 void AI_PlaneAutoFly() {
 	for (int i = 0; i < 4; i++) {
 		if (AI_PlaneList[i]->alive)AI_PlaneList[i]->autoFlying();
+		else AI_PlaneList[i]->afterShutDown();
 	}
 }
 
@@ -161,7 +162,7 @@ bool isToChangeLevel() {
 		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::BORDER_MASK))->close(true);
 	}
 	else {}
-	
+
 	return false;
 }
 void initLevel1() {
@@ -193,14 +194,14 @@ void initLevel3() {
 void resetLevel() {
 	//销毁坦克内容
 	for (int i = 0; i < 2; i++) {
-		if (tankList[i]!=nullptr&&tankList[i]->alive)gScene->removeActor(*tankList[i]->healthBody);
-		if(tankList[i]!=nullptr)gScene->removeActor(*tankList[i]->body);
+		if (tankList[i] != nullptr&&tankList[i]->alive)gScene->removeActor(*tankList[i]->healthBody);
+		if (tankList[i] != nullptr)gScene->removeActor(*tankList[i]->body);
 		//free(tankList[i]);
 		tankList[i] = nullptr;
 	}
 	//销毁存在的道具
 	for (auto i = exsitBonusList.begin(); i != exsitBonusList.end(); i++) {
-		if((*i)!=nullptr)gScene->removeActor(*(*i));
+		if ((*i) != nullptr)gScene->removeActor(*(*i));
 	}
 	//销毁炮塔内容
 	GunTower.reset();
@@ -348,7 +349,8 @@ void Tick() {
 	}
 	//if(tempList[0]!=nullptr)tempList[0]->autoFlying();
 	//Plane_AI->autoFlying();
-	//Plane_1->formcloud();
+	Plane_1->formCloud2Side();
+	Plane_1->formCloudBehind();
 
 	Plane_1->formmisslecloud();
 }

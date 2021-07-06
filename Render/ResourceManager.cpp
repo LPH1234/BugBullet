@@ -22,6 +22,7 @@ void ModelManager::init() {
 	for (int i = 1; i <= 18; i++) {
 		modelPathes.push_back("model/particle/crash/" + to_string(i) + ".obj"); //»úÐµ²Ðº¡ËéÆ¬
 	}
+	modelPathes.push_back(RED_MISSILE_MODEL_PATH);
 
 	for (int i = 0; i < modelPathes.size(); i++) {
 		if (FileUtils::isFileExist(modelPathes[i])) {
