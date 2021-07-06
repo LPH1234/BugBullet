@@ -7,6 +7,8 @@ const std::string WINDOW_TITLE = "Bug×Óµ¯";
 const std::string WINDOW_TITLE_EN = "B U G   B U L L E T";
 const std::string ICON_PATH = "images/icon/icon.png";
 
+const std::string SKYBOX_DIR = "images/skyboxes/sky1";
+const std::string SKYBOX_SUFFIX = "png";
 
 const std::string COOKING_DIR = "cooking/";
 const std::string COOKING_FILE_SUFFIX = ".cooking";
@@ -63,6 +65,7 @@ const std::string BLOOD_TEXTURE_PATH = "images/textures/blood.png";
 const std::string GRAY_CLOUD_TEXTURE_PATH = "images/textures/smoke/gray-cloud.png";
 const std::string WHITE_CLOUD_TEXTURE_PATH = "images/textures/smoke/white-cloud.png";
 const std::string GRAY_SMOKE_TEXTURE_PATH = "images/textures/smoke/gray-smoke.png";
+const std::string BLACK_SMOKE_TEXTURE_PATH = "images/textures/smoke/smoke-black-2.png";
 
 
 const std::string PAUSE_ICON_PATH = "images/textures/pause.png";

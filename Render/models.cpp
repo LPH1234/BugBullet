@@ -80,7 +80,7 @@ void FlameParticle::draw() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-BoomFlameParticle::BoomFlameParticle(glm::vec3 pos, int pointNum, float pointSize,  float velocity, int timeToLeave, std::string texturePath, Shader* shader) :BaseSpriteParticle(pos, pointNum, pointSize, radis, texturePath, shader) {
+BoomFlameParticle::BoomFlameParticle(glm::vec3 pos, int pointNum, float pointSize, float velocity, int timeToLeave, std::string texturePath, Shader* shader) :BaseSpriteParticle(pos, pointNum, pointSize, radis, texturePath, shader) {
 	this->timeToLeave = timeToLeave;
 	this->radis = radis;
 	this->velocity = velocity;
@@ -89,7 +89,7 @@ BoomFlameParticle::BoomFlameParticle(glm::vec3 pos, int pointNum, float pointSiz
 	const int STEP = 3;
 	vertices = new float[pointNum * STEP]; // 正态分布的初速度方向和大小
 	float* random = createNormalRandomFloatArray(pointNum * STEP, 0.f, velocity);
-	for (int i = 0; i < pointNum; i++){
+	for (int i = 0; i < pointNum; i++) {
 		for (int ji = 0; ji < STEP; ji++)
 			vertices[STEP * i + ji] = random[STEP * i + ji];
 	}
@@ -118,7 +118,7 @@ void BoomFlameParticle::draw() {
 	alpha = 1 - (clock() - createTime) / (timeToLeave * 1000.f);
 	shader->setFloat("pointSize", pointSize);
 	shader->setVec3("initPos", Position);
-	shader->setFloat("currTime", (clock() - createTime)/1000.f);
+	shader->setFloat("currTime", (clock() - createTime) / 1000.f);
 	shader->setFloat("alpha1", alpha);
 	shader->setVec3("cameraPos", camera.getPosition());
 	this->updateShaderModel();
