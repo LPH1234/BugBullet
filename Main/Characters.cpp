@@ -801,6 +801,7 @@ void AirPlane::formcloud() {
 	textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
 	PxVec3 pos1 = body->getGlobalPose().p + (-1)*currentHeadForward + 2 * currentSwingForward;
 	CloudParticleCluster* cloud_cluster1 = new CloudParticleCluster(
+		1,
 		70, 0.05f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos1.x, pos1.y, pos1.z), //初始位置
@@ -811,6 +812,7 @@ void AirPlane::formcloud() {
 	);
 	PxVec3 pos2 = body->getGlobalPose().p + (-1)*currentHeadForward + (-2)*currentSwingForward;
 	CloudParticleCluster* cloud_cluster2 = new CloudParticleCluster(
+		1,
 		70, 0.05f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos2.x, pos2.y, pos2.z), //初始位置
@@ -821,6 +823,7 @@ void AirPlane::formcloud() {
 	);
 	PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
 	CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
+		1,
 		10, 0.1f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
@@ -839,6 +842,7 @@ void AirPlane::formmisslecloud() {
 		vector<string>textures;
 		textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
 		CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
+			1,
 			10, 0.05f,  //云密度、云团的半径
 			0.1f, 4.0f, // 云在y方向的速度、云在y方向上最大能上升的距离
 			glm::vec3(pos.x, pos.y, pos.z), //初始位置
@@ -854,6 +858,7 @@ void AirPlane::formmisslecloud() {
 		vector<string>textures;
 		textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
 		CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
+			1,
 			10, 0.05f,  //云密度、云团的半径
 			0.1f, 4.0f, // 云在y方向的速度、云在y方向上最大能上升的距离
 			glm::vec3(pos.x, pos.y, pos.z), //初始位置
@@ -882,7 +887,7 @@ void AirPlane::crash() {
 	MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
 	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
 	renderParticleClusterList.push_back(flame_cluster);
-	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
+	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(1, 100, 2.f, 90, 0.1f, 5.f,
 		input, std::vector<string>(), smokeShader);
 	renderParticleClusterList.push_back(smoke_cluster);
 }
@@ -1791,15 +1796,8 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			this->health = 0;
 			this->alive = false;
 			UI::MissionModal::currBeatAndTotal[2][0] += 1;
-			PxVec3 p = body->getGlobalPose().p;
-			//glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
-			glm::vec3 input(p.x, p.y - 3.f, p.z);
 			MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::EXPLODE);
-			FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
-			renderParticleClusterList.push_back(flame_cluster);
-			SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
-				input, std::vector<string>(), smokeShader);
-			renderParticleClusterList.push_back(smoke_cluster);
+
 			addCrashList.push_back(body->getGlobalPose());
 			shotdown();
 		}
@@ -1814,11 +1812,11 @@ void AirPlane_AI::crash() {
 	body->setAngularDamping(PxReal(50.f));
 	body->addForce(PxVec3(0.f, 1000.f, 0.f));
 	PxVec3 p = body->getGlobalPose().p;
-	glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
+	glm::vec3 input(p.x / 2, p.y / 2, p.z / 2);
 	//MediaPlayer.PlayMedia3D(vec3df(10.f, 10.f, 10.f), Media::MediaType::EXPLODE);
 	FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
 	renderParticleClusterList.push_back(flame_cluster);
-	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
+	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(1, 100, 2.f, 90, 0.1f, 5.f,
 		input, std::vector<string>(), smokeShader);
 	renderParticleClusterList.push_back(smoke_cluster);
 }
@@ -1826,13 +1824,15 @@ void AirPlane_AI::shotdown() {
 	PxVec3 velocity = body->getLinearVelocity();
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
 	PxVec3 p = body->getGlobalPose().p;
-	glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
+	glm::vec3 input(p.x / 2, p.y / 2, p.z / 2);
 	PxQuat rot = PxQuat(PxPi / 2 * (-1), swingForward);
 	body->setGlobalPose(PxTransform(p, rot));
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
 	body->setLinearVelocity(veclocity * 5 * PxVec3(0.f, -1.f, 0.f));
-	BoomFlameParticleCluster* boom_cluster = new BoomFlameParticleCluster(5, 10.f, 5.f, input, std::vector<string>(), boomFlameShader);
+	BoomFlameParticleCluster* boom_cluster = new BoomFlameParticleCluster(5, 10.f, 10.f, input, std::vector<string>(), boomFlameShader);
 	renderParticleClusterList.push_back(boom_cluster);
+	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(1, 100, 2.f, 90, 0.1f, 15.f, input, BLACK_SMOKE_TEXTURE_PATH, smokeShader);
+	renderParticleClusterList.push_back(smoke_cluster);
 }
 
 void AirPlane_AI::getRight(physx::PxVec3& right) { right = currentSwingForward; }
