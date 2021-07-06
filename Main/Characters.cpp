@@ -1785,7 +1785,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			PxVec3 p = body->getGlobalPose().p;
 			glm::vec3 input(p.x / 2, p.y - 3.f, p.z / 2);
 			MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::EXPLODE);
-			FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 7.f, input, std::vector<string>(), flameShader);
+			FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 15.f, input, std::vector<string>(), flameShader);
 			renderParticleClusterList.push_back(flame_cluster);
 			SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
 				input, std::vector<string>(), smokeShader);
