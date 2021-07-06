@@ -24,7 +24,7 @@ vector<AirPlane_AI*>					tempList(1, nullptr);		//测试
 guntower								GunTower;
 bonus									Bonus;
 PxRigidActor*							Map = nullptr;				//地图
-bool									Level[3]{ false,false,false };
+bool									Level[4]{ false,false,false,false };
 set<PxRigidActor*>						exsitBonusList;				//当前存在的道具
 
 void createModel(std::string path, int scale, PxVec3& offset) {}
@@ -127,19 +127,9 @@ void AI_PlaneAutoFly() {
 
 bool isToChangeLevel() {
 	bool isSuccessful = false;
-	if (Level[0]) {
+	if (Level[1]) {
 		for (int i = 0; i < 2; i++) {
 			if (tankList[i]->alive)
-				return false;
-		}
-		Level[0] = false;
-		Level[1] = true;
-		return true;
-	}
-	else if (Level[1]) {
-		int count = GunTower.tower_list.size();
-		for (int i = 0; i < count; i++) {
-			if (GunTower.health_list[i] != 0)
 				return false;
 		}
 		Level[1] = false;
@@ -147,6 +137,16 @@ bool isToChangeLevel() {
 		return true;
 	}
 	else if (Level[2]) {
+		int count = GunTower.tower_list.size();
+		for (int i = 0; i < count; i++) {
+			if (GunTower.health_list[i] != 0)
+				return false;
+		}
+		Level[2] = false;
+		Level[3] = true;
+		return true;
+	}
+	else if (Level[3]) {
 		int count = AI_PlaneList.size();
 		for (int i = 0; i < count; i++) {
 			if (AI_PlaneList[i]->alive)
@@ -164,28 +164,43 @@ bool isToChangeLevel() {
 	
 	return false;
 }
-void initPhysics2() {
-	initGunTower();
+void initLevel1() {
+	initTank();
 	Level[1] = true;
-	UI::MissionModal::currLevel = 2;
+	UI::MissionModal::currLevel = 1;
+	UI::MissionModal::currBeatAndTotal[0][0] = 0;
+	UI::CenterText::show(LEVEL1_BEGIN_TEXT, 10, 5);
 }
-void initPhysics3() {
-	initAI_Plane();
+void initLevel2() {
+	initGunTower();
 	Level[2] = true;
+	UI::MissionModal::currLevel = 2;
+	UI::MissionModal::currBeatAndTotal[0][0] = 2;
+	UI::MissionModal::currBeatAndTotal[1][0] = 0;
+	UI::CenterText::show(LEVEL2_BEGIN_TEXT, 10, 5);
+}
+void initLevel3() {
+	initAI_Plane();
+	Level[3] = true;
 	UI::MissionModal::currLevel = 3;
+	UI::MissionModal::currBeatAndTotal[0][0] = 2;
+	UI::MissionModal::currBeatAndTotal[1][0] = 7;
+	UI::MissionModal::currBeatAndTotal[2][0] = 0;
+	UI::CenterText::show(LEVEL3_BEGIN_TEXT, 10, 5);
 }
 
 //重置关卡
 void resetLevel() {
 	//销毁坦克内容
 	for (int i = 0; i < 2; i++) {
-		if (tankList[i]->alive)gScene->removeActor(*tankList[i]->healthBody);
-		gScene->removeActor(*tankList[i]->body);
+		if (tankList[i]!=nullptr&&tankList[i]->alive)gScene->removeActor(*tankList[i]->healthBody);
+		if(tankList[i]!=nullptr)gScene->removeActor(*tankList[i]->body);
 		//free(tankList[i]);
-		//tankList[i] = nullptr;
+		tankList[i] = nullptr;
 	}
+	//销毁存在的道具
 	for (auto i = exsitBonusList.begin(); i != exsitBonusList.end(); i++) {
-		gScene->removeActor(*(*i));
+		if((*i)!=nullptr)gScene->removeActor(*(*i));
 	}
 	//销毁炮塔内容
 	GunTower.reset();
@@ -210,14 +225,18 @@ void resetLevel() {
 	initTank();
 	initBonus();
 
-	Level[0] = true;
-	Level[1] = false;
+	Level[1] = true;
 	Level[2] = false;
+	Level[3] = false;
+	UI::MissionModal::currLevel = 1;
 	//右上角UI
 	UI::MissionModal::currBeatAndTotal[0][0] = 0;
 	UI::MissionModal::currBeatAndTotal[1][0] = 0;
 	UI::MissionModal::currBeatAndTotal[2][0] = 0;
-	UI::MissionModal::currLevel = 1;
+	UI::MissionModal::currBeatAndTotal[0][1] = 2;
+	UI::MissionModal::currBeatAndTotal[1][1] = 7;
+	UI::MissionModal::currBeatAndTotal[2][1] = 4;
+
 }
 
 void initPhysics(bool interactive)
@@ -254,42 +273,38 @@ void initPhysics(bool interactive)
 	}
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
-	//当前为Level0
-	Level[0] = true;
 	//地面和trigger墙
 	testTriggerWall();
-
-
 	//加载地图
 	initMap();
-
 	//初始化导弹管理器
 	ManageMissile = new MissileManager();
-
-
 	//加载玩家飞机
 	initMyAirPlane();
-
 	//相机跟踪目标
-	//camera.setTarget(player);
 	camera.setTarget(Plane_1);
-	//camera.setTarget(tankList[1]);
-	//camera.setTarget(Plane_AI);
-
-
-	//加载坦克
-	initTank();
 	//加载道具
 	initBonus();
-
 	//右上角UI
 	UI::MissionModal::currBeatAndTotal[0][1] = 2;
 	UI::MissionModal::currBeatAndTotal[1][1] = 7;
 	UI::MissionModal::currBeatAndTotal[2][1] = 4;
+	//当前Level
+	Level[3] = true;
+	if (Level[1]) {
+		initLevel1();
+	}
+	else if (Level[2]) {
+		initLevel2();
+	}
+	else if (Level[3]) {
+		initLevel3();
+	}
+	else {}
 
 	//加载4架AI飞机
 	//initAI_Plane();
-	//initPhysics2();
+	//initLevel2();
 
 }
 
@@ -299,17 +314,17 @@ void beforeStepPhysics() {
 
 //我们所有需要每一帧调用的物理计算放在这里面
 void Tick() {
-	if (Level[0]) {
+	if (Level[1]) {
 		tankAutoMove();
 		updateTankInList();
 
 	}
-	else if (Level[1]) {
+	else if (Level[2]) {
 		GunTower.runguntower(Plane_1->body);
 		updateGuntowerInList();
 
 	}
-	else if (Level[2]) {
+	else if (Level[3]) {
 		AI_PlaneAutoFly();
 		ManageMissile->trackingAllMissile();
 		ManageMissile->removeMissile();
@@ -322,12 +337,12 @@ void Tick() {
 	removeActorInList();
 	//判断是否需要切换场景
 	if (isToChangeLevel()) {
-		if (Level[0]) {}
-		else if (Level[1]) {
-			initPhysics2();
-		}
+		if (Level[1]) {}
 		else if (Level[2]) {
-			initPhysics3();
+			initLevel2();
+		}
+		else if (Level[3]) {
+			initLevel3();
 		}
 		else {}
 	}

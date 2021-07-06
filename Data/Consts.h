@@ -7,6 +7,8 @@ const std::string WINDOW_TITLE = "Bug×Óµ¯";
 const std::string WINDOW_TITLE_EN = "B U G   B U L L E T";
 const std::string ICON_PATH = "images/icon/icon.png";
 
+const std::string SKYBOX_DIR = "images/skyboxes/sky1";
+const std::string SKYBOX_SUFFIX = "png";
 
 const std::string COOKING_DIR = "cooking/";
 const std::string COOKING_FILE_SUFFIX = ".cooking";
@@ -19,6 +21,10 @@ const std::string HETP_TEXT = "\
 Press The W,S,A,D,Q,E Key To Control The Movement And \n\
 Orientation of Fighter, Press Space Key To Emit Missile.\n\
 ";
+
+const std::string LEVEL1_BEGIN_TEXT = "LEVEL 1";
+const std::string LEVEL2_BEGIN_TEXT = "LEVEL 2";
+const std::string LEVEL3_BEGIN_TEXT = "LEVEL 3";
 
 const unsigned int MAX_GAME_LEVEL = 3;
 const std::string GAME_MISSION_TITLE = "M I S S I O N     T A R G E T";
@@ -45,6 +51,9 @@ const unsigned int CENTER_TEXT_Y_OFFSET = 100U;
 const unsigned int CENTER_TEXT_MAX_BLING_TIMES = 5;
 const float CENTER_TEXT_BLING_VELOCITY = 0.02f;
 
+const std::string AMMO_EXAUSTED_TEXT = "AMMO EXAUSTED!";
+const std::string MISSILE_EXAUSTED_TEXT = "MISSILE EXAUSTED!";
+
 const float BORDER_MASK_UI_CLOSE_DELAY = 5;
 const float BORDER_MASK_UI_BLING_VELOCITY = 0.02;
 const std::string BORDER_MASK_UI_TEX_PATH = "images/textures/borderMask.png";
@@ -56,6 +65,7 @@ const std::string BLOOD_TEXTURE_PATH = "images/textures/blood.png";
 const std::string GRAY_CLOUD_TEXTURE_PATH = "images/textures/smoke/gray-cloud.png";
 const std::string WHITE_CLOUD_TEXTURE_PATH = "images/textures/smoke/white-cloud.png";
 const std::string GRAY_SMOKE_TEXTURE_PATH = "images/textures/smoke/gray-smoke.png";
+const std::string BLACK_SMOKE_TEXTURE_PATH = "images/textures/smoke/smoke-black-2.png";
 
 
 const std::string PAUSE_ICON_PATH = "images/textures/pause.png";

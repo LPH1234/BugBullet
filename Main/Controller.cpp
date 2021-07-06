@@ -57,8 +57,8 @@ void mouseSingleClick(int button, int action) { //鼠标单次点击
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) { //右键按下
 		//reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
-		BoomFlameParticleCluster* flame_cluster = new BoomFlameParticleCluster(5, 10.f,  5.f, glm::vec3(0.f,0.f,0.f), std::vector<string>(), boomFlameShader);
-		renderParticleClusterList.push_back(flame_cluster);
+		/*BoomFlameParticleCluster* flame_cluster = new BoomFlameParticleCluster(5, 10.f,  5.f, glm::vec3(0.f,0.f,0.f), std::vector<string>(), boomFlameShader);
+		renderParticleClusterList.push_back(flame_cluster);*/
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) { //右键抬起
 	}
@@ -129,6 +129,7 @@ void mouseClick() {
 		///////3、拖尾云	
 		///////CloudParticleCluster(int cloudDensity, float cloudRadis, float cloudVy, float cloudMaxY, glm::vec3 initPos, vector<string> textures, Shader* shader)
 		//CloudParticleCluster* cloud_cluster = new CloudParticleCluster(
+		//1,
 		//	100, 0.05f,  //云密度、云团的半径
 		//	0.01f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		//	glm::vec3(3.f, 1.5f, 3.f), //初始位置

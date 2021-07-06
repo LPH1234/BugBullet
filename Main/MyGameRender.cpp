@@ -25,7 +25,7 @@ Camera camera(VIEW_TYPE::THIRD_PERSON, glm::vec3(0.0f, 5.0f, 0.0f));
 
 //light
 glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-glm::vec3 lightPosition = glm::vec3(0.0f, 32.0f, 0.0f);
+glm::vec3 lightPosition = glm::vec3(0.0f, 64.0f, 0.0f);
 
 
 SkyBox* skybox;
@@ -147,7 +147,7 @@ int myRenderLoop()
 			envShader->setFloat("material.shininess", 32.0f);
 			envShader->setVec3("light.position", lightPosition);
 			envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
-			envShader->setVec3("light.diffuse", 0.6f, 0.6f, 0.6f); // 将光照调暗了一些以搭配场景
+			envShader->setVec3("light.diffuse", 0.8f, 0.8f, 0.8f); // 将光照调暗了一些以搭配场景
 			envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 			Render::renderActors(envShader);// 渲染场景内的物体
@@ -159,9 +159,7 @@ int myRenderLoop()
 			UI::UIManager::setUIVisable(UI::UIID::RETICLE, mouseButtonPressState[1]); //按下右键出现准心
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
 
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
+			UI::UIManager::ImgUIBeginFrame();
 			UI::CornerTip::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::PlayerStatus::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::PauseMenu::visable = game.state == GAME_STATE::PAUSE;
@@ -170,9 +168,7 @@ int myRenderLoop()
 			UI::OverModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::CenterText::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::MissionModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-			ImGui::Render();// 渲染ImgUI界面
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+			UI::UIManager::ImgUIEndFrame();
 
 		}
 		else if (game.state == GAME_STATE::INIT) { // 初始状态，初始化及渲染初始帧
@@ -180,10 +176,12 @@ int myRenderLoop()
 			UI::UIManager::setEnableAnimate(UI::UIID::MAIN_ANIMATION, false);
 			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, true); // 以上两行为了渲染动画的默认帧
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+			glfwSwapBuffers(window);
+			glfwPollEvents();// 以上为了渲染动画的默认帧
+			MediaPlayer.PlayBackground(Media::MediaType::START);
 			if (!game.isInit) { //如果没有进行过初始化
 				atexit(exitCallback);
 				// build and compile shaders
-				// -------------------------
 				skyBoxShader = new Shader("shaders/skyboxShader/skybox.vs", "shaders/skyboxShader/skybox.fs");
 				envShader = new Shader("shaders/envShader/env.vs", "shaders/envShader/env.fs");
 				pointParticleShader = new Shader("shaders/debrisShader/debris.vs", "shaders/debrisShader/debris.fs");
@@ -191,8 +189,9 @@ int myRenderLoop()
 				flameShader = new Shader("shaders/flameShader/flame.vs", "shaders/flameShader/flame.fs");
 				cloudShader = new Shader("shaders/cloudShader/cloud.vs", "shaders/cloudShader/cloud.fs");
 				boomFlameShader = new Shader("shaders/boomFlameShader/boomFlame.vs", "shaders/boomFlameShader/boomFlame.fs");
-				ModelManager::init();
+				// UI Var Init
 				UI::initImgUI(window);
+				ModelManager::init();
 				UI::MainMenu::init(window);
 				UI::ConfigModal::init(window);
 				UI::HelpModal::init(window);
@@ -203,10 +202,7 @@ int myRenderLoop()
 				UI::LogoText::init(window);
 				UI::OverModal::init(window);
 				UI::MissionModal::init(window);
-
-
 				// var init
-				// -----------------------------
 				for (int i = 0; i <= 348; i++)
 					keyToPrePressState[i] = keyToPressState[i] = false;
 				for (int i = 0; i < 3; i++)
@@ -218,25 +214,22 @@ int myRenderLoop()
 				initPhysics(true);
 				game.state = GAME_STATE::MAIN_MENU;
 				game.isInit = true;
-				MediaPlayer.PlayBackground(Media::MediaType::START);
 			}
 		}
 		else if (game.state == GAME_STATE::MAIN_MENU) { // 主菜单界面
 			// resetPhysicsObjState();
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
+
 			UI::UIManager::setEnableAnimate(UI::UIID::MAIN_ANIMATION, TextureManager::getAnimationLoadProgress() == 1);
 			UI::UIManager::setUIVisable(UI::UIID::MAIN_ANIMATION, true);
 			//	std::cout << "tex loadTexProgress:" << TextureManager::loadTexProgress << "   " << TextureManager::getAnimationLoadProgress() << "\n";
 			UI::UIManager::setUIVisable(UI::UIID::HP_BAR, false);
 			Render::renderUI(game.SCR_WIDTH, game.SCR_HEIGHT); //渲染UI界面
+			UI::UIManager::ImgUIBeginFrame();
 			UI::MainMenu::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::HelpModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::ConfigModal::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
 			UI::LogoText::draw(game.SCR_WIDTH, game.SCR_HEIGHT);
-			ImGui::Render();// 渲染ImgUI界面
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			UI::UIManager::ImgUIEndFrame();
 
 			//MediaPlayer.PlayBackground(Media::MediaType::START);
 
