@@ -12,7 +12,7 @@ extern Game game;
 PxRigidDynamic* createAndShowBlood(PxRigidDynamic* _body, float _healthLength, PxTransform _healthPos, PxTransform t0, PxTransform t1) {
 	PxShape* healthShape = gPhysics->createShape(PxBoxGeometry(_healthLength / 2, 0.1f, 0.1f), *gMaterial, true);
 	healthShape->userData = new UserData(1024, "", DATATYPE::BLOOD);
-	idToRenderModel[1024] = getCube("images/textures/blood.png");
+	ObjLoader::meshToRenderModel[healthShape] = getCube("images/textures/blood.png");
 	PxRigidDynamic* bloodDynamic = PxCreateDynamic(*gPhysics, _healthPos, *healthShape, 0.0001);
 	bloodDynamic->setName("blood");
 	bloodDynamic->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
@@ -795,14 +795,13 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
 
 }
-void AirPlane::formcloud() {
+void AirPlane::formCloud2Side() {
 	vector<string>textures;
-	//textures.push_back("images/textures/smoke/smoke-white-1.png");
-	textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
+	textures.push_back(WHITE_CLOUD_TEXTURE_PATH);
 	PxVec3 pos1 = body->getGlobalPose().p + (-1)*currentHeadForward + 2 * currentSwingForward;
 	CloudParticleCluster* cloud_cluster1 = new CloudParticleCluster(
 		1,
-		70, 0.05f,  //云密度、云团的半径
+		70, 0.1f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos1.x, pos1.y, pos1.z), //初始位置
 		glm::vec3(0.03f, 0.03f, 0.03f), //每片云粒子的缩放
@@ -813,7 +812,7 @@ void AirPlane::formcloud() {
 	PxVec3 pos2 = body->getGlobalPose().p + (-1)*currentHeadForward + (-2)*currentSwingForward;
 	CloudParticleCluster* cloud_cluster2 = new CloudParticleCluster(
 		1,
-		70, 0.05f,  //云密度、云团的半径
+		70, 0.1f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos2.x, pos2.y, pos2.z), //初始位置
 		glm::vec3(0.03f, 0.03f, 0.03f), //每片云粒子的缩放
@@ -821,21 +820,26 @@ void AirPlane::formcloud() {
 		textures, // 纹理路径列表
 		cloudShader //渲染此烟雾的shader
 	);
-	PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
-	CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
-		1,
-		10, 0.1f,  //云密度、云团的半径
-		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
-		glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
-		glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
-		//camera.getPosition() + camera.getFront() * 1.f,
-		textures, // 纹理路径列表
-		cloudShader //渲染此烟雾的shader
-	);
 	renderParticleClusterList.push_back(cloud_cluster1);
 	renderParticleClusterList.push_back(cloud_cluster2);
-	renderParticleClusterList.push_back(cloud_cluster3);
 }
+
+void AirPlane::formCloudBehind() {
+	if (this->health < PLAYER_MIN_HP_TO_ALERT) {
+		PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
+		CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
+			1,
+			50, 0.3f,  //云密度、云团的半径
+			0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
+			glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
+			glm::vec3(0.3f, 0.3f, 0.3f), //每片云粒子的缩放
+			BLACK_SMOKE_TEXTURE_PATH, // 纹理
+			cloudShader //渲染此烟雾的shader
+		);
+		renderParticleClusterList.push_back(cloud_cluster3);
+	}
+}
+
 void AirPlane::formmisslecloud() {
 	for (auto i = airPlaneBullet.begin(); i != airPlaneBullet.end(); i++) {
 		PxVec3 pos = (*i)->getGlobalPose().p;
@@ -863,7 +867,6 @@ void AirPlane::formmisslecloud() {
 			0.1f, 4.0f, // 云在y方向的速度、云在y方向上最大能上升的距离
 			glm::vec3(pos.x, pos.y, pos.z), //初始位置
 			glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
-			//camera.getPosition() + camera.getFront() * 1.f,
 			textures, // 纹理路径列表
 			cloudShader //渲染此烟雾的shader
 		);
@@ -1821,18 +1824,44 @@ void AirPlane_AI::crash() {
 	renderParticleClusterList.push_back(smoke_cluster);
 }
 void AirPlane_AI::shotdown() {
-	PxVec3 velocity = body->getLinearVelocity();
+	velocityOnShutDown = body->getLinearVelocity();
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
 	PxVec3 p = body->getGlobalPose().p;
-	glm::vec3 input(p.x / 2, p.y / 2, p.z / 2);
-	PxQuat rot = PxQuat(PxPi / 2 * (-1), swingForward);
-	body->setGlobalPose(PxTransform(p, rot));
+	currRotAngle = body->getGlobalPose().q.getAngle();
+	//PxQuat rot = PxQuat(PxPi / 2 * (-1), swingForward);
+	//body->setGlobalPose(PxTransform(p, rot));
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
-	body->setLinearVelocity(veclocity * 5 * PxVec3(0.f, -1.f, 0.f));
+	glm::vec3 input(p.x / 2, p.y / 2, p.z / 2);
 	BoomFlameParticleCluster* boom_cluster = new BoomFlameParticleCluster(5, 10.f, 10.f, input, std::vector<string>(), boomFlameShader);
 	renderParticleClusterList.push_back(boom_cluster);
 	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(1, 100, 2.f, 90, 0.1f, 15.f, input, BLACK_SMOKE_TEXTURE_PATH, smokeShader);
 	renderParticleClusterList.push_back(smoke_cluster);
+}
+
+void AirPlane_AI::afterShutDown() {
+	if (this->isContactMap) return;
+	PxVec3 p = body->getGlobalPose().p;
+	float q = body->getGlobalPose().q.getAngle();
+	if (q > 6.2f) q = 0.f;
+	PxVec3 axis = velocityOnShutDown; axis.normalize();
+	PxQuat rot = PxQuat(q + PI / 180.f * 2.f, axis);//swingForward
+	body->setGlobalPose(PxTransform(p, rot));
+	velocityOnShutDown.y = -9.81f;
+	body->addForce(velocityOnShutDown, physx::PxForceMode::eACCELERATION);
+	if (this->health < PLAYER_MIN_HP_TO_ALERT) {  //血量告急时冒烟
+		PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
+		CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
+			1,
+			50, 0.5f,  //云密度、云团的半径
+			0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
+			glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
+			glm::vec3(0.3f, 0.3f, 0.3f), //每片云粒子的缩放
+			BLACK_SMOKE_TEXTURE_PATH, // 纹理
+			cloudShader //渲染此烟雾的shader
+		);
+		renderParticleClusterList.push_back(cloud_cluster3);
+	}
+
 }
 
 void AirPlane_AI::getRight(physx::PxVec3& right) { right = currentSwingForward; }
@@ -1852,17 +1881,19 @@ PxRigidDynamic* MissileManager::emitMissile(PxVec3 &emitPos, PxVec3 &direction, 
 	double cosAngle = PxVec3(1, 0, 0).dot(direction.getNormalized());
 	double radiusAngle = acos(cosAngle);
 	PxQuat rot(radiusAngle, rotAxis.getNormalized());
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, rot), PxCapsuleGeometry(0.04, 0.2), *gMaterial, 0.1f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, rot), PxCapsuleGeometry(0.04, 0.20), *gMaterial, 0.1f);
 
 
 	//设置刚体名称
 	dynamic->setName("bullet");
+
 	//setupFiltering(dynamic, FilterGroup::ePLAYERBULLET, FilterGroup::eAIRPLANE);
 	gScene->addActor(*dynamic);
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	dynamic->userData = new UserData(target, 1, "missile", DATATYPE::ACTOR_TYPE::PLANE_MISSLE);
+	ObjLoader::meshToRenderModel[dynamic] = getCapsule(RED_MISSILE_MODEL_PATH);
 	dynamic->setLinearVelocity(missileSpeed*direction.getNormalized());
 	MissileList.insert(dynamic);
 	count++;
