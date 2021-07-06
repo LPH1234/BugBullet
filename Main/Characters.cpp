@@ -780,7 +780,7 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 			this->health += 20;
 		}
 		//MediaPlayer.PlayMedia2D(Media::MediaType::SUPPLY);
-		MediaPlayer.PlayMedia3D(vec3df(0.f, 0.f, 0.f), Media::MediaType::SUPPLY);
+		MediaPlayer.PlayMedia3D(vec3df(1.f,1.f,1.f), Media::MediaType::SUPPLY);
 		cout << bullet_ammo << '\t' << health << endl;
 	}
 	else if (_type == DATATYPE::TRIGGER_TYPE::COLLECTION) {
@@ -1797,11 +1797,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			this->alive = false;
 			UI::MissionModal::currBeatAndTotal[2][0] += 1;
 			MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::EXPLODE);
-			FlameParticleCluster* flame_cluster = new FlameParticleCluster(5, 3.f, 5.1f, 15.f, input, std::vector<string>(), flameShader);
-			renderParticleClusterList.push_back(flame_cluster);
-			SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(100, 2.f, 90, 0.1f, 5.f,
-				input, std::vector<string>(), smokeShader);
-			renderParticleClusterList.push_back(smoke_cluster);
+			glm::vec3 input; pxVec3ToGlmVec3(this->body->getGlobalPose().p, input);
 			addCrashList.push_back(body->getGlobalPose());
 			shotdown();
 		}

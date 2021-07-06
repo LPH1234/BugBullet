@@ -290,7 +290,7 @@ void initPhysics(bool interactive)
 	UI::MissionModal::currBeatAndTotal[1][1] = 7;
 	UI::MissionModal::currBeatAndTotal[2][1] = 4;
 	//当前Level
-	Level[3] = true;
+	Level[1] = true;
 	if (Level[1]) {
 		initLevel1();
 	}
