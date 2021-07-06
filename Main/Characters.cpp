@@ -519,7 +519,15 @@ void AirPlane::emit() {
 	PxQuat bulletRot2 = body->getGlobalPose().q;
 	PxQuat bulletRot3(PxPi / 180 * (-10), currentSwingForward);
 	PxVec3 emitPos; PxRigidDynamic* dynamic;
-	if (activatemissle) {
+	if (currAmmoType == AMMO_TYPE::BULLET) {
+		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
+		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
+			PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+		//MediaPlayer.PlayMedia2D(Media::MediaType::PLANEBULLET);
+		MediaPlayer.PlayMedia3D(vec3df(emitPos.x / 5, emitPos.y / 5, emitPos.z / 5), Media::MediaType::PLANEBULLET);
+	}
+	else if (currAmmoType == AMMO_TYPE::MISSILE_FOR_GROUND) {
 		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
 		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
 			PxCapsuleGeometry(0.04, 0.17), *gMaterial, 1.0f);
@@ -528,14 +536,7 @@ void AirPlane::emit() {
 		//MediaPlayer.PlayMedia2D(Media::MediaType::PLANEMISSILE);
 		MediaPlayer.PlayMedia3D(vec3df(emitPos.x / 5, emitPos.y / 5, emitPos.z / 5), Media::MediaType::PLANEMISSILE);
 	}
-	else {
-		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
-		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
-			PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
-		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_BULLET);
-		//MediaPlayer.PlayMedia2D(Media::MediaType::PLANEBULLET);
-		MediaPlayer.PlayMedia3D(vec3df(emitPos.x / 5, emitPos.y / 5, emitPos.z / 5), Media::MediaType::PLANEBULLET);
-	}
+
 
 	//MediaPlayer.PlayMedia3D(vec3df(emitPos.x, emitPos.y, emitPos.z), Media::MediaType::PLANEBULLET);
 	leftOrRight *= -1;
@@ -617,10 +618,19 @@ void AirPlane::ProcessKeyPress() {
 			turningState2[6] = false;
 		}
 		if (keyToPressState[GLFW_KEY_1]) {
-			activatemissle = false;
+			currAmmoType = AMMO_TYPE::BULLET;
+			UI::CenterText::show(SWITCH_TO_BULLET_TEXT, 3, 1, false);
 		}
 		if (keyToPressState[GLFW_KEY_2]) {
-			activatemissle = true;
+			currAmmoType = AMMO_TYPE::MISSILE_FOR_GROUND;
+			UI::CenterText::show(SWITCH_TO_MISSILE_FOR_GROUND_TEXT, 3, 1, false);
+		}
+		if (keyToPressState[GLFW_KEY_3]) {
+			currAmmoType = AMMO_TYPE::MISSILE_FOR_AIR;
+			UI::CenterText::show(SWITCH_TO_MISSILE_FOR_AIR_TEXT, 3, 1, false);
+		}
+		if ((!keyToPressState[GLFW_KEY_1] && keyToPrePressState[GLFW_KEY_1]) || (!keyToPressState[GLFW_KEY_2] && keyToPrePressState[GLFW_KEY_2]) || (!keyToPressState[GLFW_KEY_3] && keyToPrePressState[GLFW_KEY_3])) {
+			MediaPlayer.PlayMedia3D(vec3df(0.1f, 0.1f, 0.1f), Media::MediaType::SWITCH_AMMO);
 		}
 		if (!keyToPressState[GLFW_KEY_F4] && keyToPrePressState[GLFW_KEY_F4]) {
 			turningSpeed = 2.0f;
@@ -628,42 +638,7 @@ void AirPlane::ProcessKeyPress() {
 		if (!keyToPressState[GLFW_KEY_F3] && keyToPrePressState[GLFW_KEY_F3]) {
 			turningSpeed = 6.f;
 		}
-		//发射
-		if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]) {
-			if (((!activatemissle&&bullet_ammo > 0) || (activatemissle&&missle_ammo > 0))) {
-				if (activatemissle) {
-					missle_ammo--;
-				}
-				else {
-					bullet_ammo--;
-				}
-				emit();
-				cout << "bullet_ammo: " << bullet_ammo << endl;
-			}
-			else if (bullet_ammo == 0) {
-				UI::CenterText::show(AMMO_EXAUSTED_TEXT, 3, 0, true);
-			}
-			else if (missle_ammo == 0) {
-				UI::CenterText::show(MISSILE_EXAUSTED_TEXT, 3, 0, true);
-			}
-		}
-		//发射追踪型导弹
-		//if (!keyToPressState[GLFW_KEY_M] && keyToPrePressState[GLFW_KEY_M]) {
-		//	for (int k = 0; k < AI_PlaneList.size(); k++) {
-		//		if (AI_PlaneList[k] != nullptr&&AI_PlaneList[k]->alive) {
-		//			PxVec3 targetDir = AI_PlaneList[k]->body->getGlobalPose().p - this->body->getGlobalPose().p;
-		//			double cosine = targetDir.getNormalized().dot(this->currentHeadForward.getNormalized());
-		//			double radiusAng = acos(cosine);
-		//			double ang = radiusAng * 180 / PxPi;
-		//			//Logger::debug(to_string(ang));
-		//			if (ang < 15) {
-		//				PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
-		//				myMissileManager->emitMissile(emitPos, currentHeadForward, AI_PlaneList[k]);
-		//				leftOrRight *= -1;
-		//				break;
-		//			}
-		//		}
-		//	}
+
 	}
 	else {
 		shotdown();
@@ -705,7 +680,29 @@ void AirPlane::ProcessKeyPress() {
 
 void AirPlane::ProcessMouseClick(int button, int action) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-		this->emitMissile();
+		if (currAmmoType == AMMO_TYPE::MISSILE_FOR_AIR) {
+			if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT])
+				this->emitMissile();
+		}
+		else if (currAmmoType == AMMO_TYPE::BULLET) {
+			if (bullet_ammo > 0) {
+				bullet_ammo--;
+				emit();
+			}
+			else {
+				UI::CenterText::show(AMMO_EXAUSTED_TEXT, 5, 1, true);
+			}
+		}
+		else if (currAmmoType == AMMO_TYPE::MISSILE_FOR_GROUND) {
+			if (missle_ammo > 0) {
+				missle_ammo--;
+				emit();
+			}
+			else {
+				UI::CenterText::show(MISSILE_EXAUSTED_TEXT, 5, 1, true);
+			}
+		}
+
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 		reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(false);

@@ -143,6 +143,12 @@ public:
 
 
 class AirPlane : public BaseCharacter {
+	enum AMMO_TYPE
+	{
+		BULLET,
+		MISSILE_FOR_GROUND,
+		MISSILE_FOR_AIR
+	};
 public:
 	PxRigidDynamic*			body;//飞机刚体
 	MissileManager*			myMissileManager;//导弹管理器
@@ -166,9 +172,9 @@ public:
 	float					turningSpeed = 6.0f;//转向速度
 	int						leftOrRight = -1;//左右交替发射,-1为左，+1为右
 
-	bool track_mode = false;
+	bool					track_mode = false;
 
-	bool activatemissle = false;
+	AMMO_TYPE				currAmmoType = AMMO_TYPE::BULLET;
 
 	int health = 1000;//飞机生命值
 	bool alive = true;

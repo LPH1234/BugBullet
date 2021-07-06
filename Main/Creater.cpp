@@ -603,7 +603,6 @@ void addCrashInList() {
 			PxVec3(0.f, -6.f, 0.f), //初始速度
 			PxVec3(0.3f, -14.f, 0.3f)  //力场
 		);
-		cout << "create crash" << endl;
 	}
 	addCrashList.clear();
 }
@@ -1139,7 +1138,6 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 			ps->setParticleBaseFlag(PxParticleBaseFlag::eCOLLISION_TWOWAY, true);
 			gScene->addActor(*ps);
 			physicsParticleSystemList.push_back(ps);
-			cout << "创建粒子成功\n";
 		}
 		else {
 			myindexpool->freeIndices();
