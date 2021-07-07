@@ -511,7 +511,7 @@ PxQuat AirPlane::getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront) {
 
 
 
-void AirPlane::emit() {
+void AirPlane::emit(float extraSpeed) {
 	//ÇòÐÎµ¯Ò©
 	//PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, body->getGlobalPose().transform(emitTransform), PxSphereGeometry(0.1), *gMaterial, 10.0f);
 	//½ºÄÒÌåµ¯Ò©
@@ -549,7 +549,7 @@ void AirPlane::emit() {
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-	dynamic->setLinearVelocity((veclocity + emitVeclocity)*emitDirection);
+	dynamic->setLinearVelocity((veclocity + emitVeclocity + extraSpeed)*emitDirection);
 	//dynamic->setLinearVelocity((veclocity + emitVeclocity)*currentHeadForward);
 
 	//MediaPlayer.PlayMedia2D(Media::MediaType::PLANEBULLET);
@@ -684,15 +684,6 @@ void AirPlane::ProcessMouseClick(int button, int action) {
 			if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT])
 				this->emitMissile();
 		}
-		else if (currAmmoType == AMMO_TYPE::BULLET) {
-			if (bullet_ammo > 0) {
-				bullet_ammo--;
-				emit();
-			}
-			else {
-				UI::CenterText::show(AMMO_EXAUSTED_TEXT, 5, 1, true);
-			}
-		}
 		else if (currAmmoType == AMMO_TYPE::MISSILE_FOR_GROUND) {
 			if (missle_ammo > 0) {
 				missle_ammo--;
@@ -727,6 +718,19 @@ void AirPlane::ProcessMouseClick() {
 			reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(false);
 		}
 
+	}
+	if (mouseButtonPressState[GLFW_MOUSE_BUTTON_LEFT]) {
+		clock_t now_emit = clock();
+        if (currAmmoType == AMMO_TYPE::BULLET&& now_emit - last_time_emit > 100) {
+			if (bullet_ammo > 0 ) {
+				bullet_ammo--;
+				emit(40.f);
+				last_time_emit = now_emit;
+			}
+			else {
+				UI::CenterText::show(AMMO_EXAUSTED_TEXT, 5, 1, true);
+			}
+		}
 	}
 }
 

@@ -82,7 +82,7 @@ void renderGeometry(PxRigidActor* actor, PxShape* shape, const PxGeometryHolder&
 		}
 		else {
 			if (bullet == nullptr)
-				bullet = new PlainModel(pos, scale, "model/bullet/bullet3/bullet.obj", shader);
+				bullet = new PlainModel(pos, scale, "model/bullet/bullet3/bullet-3.obj", shader);
 			modelToDraw = bullet;
 		}
 		modelToDraw->setPosition(pos);

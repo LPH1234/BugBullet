@@ -104,7 +104,7 @@ void Media::PlayMedia3D(vec3df pos, Media::MediaType _type) {
 		Sound = SoundEngine->play3D("audio/tankfire.mp3", pos / 5, false, false, true, ESM_AUTO_DETECT, true);
 	}
 	else if (_type == Media::MediaType::TOWERSHOOT) {
-		Sound = SoundEngine->play3D("audio/biggun1.wav", pos / 5, false, false, true, ESM_AUTO_DETECT, true);
+		Sound = SoundEngine->play3D("audio/cannon.mp3", pos / 5, false, false, true, ESM_AUTO_DETECT, true);
 		//Sound->setVolume(50.f);
 	}
 	else if (_type == Media::MediaType::PLANEBULLET) {
