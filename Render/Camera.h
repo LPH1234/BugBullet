@@ -70,6 +70,7 @@ class Camera
 	// camera options
 	float movementSpeed;
 	float mouseSensitivity;
+	const float DEFAULT_ZOOM = 45.f;
 	float Zoom;
 
 	VIEW_TYPE mode;
