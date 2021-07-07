@@ -176,10 +176,10 @@ public:
 
 	AMMO_TYPE				currAmmoType = AMMO_TYPE::BULLET;
 
-	int health = 1000;//飞机生命值
+	int health = 100;//飞机生命值
 	bool alive = true;
-	int bullet_ammo = 10000;
-	int missle_ammo = 50;
+	int bullet_ammo = 100;
+	int missle_ammo = 5;
 
 	void*					user_data;//信息
 	clock_t last_time_signal = 0;
