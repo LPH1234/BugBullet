@@ -183,6 +183,7 @@ public:
 
 	void*					user_data;//信息
 	clock_t last_time_signal = 0;
+	clock_t last_time_emit = 0;
 
 	AirPlane();
 	~AirPlane();
@@ -193,7 +194,7 @@ public:
 	void manualControlAirPlane3();
 	void manualControlAirPlane4();//WASDQE 6个按键
 	PxQuat getBulletRotate(PxVec3& neededFront, PxVec3& bulletFront);
-	void emit();
+	void emit(float extraSpeed = 0);
 	void reset();
 	void crash();
 	void shotdown();
