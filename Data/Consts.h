@@ -19,7 +19,9 @@ const std::string ACTOR_NAME_PLAYER_BULLET = "bullet";
 
 const std::string HETP_TEXT = "\
 Press The W,S,A,D,Q,E Key To Control The Movement,Yaw \n\
-Pitch,Roll of Fighter, Press Space Key To Emit Missile.\n\
+Pitch,Roll of Fighter, Right Click To Aim And Left Click\n\
+ To Fire, Press 1 2 3 Key To Switch Weapon.Scroll Mouse\n\
+Whell To ZOOM View.\n\
 ";
 
 const std::string LEVEL1_BEGIN_TEXT = "LEVEL 1";
