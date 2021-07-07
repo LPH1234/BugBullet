@@ -42,7 +42,6 @@ void Camera::ProcessKeyboard(Movement direction, float deltaTime)
 		if (direction == SHIFT_RELEASE)
 			movementSpeed = SPEED;
 	}
-	//
 }
 
 // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -98,22 +97,13 @@ void Camera::ProcessMouseScroll(float yoffset)
 		this->track_radius += yoffset;
 	}
 	if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
-		if (yoffset + this->track_radius <= MIN_TRACK_RADIUS) {
-			track_radius = MIN_TRACK_RADIUS;
-			return;
-		}
-		if (yoffset + this->track_radius >= MAX_TRACK_RADIUS) {
-			track_radius = MAX_TRACK_RADIUS;
-			return;
-		}
-		this->track_radius += yoffset;
+		Zoom -= (float)yoffset;
+		if (Zoom < 1.0f)   // 放大
+			Zoom = 1.0f;
+		if (Zoom > 90.0f)  // 广角
+			Zoom = 90.0f;
 	}
 
-	//Zoom -= (float)yoffset;
-	/*if (Zoom < 1.0f)
-		Zoom = 1.0f;
-	if (Zoom > 45.0f)
-		Zoom = 45.0f;*/
 }
 
 void Camera::trackDynamicPosition() { // 设置相机跟随物体
@@ -188,9 +178,6 @@ void Camera::updateCameraVectors()
 		Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
 
-		//glm::vec3 up_tmp(front.x, (track_radius*track_radius - (Position.x - target_position.x)*(front.x - target_position.x) - (Position.z - target_position.z)*(front.z - target_position.z)) / (Position.y - target_position.y) + target_position.y, front.z);
-		//Up = glm::normalize(up_tmp);
-		//Right = glm::normalize(glm::cross(Front, Up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 	}
 	if (this->mode == VIEW_TYPE::BEHIND_PERSON_TRACK_ALL_DIRECTION) {
 
@@ -206,6 +193,9 @@ void Camera::updateCameraVectors()
 		PxVec3 Right_t(Right.x, Right.y, Right.z); this->target->getRight(Right_t);
 		Right = glm::normalize(pxVec3ToGlmVec3(Right_t));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
+	}
+	else {
+		Zoom = DEFAULT_ZOOM;
 	}
 }
 

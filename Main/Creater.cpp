@@ -33,7 +33,6 @@ vector<PxTransform> addCrashList;
 set<Player*>			updateTankList;
 list<PxParticleSystem*> physicsParticleSystemList;
 list<BaseParticleCluster*> renderParticleClusterList;
-unordered_map<int, BaseModel*> idToRenderModel;
 unordered_map<std::string, Cube*> texToCubeModel;
 unordered_map<std::string, BaseModel*> modelPathToCapsuleModel;
 
@@ -231,11 +230,11 @@ PxRigidDynamic* createCollection(PxTransform &tran, DATATYPE::TRIGGER_TYPE _type
 	PxRigidDynamic* collection = gPhysics->createRigidDynamic(tran);
 	if (_type == DATATYPE::TRIGGER_TYPE::COLLECTION) {
 		collectionShape->userData = new UserData(1026, "", DATATYPE::TRIGGER_TYPE::COLLECTION);
-		idToRenderModel[1026] = getCube("images/textures/missle1.jpg");
+		ObjLoader::meshToRenderModel[collectionShape] = getCube("images/textures/missle1.jpg");
 	}
 	else {
 		collectionShape->userData = new UserData(1025, "", DATATYPE::TRIGGER_TYPE::SUPPLY);
-		idToRenderModel[1025] = getCube("images/textures/redcross.png");
+		ObjLoader::meshToRenderModel[collectionShape] = getCube("images/textures/redcross.png");
 	}
 
 	collection->userData = new UserData(1, "collection", _type);
@@ -602,9 +601,8 @@ void addCrashInList() {
 			true, 20.0, // true是随机速度
 			20, 12, // 消失时间、开始渐隐时间
 			PxVec3(0.f, -6.f, 0.f), //初始速度
-			PxVec3(0.3f, -10.f, 0.3f)  //力场
+			PxVec3(0.3f, -14.f, 0.3f)  //力场
 		);
-		cout << "create crash" << endl;
 	}
 	addCrashList.clear();
 }
@@ -1140,7 +1138,6 @@ void createPointParticles(int numParticles, bool perOffset, BaseParticle* render
 			ps->setParticleBaseFlag(PxParticleBaseFlag::eCOLLISION_TWOWAY, true);
 			gScene->addActor(*ps);
 			physicsParticleSystemList.push_back(ps);
-			cout << "创建粒子成功\n";
 		}
 		else {
 			myindexpool->freeIndices();

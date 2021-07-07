@@ -4,6 +4,7 @@
 //全局变量区
 const float velocity = 1.0f;
 extern Camera camera;
+extern Game game;
 
 extern vector<bool>	turningState;
 extern AirPlane* Plane_1;
@@ -26,16 +27,9 @@ void processOtherControlEvents() {
 }
 
 void keyPress() {
-
-	//if (!camera.isHandling()) {
-		//vehicleProcessKeyboard();
-		//playerProcessKeyboard();
-	//vehicle->ProcessKeyPress();
-	Plane_1->ProcessKeyPress();
-	//mouseClick();
-//}
-
-
+	if (game.state == GAME_STATE::STARTED) {
+		Plane_1->ProcessKeyPress();
+	}
 }
 
 
@@ -44,7 +38,9 @@ void mouseMove() {
 }
 
 void mouseSingleClick(int button, int action) { //鼠标单次点击
-	Plane_1->ProcessMouseClick(button, action);
+	if (game.state == GAME_STATE::STARTED) {
+		Plane_1->ProcessMouseClick(button, action);
+	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) { //左键按下
 		//UI::CenterText::show(string(HETP_TEXT), 6, 4, true);
 		//一直闪动

@@ -12,7 +12,7 @@ extern Game game;
 PxRigidDynamic* createAndShowBlood(PxRigidDynamic* _body, float _healthLength, PxTransform _healthPos, PxTransform t0, PxTransform t1) {
 	PxShape* healthShape = gPhysics->createShape(PxBoxGeometry(_healthLength / 2, 0.1f, 0.1f), *gMaterial, true);
 	healthShape->userData = new UserData(1024, "", DATATYPE::BLOOD);
-	idToRenderModel[1024] = getCube("images/textures/blood.png");
+	ObjLoader::meshToRenderModel[healthShape] = getCube("images/textures/blood.png");
 	PxRigidDynamic* bloodDynamic = PxCreateDynamic(*gPhysics, _healthPos, *healthShape, 0.0001);
 	bloodDynamic->setName("blood");
 	bloodDynamic->userData = new UserData(0, "blood", DATATYPE::TRIGGER_TYPE::BLOOD);
@@ -519,7 +519,15 @@ void AirPlane::emit() {
 	PxQuat bulletRot2 = body->getGlobalPose().q;
 	PxQuat bulletRot3(PxPi / 180 * (-10), currentSwingForward);
 	PxVec3 emitPos; PxRigidDynamic* dynamic;
-	if (activatemissle) {
+	if (currAmmoType == AMMO_TYPE::BULLET) {
+		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
+		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
+			PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
+		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_BULLET);
+		//MediaPlayer.PlayMedia2D(Media::MediaType::PLANEBULLET);
+		MediaPlayer.PlayMedia3D(vec3df(emitPos.x / 5, emitPos.y / 5, emitPos.z / 5), Media::MediaType::PLANEBULLET);
+	}
+	else if (currAmmoType == AMMO_TYPE::MISSILE_FOR_GROUND) {
 		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
 		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
 			PxCapsuleGeometry(0.04, 0.17), *gMaterial, 1.0f);
@@ -528,14 +536,7 @@ void AirPlane::emit() {
 		//MediaPlayer.PlayMedia2D(Media::MediaType::PLANEMISSILE);
 		MediaPlayer.PlayMedia3D(vec3df(emitPos.x / 5, emitPos.y / 5, emitPos.z / 5), Media::MediaType::PLANEMISSILE);
 	}
-	else {
-		emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward;
-		dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, bulletRot3*bulletRot2*bulletRot),
-			PxCapsuleGeometry(0.04, 0.07), *gMaterial, 1.0f);
-		dynamic->userData = new UserData(1, "ab", DATATYPE::ACTOR_TYPE::PLANE_BULLET);
-		//MediaPlayer.PlayMedia2D(Media::MediaType::PLANEBULLET);
-		MediaPlayer.PlayMedia3D(vec3df(emitPos.x / 5, emitPos.y / 5, emitPos.z / 5), Media::MediaType::PLANEBULLET);
-	}
+
 
 	//MediaPlayer.PlayMedia3D(vec3df(emitPos.x, emitPos.y, emitPos.z), Media::MediaType::PLANEBULLET);
 	leftOrRight *= -1;
@@ -617,10 +618,19 @@ void AirPlane::ProcessKeyPress() {
 			turningState2[6] = false;
 		}
 		if (keyToPressState[GLFW_KEY_1]) {
-			activatemissle = false;
+			currAmmoType = AMMO_TYPE::BULLET;
+			UI::CenterText::show(SWITCH_TO_BULLET_TEXT, 3, 1, false);
 		}
 		if (keyToPressState[GLFW_KEY_2]) {
-			activatemissle = true;
+			currAmmoType = AMMO_TYPE::MISSILE_FOR_GROUND;
+			UI::CenterText::show(SWITCH_TO_MISSILE_FOR_GROUND_TEXT, 3, 1, false);
+		}
+		if (keyToPressState[GLFW_KEY_3]) {
+			currAmmoType = AMMO_TYPE::MISSILE_FOR_AIR;
+			UI::CenterText::show(SWITCH_TO_MISSILE_FOR_AIR_TEXT, 3, 1, false);
+		}
+		if ((!keyToPressState[GLFW_KEY_1] && keyToPrePressState[GLFW_KEY_1]) || (!keyToPressState[GLFW_KEY_2] && keyToPrePressState[GLFW_KEY_2]) || (!keyToPressState[GLFW_KEY_3] && keyToPrePressState[GLFW_KEY_3])) {
+			MediaPlayer.PlayMedia3D(vec3df(0.1f, 0.1f, 0.1f), Media::MediaType::SWITCH_AMMO);
 		}
 		if (!keyToPressState[GLFW_KEY_F4] && keyToPrePressState[GLFW_KEY_F4]) {
 			turningSpeed = 2.0f;
@@ -628,42 +638,7 @@ void AirPlane::ProcessKeyPress() {
 		if (!keyToPressState[GLFW_KEY_F3] && keyToPrePressState[GLFW_KEY_F3]) {
 			turningSpeed = 6.f;
 		}
-		//发射
-		if (!keyToPressState[GLFW_KEY_SPACE] && keyToPrePressState[GLFW_KEY_SPACE]) {
-			if (((!activatemissle&&bullet_ammo > 0) || (activatemissle&&missle_ammo > 0))) {
-				if (activatemissle) {
-					missle_ammo--;
-				}
-				else {
-					bullet_ammo--;
-				}
-				emit();
-				cout << "bullet_ammo: " << bullet_ammo << endl;
-			}
-			else if (bullet_ammo == 0) {
-				UI::CenterText::show(AMMO_EXAUSTED_TEXT, 3, 0, true);
-			}
-			else if (missle_ammo == 0) {
-				UI::CenterText::show(MISSILE_EXAUSTED_TEXT, 3, 0, true);
-			}
-		}
-		//发射追踪型导弹
-		//if (!keyToPressState[GLFW_KEY_M] && keyToPrePressState[GLFW_KEY_M]) {
-		//	for (int k = 0; k < AI_PlaneList.size(); k++) {
-		//		if (AI_PlaneList[k] != nullptr&&AI_PlaneList[k]->alive) {
-		//			PxVec3 targetDir = AI_PlaneList[k]->body->getGlobalPose().p - this->body->getGlobalPose().p;
-		//			double cosine = targetDir.getNormalized().dot(this->currentHeadForward.getNormalized());
-		//			double radiusAng = acos(cosine);
-		//			double ang = radiusAng * 180 / PxPi;
-		//			//Logger::debug(to_string(ang));
-		//			if (ang < 15) {
-		//				PxVec3 emitPos = body->getGlobalPose().p + (-1)*currentBackForward + (1)*currentHeadForward + leftOrRight * currentSwingForward;
-		//				myMissileManager->emitMissile(emitPos, currentHeadForward, AI_PlaneList[k]);
-		//				leftOrRight *= -1;
-		//				break;
-		//			}
-		//		}
-		//	}
+
 	}
 	else {
 		shotdown();
@@ -705,7 +680,29 @@ void AirPlane::ProcessKeyPress() {
 
 void AirPlane::ProcessMouseClick(int button, int action) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-		this->emitMissile();
+		if (currAmmoType == AMMO_TYPE::MISSILE_FOR_AIR) {
+			if (mouseButtonPressState[GLFW_MOUSE_BUTTON_RIGHT])
+				this->emitMissile();
+		}
+		else if (currAmmoType == AMMO_TYPE::BULLET) {
+			if (bullet_ammo > 0) {
+				bullet_ammo--;
+				emit();
+			}
+			else {
+				UI::CenterText::show(AMMO_EXAUSTED_TEXT, 5, 1, true);
+			}
+		}
+		else if (currAmmoType == AMMO_TYPE::MISSILE_FOR_GROUND) {
+			if (missle_ammo > 0) {
+				missle_ammo--;
+				emit();
+			}
+			else {
+				UI::CenterText::show(MISSILE_EXAUSTED_TEXT, 5, 1, true);
+			}
+		}
+
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 		reinterpret_cast<UI::ReticleUI*>(UI::UIManager::getUI(UI::UIID::RETICLE))->enableTrack(false);
@@ -780,7 +777,7 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 			this->health += 20;
 		}
 		//MediaPlayer.PlayMedia2D(Media::MediaType::SUPPLY);
-		MediaPlayer.PlayMedia3D(vec3df(0.f, 0.f, 0.f), Media::MediaType::SUPPLY);
+		MediaPlayer.PlayMedia3D(vec3df(1.f,1.f,1.f), Media::MediaType::SUPPLY);
 		cout << bullet_ammo << '\t' << health << endl;
 	}
 	else if (_type == DATATYPE::TRIGGER_TYPE::COLLECTION) {
@@ -795,14 +792,13 @@ void AirPlane::oncontact(DATATYPE::TRIGGER_TYPE _type) {
 		reinterpret_cast<UI::BorderMaskUI*>(UI::UIManager::getUI(UI::UIID::BORDER_MASK))->close();
 
 }
-void AirPlane::formcloud() {
+void AirPlane::formCloud2Side() {
 	vector<string>textures;
-	//textures.push_back("images/textures/smoke/smoke-white-1.png");
-	textures.push_back(GRAY_CLOUD_TEXTURE_PATH);
+	textures.push_back(WHITE_CLOUD_TEXTURE_PATH);
 	PxVec3 pos1 = body->getGlobalPose().p + (-1)*currentHeadForward + 2 * currentSwingForward;
 	CloudParticleCluster* cloud_cluster1 = new CloudParticleCluster(
 		1,
-		70, 0.05f,  //云密度、云团的半径
+		70, 0.1f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos1.x, pos1.y, pos1.z), //初始位置
 		glm::vec3(0.03f, 0.03f, 0.03f), //每片云粒子的缩放
@@ -813,7 +809,7 @@ void AirPlane::formcloud() {
 	PxVec3 pos2 = body->getGlobalPose().p + (-1)*currentHeadForward + (-2)*currentSwingForward;
 	CloudParticleCluster* cloud_cluster2 = new CloudParticleCluster(
 		1,
-		70, 0.05f,  //云密度、云团的半径
+		70, 0.1f,  //云密度、云团的半径
 		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
 		glm::vec3(pos2.x, pos2.y, pos2.z), //初始位置
 		glm::vec3(0.03f, 0.03f, 0.03f), //每片云粒子的缩放
@@ -821,21 +817,26 @@ void AirPlane::formcloud() {
 		textures, // 纹理路径列表
 		cloudShader //渲染此烟雾的shader
 	);
-	PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
-	CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
-		1,
-		10, 0.1f,  //云密度、云团的半径
-		0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
-		glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
-		glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
-		//camera.getPosition() + camera.getFront() * 1.f,
-		textures, // 纹理路径列表
-		cloudShader //渲染此烟雾的shader
-	);
 	renderParticleClusterList.push_back(cloud_cluster1);
 	renderParticleClusterList.push_back(cloud_cluster2);
-	renderParticleClusterList.push_back(cloud_cluster3);
 }
+
+void AirPlane::formCloudBehind() {
+	if (this->health < PLAYER_MIN_HP_TO_ALERT) {
+		PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
+		CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
+			1,
+			50, 0.3f,  //云密度、云团的半径
+			0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
+			glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
+			glm::vec3(0.3f, 0.3f, 0.3f), //每片云粒子的缩放
+			BLACK_SMOKE_TEXTURE_PATH, // 纹理
+			cloudShader //渲染此烟雾的shader
+		);
+		renderParticleClusterList.push_back(cloud_cluster3);
+	}
+}
+
 void AirPlane::formmisslecloud() {
 	for (auto i = airPlaneBullet.begin(); i != airPlaneBullet.end(); i++) {
 		PxVec3 pos = (*i)->getGlobalPose().p;
@@ -863,7 +864,6 @@ void AirPlane::formmisslecloud() {
 			0.1f, 4.0f, // 云在y方向的速度、云在y方向上最大能上升的距离
 			glm::vec3(pos.x, pos.y, pos.z), //初始位置
 			glm::vec3(0.1f, 0.1f, 0.1f), //每片云粒子的缩放
-			//camera.getPosition() + camera.getFront() * 1.f,
 			textures, // 纹理路径列表
 			cloudShader //渲染此烟雾的shader
 		);
@@ -1797,7 +1797,7 @@ void AirPlane_AI::oncontact(DATATYPE::ACTOR_TYPE _type) {
 			this->alive = false;
 			UI::MissionModal::currBeatAndTotal[2][0] += 1;
 			MediaPlayer.PlayMedia3D(vec3df(1.f, 1.f, 1.f), Media::MediaType::EXPLODE);
-
+			glm::vec3 input; pxVec3ToGlmVec3(this->body->getGlobalPose().p, input);
 			addCrashList.push_back(body->getGlobalPose());
 			shotdown();
 		}
@@ -1821,18 +1821,44 @@ void AirPlane_AI::crash() {
 	renderParticleClusterList.push_back(smoke_cluster);
 }
 void AirPlane_AI::shotdown() {
-	PxVec3 velocity = body->getLinearVelocity();
+	velocityOnShutDown = body->getLinearVelocity();
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, true);
 	PxVec3 p = body->getGlobalPose().p;
-	glm::vec3 input(p.x / 2, p.y / 2, p.z / 2);
-	PxQuat rot = PxQuat(PxPi / 2 * (-1), swingForward);
-	body->setGlobalPose(PxTransform(p, rot));
+	currRotAngle = body->getGlobalPose().q.getAngle();
+	//PxQuat rot = PxQuat(PxPi / 2 * (-1), swingForward);
+	//body->setGlobalPose(PxTransform(p, rot));
 	body->setActorFlag(PxActorFlag::eDISABLE_SIMULATION, false);
-	body->setLinearVelocity(veclocity * 5 * PxVec3(0.f, -1.f, 0.f));
+	glm::vec3 input(p.x / 2, p.y / 2, p.z / 2);
 	BoomFlameParticleCluster* boom_cluster = new BoomFlameParticleCluster(5, 10.f, 10.f, input, std::vector<string>(), boomFlameShader);
 	renderParticleClusterList.push_back(boom_cluster);
 	SmokeParticleCluster* smoke_cluster = new SmokeParticleCluster(1, 100, 2.f, 90, 0.1f, 15.f, input, BLACK_SMOKE_TEXTURE_PATH, smokeShader);
 	renderParticleClusterList.push_back(smoke_cluster);
+}
+
+void AirPlane_AI::afterShutDown() {
+	if (this->isContactMap) return;
+	PxVec3 p = body->getGlobalPose().p;
+	float q = body->getGlobalPose().q.getAngle();
+	if (q > 6.2f) q = 0.f;
+	PxVec3 axis = velocityOnShutDown; axis.normalize();
+	PxQuat rot = PxQuat(q + PI / 180.f * 2.f, axis);//swingForward
+	body->setGlobalPose(PxTransform(p, rot));
+	velocityOnShutDown.y = -9.81f;
+	body->addForce(velocityOnShutDown, physx::PxForceMode::eACCELERATION);
+	if (this->health < PLAYER_MIN_HP_TO_ALERT) {  //血量告急时冒烟
+		PxVec3 pos3 = body->getGlobalPose().p + (-1)*currentHeadForward;
+		CloudParticleCluster* cloud_cluster3 = new CloudParticleCluster(
+			1,
+			50, 0.5f,  //云密度、云团的半径
+			0.05f, 3.4f, // 云在y方向的速度、云在y方向上最大能上升的距离
+			glm::vec3(pos3.x, pos3.y, pos3.z), //初始位置
+			glm::vec3(0.3f, 0.3f, 0.3f), //每片云粒子的缩放
+			BLACK_SMOKE_TEXTURE_PATH, // 纹理
+			cloudShader //渲染此烟雾的shader
+		);
+		renderParticleClusterList.push_back(cloud_cluster3);
+	}
+
 }
 
 void AirPlane_AI::getRight(physx::PxVec3& right) { right = currentSwingForward; }
@@ -1852,17 +1878,19 @@ PxRigidDynamic* MissileManager::emitMissile(PxVec3 &emitPos, PxVec3 &direction, 
 	double cosAngle = PxVec3(1, 0, 0).dot(direction.getNormalized());
 	double radiusAngle = acos(cosAngle);
 	PxQuat rot(radiusAngle, rotAxis.getNormalized());
-	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, rot), PxCapsuleGeometry(0.04, 0.2), *gMaterial, 0.1f);
+	PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, PxTransform(emitPos, rot), PxCapsuleGeometry(0.04, 0.20), *gMaterial, 0.1f);
 
 
 	//设置刚体名称
 	dynamic->setName("bullet");
+
 	//setupFiltering(dynamic, FilterGroup::ePLAYERBULLET, FilterGroup::eAIRPLANE);
 	gScene->addActor(*dynamic);
 	dynamic->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 	dynamic->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 	dynamic->setActorFlag(PxActorFlag::eVISUALIZATION, true);
 	dynamic->userData = new UserData(target, 1, "missile", DATATYPE::ACTOR_TYPE::PLANE_MISSLE);
+	ObjLoader::meshToRenderModel[dynamic] = getCapsule(RED_MISSILE_MODEL_PATH);
 	dynamic->setLinearVelocity(missileSpeed*direction.getNormalized());
 	MissileList.insert(dynamic);
 	count++;

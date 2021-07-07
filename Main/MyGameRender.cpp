@@ -147,7 +147,7 @@ int myRenderLoop()
 			envShader->setFloat("material.shininess", 32.0f);
 			envShader->setVec3("light.position", lightPosition);
 			envShader->setVec3("light.ambient", 0.3f, 0.3f, 0.3f);
-			envShader->setVec3("light.diffuse", 0.8f, 0.8f, 0.8f); // 将光照调暗了一些以搭配场景
+			envShader->setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
 			envShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 			Render::renderActors(envShader);// 渲染场景内的物体

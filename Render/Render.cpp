@@ -10,7 +10,6 @@ using namespace physx;
 #define MAX_NUM_MESH_VEC3S  21474836
 static PxVec3 gVertexBuffer[MAX_NUM_MESH_VEC3S];
 extern PxScene* gScene;
-extern unordered_map<int, BaseModel*> idToRenderModel;
 
 Cube* cube = nullptr;
 Cube* hpBar = nullptr;
@@ -27,14 +26,15 @@ void renderGeometry(PxRigidActor* actor, PxShape* shape, const PxGeometryHolder&
 	{
 	case PxGeometryType::eBOX:
 	{
-		void* userDataPtr = shape->userData;
 		glm::vec3 scale(2 * h.box().halfExtents.x, 2 * h.box().halfExtents.y, 2 * h.box().halfExtents.z);
 		BaseModel* modelToDraw = nullptr;
-		if (userDataPtr != nullptr) {
-			UserData* ud = reinterpret_cast<UserData*>(userDataPtr);
-			modelToDraw = idToRenderModel[ud->id];
+		if (ObjLoader::meshToRenderModel[shape] != nullptr) {
+			modelToDraw = ObjLoader::meshToRenderModel[shape];
 		}
-		if (modelToDraw == nullptr || userDataPtr == nullptr) {
+		else if (ObjLoader::meshToRenderModel[actor] != nullptr) {
+			modelToDraw = ObjLoader::meshToRenderModel[actor];
+		}
+		else {
 			if (cube == nullptr)
 				cube = new Cube(pos, scale, "", shader, CUBE_TEXTURE_PATH);
 			modelToDraw = cube;
@@ -49,27 +49,38 @@ void renderGeometry(PxRigidActor* actor, PxShape* shape, const PxGeometryHolder&
 	case PxGeometryType::eSPHERE:
 	{
 		glm::vec3 scale(h.sphere().radius, h.sphere().radius, h.sphere().radius);
-		if (sphere == nullptr) {
-			sphere = new Sphere(pos, scale, "", shader, 30, 30);
+		BaseModel* modelToDraw = nullptr;
+		if (ObjLoader::meshToRenderModel[shape] != nullptr) {
+			modelToDraw = ObjLoader::meshToRenderModel[shape];
 		}
-		sphere->setPosition(pos);
-		sphere->setScaleValue(scale);
-		sphere->setRotate(t.q);
-		sphere->updateShaderModel();
-		sphere->setColor(glm::vec3(1.f, 0.f, 0.f));
-		sphere->draw();
+		else if (ObjLoader::meshToRenderModel[actor] != nullptr) {
+			modelToDraw = ObjLoader::meshToRenderModel[actor];
+		}
+		else {
+			if (sphere == nullptr)
+				sphere = new Sphere(pos, scale, "", shader, 30, 30);
+			sphere->setColor(glm::vec3(1.f, 0.f, 0.f));
+			modelToDraw = sphere;
+		}
+
+		modelToDraw->setPosition(pos);
+		modelToDraw->setScaleValue(scale);
+		modelToDraw->setRotate(t.q);
+		modelToDraw->updateShaderModel();
+		modelToDraw->draw();
 	}
 	break;
 	case PxGeometryType::eCAPSULE:
 	{
 		glm::vec3 scale(h.capsule().halfHeight * 2, h.capsule().radius * 2, h.capsule().radius * 2);
-		void* userDataPtr = shape->userData;
 		BaseModel* modelToDraw = nullptr;
-		if (userDataPtr != nullptr) {
-			UserData* ud = reinterpret_cast<UserData*>(userDataPtr);
-			modelToDraw = idToRenderModel[ud->id];
+		if (ObjLoader::meshToRenderModel[shape] != nullptr) {
+			modelToDraw = ObjLoader::meshToRenderModel[shape];
 		}
-		if (modelToDraw == nullptr || userDataPtr == nullptr) {
+		else if (ObjLoader::meshToRenderModel[actor] != nullptr) {
+			modelToDraw = ObjLoader::meshToRenderModel[actor];
+		}
+		else {
 			if (bullet == nullptr)
 				bullet = new PlainModel(pos, scale, "model/bullet/bullet3/bullet.obj", shader);
 			modelToDraw = bullet;

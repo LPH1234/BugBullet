@@ -710,9 +710,11 @@ namespace UI {
 	void ConfigModal::configSoundEffect() {
 		if (soundEffect == 0) { //开启
 			std::cout << "开音效";
+			MediaPlayer.setEnableEffect(true);
 		}
 		else {//关闭
 			std::cout << "关音效";
+			MediaPlayer.setEnableEffect(false);
 		}
 	}
 	void ConfigModal::configSoundBg() {

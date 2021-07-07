@@ -18,8 +18,8 @@ const std::string COOKING_TRIANGLE_PREFIX = "t_";
 const std::string ACTOR_NAME_PLAYER_BULLET = "bullet";
 
 const std::string HETP_TEXT = "\
-Press The W,S,A,D,Q,E Key To Control The Movement And \n\
-Orientation of Fighter, Press Space Key To Emit Missile.\n\
+Press The W,S,A,D,Q,E Key To Control The Movement,Yaw \n\
+Pitch,Roll of Fighter, Press Space Key To Emit Missile.\n\
 ";
 
 const std::string LEVEL1_BEGIN_TEXT = "LEVEL 1";
@@ -78,7 +78,7 @@ const float RETICLE_BEGIN_TO_BLING_DISTANCE = 300.f;
 const float RETICLE_LOCK_DISTANCE = 15.f;
 const float RETICLE_BLING_VELOCITY = 0.1f;
 
-const unsigned int ANIMATE_START_FRAME = 946; //主界面动画开始帧
+const unsigned int ANIMATE_START_FRAME = 710; //主界面动画开始帧
 const  std::string ANIMATE_FRAMS_PATH = "resources/animation/BattleField2042/images/";
 const  std::string ANIMATE_FRAMS_SUFFIX = ".png";
 
@@ -105,3 +105,11 @@ const std::string PLAYER_STATUS_MISSILE_ICON = "images/textures/missile.png";
 const std::string PLAYER_STATUS_MISSILE_TEXT = "Missile";
 
 const unsigned int PLAYER_MIN_HP_TO_ALERT = 30;
+
+
+
+const std::string RED_MISSILE_MODEL_PATH = "model/missile/missile-red/missile-red.obj";
+
+const std::string SWITCH_TO_BULLET_TEXT = "SWITCH TO BULLET";
+const std::string SWITCH_TO_MISSILE_FOR_GROUND_TEXT = "SWITCH TO MISSILE FOR GROUND";
+const std::string SWITCH_TO_MISSILE_FOR_AIR_TEXT = "SWITCH TO MISSILE FOR AIR";
