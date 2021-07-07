@@ -27,11 +27,9 @@ void processOtherControlEvents() {
 }
 
 void keyPress() {
-
 	if (game.state == GAME_STATE::STARTED) {
 		Plane_1->ProcessKeyPress();
 	}
-
 }
 
 
